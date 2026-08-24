@@ -1,0 +1,91 @@
+diff --git a/cpu/cpu-server-client-mgr.c b/cpu/cpu-server-client-mgr.c
+--- a/cpu/cpu-server-client-mgr.c
++++ b/cpu/cpu-server-client-mgr.c
+@@ -323,6 +323,8 @@ static int freeResources(cricket_client* client) {
+         if (resource_mg_get_element_at(&client->gpu_mem, FALSE, i, (void **)&map_elem) == 0) {
+             mem_alloc_args_t *mem_args = (mem_alloc_args_t *)map_elem->cuda_address;
+-            free_dev_mem(map_elem->client_address, mem_args->padded_size);
++            if (free_dev_mem(map_elem->client_address, mem_args->padded_size) == cudaSuccess) {
++                dec_mem_usage(mem_args->padded_size);
++            }
+ 	}
+     }
+ 
+diff --git a/cpu/cpu-server-driver.c b/cpu/cpu-server-driver.c
+--- a/cpu/cpu-server-driver.c
++++ b/cpu/cpu-server-driver.c
+@@ -1022,6 +1022,7 @@ bool_t rpc_cumemalloc_1_svc(uint64_t size, ptr_result *result,
+     LOGE(LOG_DEBUG, "cuMemAlloc%d) -> %p; return: %d; padded size: %lu", size, dev_mem_ptr, result->err, padded_size);
+ 
+     if (result->err == cudaSuccess) {
++        inc_mem_usage(padded_size);
+         mem_alloc_args_t *args = malloc(sizeof(mem_alloc_args_t));
+         args->type = MEM_ALLOC_TYPE_DEFAULT;
+         args->size = size;
+diff --git a/cpu/cpu-server-resource-controller.c b/cpu/cpu-server-resource-controller.c
+--- a/cpu/cpu-server-resource-controller.c
++++ b/cpu/cpu-server-resource-controller.c
+@@ -129,16 +129,16 @@ uint64_t get_mem_limit() {
+ }
+ 
+ int allow_mem_alloc(uint64_t size) {
+-    size_t gpu_memusage = get_gpu_memory_usage();
+-    LOGE(LOG_DEBUG, "Current memory usage: %zu, mem_limit: %llu", gpu_memusage, mem_limit);
+-    if (gpu_memusage + size > mem_limit) {
++    LOGE(LOG_DEBUG, "Current tracked memory usage: %llu, mem_limit: %llu",
++         current_mm_usage, mem_limit);
++    if (size > mem_limit || current_mm_usage > mem_limit - size) {
+         return 0;
+     }
+     return 1;
+ } 
+ 
+ uint64_t get_mem_free() {
+-    return mem_limit - get_gpu_memory_usage();
++    return current_mm_usage < mem_limit ? mem_limit - current_mm_usage : 0;
+ }
+ 
+ void inc_mem_usage(uint64_t size) {
+@@ -208,6 +208,7 @@ int set_new_config(uint32_t __newsm, uint64_t __newmem) {
+ }
+ 
+ int init_resource_controller(uint32_t num_sm_cores, uint64_t mem) {
++    current_mm_usage = 0;
+     
+     CUresult res = cuCtxGetCurrent(&primaryCtx);
+     if (res != CUDA_SUCCESS) {
+diff --git a/cpu/cpu-server-runtime.c b/cpu/cpu-server-runtime.c
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -1620,6 +1620,7 @@ bool_t cuda_free_1_svc(ptr devPtr, int *result, struct svc_req *rqstp)
+ #endif
+ 
+     if (*result == cudaSuccess) {
++        dec_mem_usage(alloc_args->padded_size);
+         resource_mg_remove(&client->gpu_mem, (void *)devPtr);
+ 	// migration
+         //resource_map_unset(client->gpu_mem_ext, client_addr);
+@@ -1929,6 +1930,7 @@ bool_t cuda_malloc_1_svc(size_t argp, ptr_result *result, struct svc_req *rqstp)
+     LOGE(LOG_DEBUG, "cudaMalloc(%d) -> %p; return: %d; padded size: %lu", argp, dev_mem_ptr, result->err, padded_size);
+     // resource_mg_create(&rm_memory, (void *)result->ptr_result_u.ptr);
+     if (result->err == cudaSuccess) {
++        inc_mem_usage(padded_size);
+         mem_alloc_args_t *args = malloc(sizeof(mem_alloc_args_t));
+         args->type = MEM_ALLOC_TYPE_DEFAULT;
+         args->size = argp;
+@@ -1987,6 +1989,7 @@ bool_t cuda_malloc_3d_1_svc(size_t depth, size_t height, size_t width, pptr_resu
+     result->pptr_result_u.ptr.ysize = height;
+     
+     if (result->err == cudaSuccess) {
++        inc_mem_usage(padded_out);
+         mem_alloc_args_t *args = malloc(sizeof(mem_alloc_args_t));
+         args->type = MEM_ALLOC_TYPE_3D;
+         args->depth = depth;
+@@ -2109,6 +2112,7 @@ bool_t cuda_malloc_pitch_1_svc(size_t width, size_t height, ptrsz_result *result
+     PRIMARY_CTX_RELEASE;
+     
+     if (result->err == cudaSuccess) {
++        inc_mem_usage(padded_out);
+         mem_alloc_args_t *args = malloc(sizeof(mem_alloc_args_t));
+         args->type = MEM_ALLOC_TYPE_PITCH;
+         args->width = width;

@@ -1,0 +1,28 @@
+diff --git a/cpu/cpu-server-runtime.c b/cpu/cpu-server-runtime.c
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -491,9 +491,12 @@ bool_t cuda_get_device_properties_1_svc(int device, cuda_device_prop_result *res
+ }
+ 
+ 
+-/**
+- * This call should be ignored
+- */
++/**
++ * A Flyt client sees one logical CUDA device even when the server process is
++ * scheduled onto one of several physical devices.  Keep the scheduler's
++ * selected device, but preserve CUDA's invalid-device result for every guest
++ * ordinal other than zero.
++ */
+ bool_t cuda_set_device_1_svc(int device, int *result, struct svc_req *rqstp)
+ {
+     GSCHED_RETAIN;
+@@ -501,7 +504,7 @@ bool_t cuda_set_device_1_svc(int device, int *result, struct svc_req *rqstp)
+     RECORD_API(int);
+     RECORD_SINGLE_ARG(device);
+     LOGE(LOG_DEBUG, "cudaSetDevice(%d)", device);
+-    *result = cudaSuccess;
++    *result = device == 0 ? cudaSuccess : cudaErrorInvalidDevice;
+     RECORD_RESULT(integer, *result);
+     GSCHED_RELEASE;
+     return 1;

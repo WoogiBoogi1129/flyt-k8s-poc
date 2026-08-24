@@ -1,0 +1,196 @@
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -1352,6 +1352,38 @@
+ } host_alloc_info_t;
+ static host_alloc_info_t hainfo[64] = {0};
+ static size_t hainfo_cnt = 0;
++
++static int hainfo_getfreeindex(void)
++{
++    size_t i;
++
++    for (i = 0; i < hainfo_cnt; ++i) {
++        if (hainfo[i].client_ptr == NULL) {
++            return (int)i;
++        }
++    }
++    if (hainfo_cnt >= sizeof(hainfo) / sizeof(hainfo[0])) {
++        return -1;
++    }
++    return (int)hainfo_cnt;
++}
++
++static int hainfo_add(void *client_ptr, size_t size, int idx)
++{
++    int slot = hainfo_getfreeindex();
++
++    if (slot < 0) {
++        return -1;
++    }
++    hainfo[slot].idx = idx;
++    hainfo[slot].size = size;
++    hainfo[slot].client_ptr = client_ptr;
++    if ((size_t)slot == hainfo_cnt) {
++        hainfo_cnt++;
++    }
++    return slot;
++}
++
+ static int hainfo_getindex(void *client_ptr)
+ {
+     int i;
+@@ -1375,17 +1407,19 @@
+     int result = cudaErrorInitializationError;
+     enum clnt_stat retval_1;
+     int i = -1;
++    int allocation_idx = -1;
+     //pthread_mutex_lock(&hamutex);
+     if (shm_enabled && connection_is_local == 1) { //Use local shared memory
+         i = hainfo_getindex((void*)ptr);
+         if (i == -1) {
+             goto out;
+         }
++        allocation_idx = hainfo[i].idx;
+         munmap(hainfo[i].client_ptr, hainfo[i].size);
+         memset(&hainfo[i], 0, sizeof(host_alloc_info_t));
+ 
+         FUNC_BEGIN 
+-        retval_1 = cuda_free_host_1(i, &result, clnt);
++        retval_1 = cuda_free_host_1(allocation_idx, &result, clnt);
+         FUNC_END
+         if (retval_1 != RPC_SUCCESS) {
+             clnt_perror (clnt, "call failed");
+@@ -1400,12 +1434,16 @@
+         if (i == -1) {
+             goto out;
+         }
+-        ib_free_memreg((void*)ptr, i, false);
++        ib_free_memreg((void*)ptr, hainfo[i].idx, false);
+         hainfo[i].client_ptr = 0;
+     	//pthread_mutex_unlock(&hamutex);
+         return cudaSuccess;
+ #else
+-    	//pthread_mutex_unlock(&hamutex);
++	//pthread_mutex_unlock(&hamutex);
++        i = hainfo_getindex(ptr);
++        if (i >= 0) {
++            memset(&hainfo[i], 0, sizeof(host_alloc_info_t));
++        }
+         free(ptr);
+         return cudaSuccess;
+ #endif //WITH_IB
+@@ -1502,10 +1540,13 @@
+         }
+ 
+         //pthread_mutex_lock(&hamutex);
+-        hainfo[hainfo_cnt].idx = ret.sz_result_u.data;
+-        hainfo[hainfo_cnt].size = size;
+-        hainfo[hainfo_cnt].client_ptr = *pHost;
+-        hainfo_cnt++;
++        if (hainfo_add(*pHost, size, ret.sz_result_u.data) < 0) {
++            LOGE(LOG_ERROR, "cudaHostAlloc client allocation table is full.");
++            munmap(*pHost, size);
++            *pHost = NULL;
++            ret.err = cudaErrorMemoryAllocation;
++            goto out;
++        }
+         //pthread_mutex_unlock(&hamutex);
+         
+         FUNC_BEGIN 
+@@ -1519,16 +1560,22 @@
+         shm_unlink(shm_name);
+     } else if (socktype == TCP) { //Use infiniband
+ #ifdef WITH_IB
+-       if (ib_allocate_memreg(pHost, size, hainfo_cnt, false) != 0) {
++       int slot = hainfo_getfreeindex();
++       if (slot < 0) {
++            LOGE(LOG_ERROR, "cudaHostAlloc client allocation table is full.");
++            goto out;
++       }
++       if (ib_allocate_memreg(pHost, size, slot, false) != 0) {
+             LOGE(LOG_ERROR, "failed to register infiniband memory region");
+             goto out;
+         }
+         //pthread_mutex_lock(&hamutex);
+-        hainfo[hainfo_cnt].idx = hainfo_cnt;
+-        hainfo[hainfo_cnt].size = size;
+-        hainfo[hainfo_cnt].client_ptr = *pHost;
+-
+-        hainfo_cnt++;
++        if (hainfo_add(*pHost, size, slot) < 0) {
++            LOGE(LOG_ERROR, "cudaHostAlloc client allocation table is full.");
++            ib_free_memreg(*pHost, slot, false);
++            *pHost = NULL;
++            goto out;
++        }
+         //pthread_mutex_unlock(&hamutex);
+ 
+         FUNC_BEGIN 
+@@ -1538,14 +1585,22 @@
+         ret.err = cudaSuccess;
+ 
+ #else
+-        LOGE(LOG_DEBUG, "cudaHostAlloc is not supported for TCP transports without IB. Using malloc instead...");
++        /*
++         * There is no remote DMA registration on a plain TCP transport, but
++         * PyTorch still relies on its CUDA host allocator for scalar DtoH
++         * staging.  Keep the allocation local and mark it as a non-transfer
++         * entry: cudaMemcpy{,Async} then uses the ordinary synchronous RPC
++         * path instead of the SHM/IB path.
++         */
+         *pHost = malloc(size);
+-        if (*pHost == NULL) {
+-            goto out;
+-        } else {
+-            ret.err = cudaSuccess;
++        if (*pHost == NULL || hainfo_add(*pHost, size, -1) < 0) {
++            free(*pHost);
++            *pHost = NULL;
++            ret.err = cudaErrorMemoryAllocation;
+             goto out;
+         }
++        ret.err = cudaSuccess;
++        goto out;
+ #endif //WITH_IB
+     } else {
+         LOGE(LOG_ERROR, "unknown transport.");
+@@ -2148,7 +2203,38 @@
+ DEF_FN(struct cudaPitchedPtr, make_cudaPitchedPtr, void*, d, size_t, p, size_t, xsz, size_t, ysz)
+ DEF_FN(struct cudaPos, make_cudaPos, size_t, x, size_t, y, size_t, z)
+ 
+-DEF_FN(cudaError_t, cudaPointerGetAttributes, struct cudaPointerAttributes*, attributes, const void*, ptr)
++cudaError_t cudaPointerGetAttributes(
++    struct cudaPointerAttributes *attributes, const void *ptr)
++{
++    int index;
++    cudaError_t (*real_cuda_pointer_get_attributes)(
++        struct cudaPointerAttributes *, const void *);
++    char *error_str;
++
++    if (attributes == NULL || ptr == NULL) {
++        return cudaErrorInvalidValue;
++    }
++
++    index = hainfo_getindex((void *)ptr);
++    if (index >= 0) {
++        memset(attributes, 0, sizeof(*attributes));
++        attributes->type = cudaMemoryTypeHost;
++        attributes->device = 0;
++        attributes->hostPointer = (void *)ptr;
++        return cudaSuccess;
++    }
++
++    dlerror();
++    *(void **)(&real_cuda_pointer_get_attributes) =
++        dlsym(libwrap_get_sohandle(), "cudaPointerGetAttributes");
++    error_str = dlerror();
++    if (error_str != NULL || real_cuda_pointer_get_attributes == NULL) {
++        LOGE(LOG_ERROR, "[libwrap] %s",
++             error_str != NULL ? error_str : "cudaPointerGetAttributes missing");
++        return cudaErrorNotSupported;
++    }
++    return real_cuda_pointer_get_attributes(attributes, ptr);
++}
+ 
+ cudaError_t cudaDeviceCanAccessPeer(int* canAccessPeer, int device, int peerDevice)
+ {

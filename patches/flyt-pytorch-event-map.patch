@@ -1,0 +1,95 @@
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -978,12 +978,7 @@ bool_t cuda_event_destroy_1_svc(ptr event, int *result, struct svc_req *rqstp)
+ 
+     GET_CLIENT(*result)
+     cudaEvent_t event_ptr;
+-    if ((event_ptr = resource_map_get_addr(client->gpu_events, (void*)event)) != 0) {
+-        LOGE(LOG_ERROR, "error getting event");
+-        *result = cudaErrorInvalidValue;
+-        GSCHED_RELEASE;
+-        return 1;
+-    }
++    GET_EVENT(event_ptr, event, *result)
+ 
+     *result = cudaEventDestroy(event_ptr);
+     RECORD_RESULT(integer, *result);
+@@ -1003,20 +998,10 @@ bool_t cuda_event_elapsed_time_1_svc(ptr start, ptr end, float_result *result, s
+     GET_CLIENT(result->err)
+ 
+     cudaEvent_t start_ptr;
+-    if ((start_ptr = resource_map_get_addr(client->gpu_events, (void*)start)) != 0) {
+-        LOGE(LOG_ERROR, "error getting start event");
+-        result->err = cudaErrorInvalidValue;
+-        GSCHED_RELEASE;
+-        return 1;
+-    }
++    GET_EVENT(start_ptr, start, result->err)
+ 
+     cudaEvent_t end_ptr;
+-    if ((end_ptr = resource_map_get_addr(client->gpu_events, (void*)end)) != 0) {
+-        LOGE(LOG_ERROR, "error getting end event");
+-        result->err = cudaErrorInvalidValue;
+-        GSCHED_RELEASE;
+-        return 1;
+-    }
++    GET_EVENT(end_ptr, end, result->err)
+ 
+     result->err = cudaEventElapsedTime(&result->float_result_u.data,
+       start_ptr,
+@@ -1034,12 +1019,7 @@ bool_t cuda_event_query_1_svc(ptr event, int *result, struct svc_req *rqstp)
+     GET_CLIENT(*result)
+ 
+     cudaEvent_t event_ptr;
+-    if ((event_ptr = resource_map_get_addr(client->gpu_events, (void*)event)) != 0) {
+-        LOGE(LOG_ERROR, "error getting event");
+-        *result = cudaErrorInvalidValue;
+-        GSCHED_RELEASE;
+-        return 1;
+-    }
++    GET_EVENT(event_ptr, event, *result)
+ 
+     *result = cudaEventQuery(event_ptr);
+     RECORD_RESULT(integer, *result);
+@@ -1058,12 +1038,7 @@ bool_t cuda_event_record_1_svc(ptr event, ptr stream, int *result, struct svc_re
+     GET_CLIENT(*result)
+ 
+     cudaEvent_t event_ptr;
+-    if ((event_ptr = resource_map_get_addr(client->gpu_events, (void*)event)) != 0) {
+-        LOGE(LOG_ERROR, "error getting event");
+-        *result = cudaErrorInvalidValue;
+-        GSCHED_RELEASE;
+-        return 1;
+-    }
++    GET_EVENT(event_ptr, event, *result)
+ 
+     cudaStream_t stream_ptr;
+     GET_STREAM(stream_ptr, stream, *result)
+@@ -1087,12 +1062,7 @@ bool_t cuda_event_record_with_flags_1_svc(ptr event, ptr stream, int flags, int
+     GET_CLIENT(*result)
+ 
+     cudaEvent_t event_ptr;
+-    if ((event_ptr = resource_map_get_addr(client->gpu_events, (void*)event)) != 0) {
+-        LOGE(LOG_ERROR, "error getting event");
+-        *result = cudaErrorInvalidValue;
+-        GSCHED_RELEASE;
+-        return 1;
+-    }
++    GET_EVENT(event_ptr, event, *result)
+ 
+     cudaStream_t stream_ptr;
+     GET_STREAM(stream_ptr, stream, *result)
+@@ -1120,12 +1090,7 @@ bool_t cuda_event_synchronize_1_svc(ptr event, int *result, struct svc_req *rqst
+     GET_CLIENT(*result)
+ 
+     cudaEvent_t event_ptr;
+-    if ((event_ptr = resource_map_get_addr(client->gpu_events, (void*)event)) != 0) {
+-        LOGE(LOG_ERROR, "error getting event");
+-        *result = cudaErrorInvalidValue;
+-        GSCHED_RELEASE;
+-        return 1;
+-    }
++    GET_EVENT(event_ptr, event, *result)
+ 
+     *result = cudaEventSynchronize(event_ptr);
+     RECORD_RESULT(integer, *result);

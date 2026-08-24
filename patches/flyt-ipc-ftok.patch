@@ -1,0 +1,25 @@
+diff --git a/control-managers/src/client-manager-daemon/vcuda_client_handler.rs b/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
+index f1adea9..f26b1e5 100644
+--- a/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
++++ b/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
+@@ -42,7 +42,10 @@ impl VCudaClientManager {
+             std::fs::File::create(mqueue_path).unwrap();
+         }
+ 
+-        let key = PathProjectIdKey::new(mqueue_path.to_string(), PROJ_ID);
++        // ipc-rs passes String::as_ptr() directly to libc::ftok(), which
++        // requires a NUL-terminated path. Without the explicit terminator the
++        // manager and the C interposer can derive different queue keys.
++        let key = PathProjectIdKey::new(format!("{}\0", mqueue_path), PROJ_ID);
+         let message_queue = MessageQueue::new(MessageQueueKey::PathKey(key)).create().init().unwrap();
+         log::debug!("key used by client: {} {} {}", message_queue.key, mqueue_path.to_string(), PROJ_ID);
+ 
+@@ -224,7 +227,7 @@ impl VCudaClientManager {
+     }
+ 
+     pub fn listen_to_clients<F>(&self, virt_server_getter: F) where F: Fn(i32, i32, bool) -> Option<(String, u64)> {
+-        let key = PathProjectIdKey::new(self.mqueue_path.clone(), PROJ_ID);
++        let key = PathProjectIdKey::new(format!("{}\0", self.mqueue_path), PROJ_ID);
+         let message_queue = MessageQueue::new(MessageQueueKey::PathKey(key)).create().init().unwrap();
+         log::info!("Flyt client manager listening to clients...");
+         loop {

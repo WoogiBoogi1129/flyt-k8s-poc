@@ -1,0 +1,35 @@
+diff --git a/cpu/cpu-server-runtime.c b/cpu/cpu-server-runtime.c
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -1231,7 +1231,30 @@ bool_t cuda_func_set_attributes_1_svc(ptr func, int attr, int value, int *result
+     RECORD_ARG(2, attr);
+     RECORD_ARG(3, value);
+     LOGE(LOG_DEBUG, "cudaFuncSetAttributes");
+-    *result = cudaFuncSetAttribute((void*)func, attr, value);
++
++    GET_CLIENT(*result)
++
++    /* The runtime API receives a host-function token in the client process.
++     * That address is not valid in the remote GPU server.  Kernel launches
++     * already resolve the token through the per-client function map; apply
++     * the same translation here and use the equivalent Driver API handle.
++     * cudaFuncAttribute and CUfunction_attribute intentionally share values
++     * for the settable attributes (dynamic shared memory, carveout, cluster
++     * dimensions and cluster policy).
++     */
++    addr_data_pair_t *func_ptr;
++    if (resource_mg_get(&client->functions, (void*)func,
++                        (void**)&func_ptr) != 0) {
++        LOGE(LOG_ERROR, "error getting function");
++        *result = cudaErrorInvalidValue;
++        GSCHED_RELEASE;
++        return 1;
++    }
++
++    *result = (int)cuFuncSetAttribute(
++        (CUfunction)func_ptr->addr,
++        (CUfunction_attribute)attr,
++        value);
+     RECORD_RESULT(integer, *result);
+     GSCHED_RELEASE;
+     return 1;

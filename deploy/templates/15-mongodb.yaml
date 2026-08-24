@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flyt-mongodb
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app: flyt-mongodb
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: flyt-mongodb
+  template:
+    metadata:
+      labels:
+        app: flyt-mongodb
+        app.kubernetes.io/part-of: flyt-poc
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: __NODE_NAME__
+      containers:
+        - name: mongodb
+          image: docker.io/library/mongo:7.0@sha256:444d798458e5aa40f3667230a9c631974fa169c32ae4a2d924658ac72b753122
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: flyt-mongodb-credentials
+                  key: username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: flyt-mongodb-credentials
+                  key: password
+          ports:
+            - name: mongodb
+              containerPort: 27017
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -lc
+                - >-
+                  mongosh --quiet
+                  --username "$MONGO_INITDB_ROOT_USERNAME"
+                  --password "$MONGO_INITDB_ROOT_PASSWORD"
+                  --authenticationDatabase admin
+                  --eval 'db.adminCommand({ping:1}).ok' | grep -qx 1
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            tcpSocket:
+              port: mongodb
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: 4Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flyt-mongodb
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  selector:
+    app: flyt-mongodb
+  ports:
+    - name: mongodb
+      port: 27017
+      targetPort: mongodb

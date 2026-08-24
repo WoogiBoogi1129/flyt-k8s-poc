@@ -1,0 +1,16 @@
+diff --git a/control-managers/src/common/config.rs b/control-managers/src/common/config.rs
+index 92437f8..5e50863 100644
+--- a/control-managers/src/common/config.rs
++++ b/control-managers/src/common/config.rs
+@@ -1,5 +1,8 @@
+ // Copyright (c) 2024-2026 SynerG Lab, IITB
+ 
+-pub const CLMGR_CONFIG_PATH: &str = "../configs/client-mgr.toml";
+-pub const RMGR_CONFIG_PATH: &str = "../configs/cluster-mgr.toml";
+-pub const SNODE_CONFIG_PATH: &str = "../configs/node-mgr.toml";
++// Kubernetes workloads have no reliable working directory. Keep the manager
++// configuration in one well-known, read-only mount shared by containers and
++// VM guest installations.
++pub const CLMGR_CONFIG_PATH: &str = "/etc/flyt/client-mgr.toml";
++pub const RMGR_CONFIG_PATH: &str = "/etc/flyt/cluster-mgr.toml";
++pub const SNODE_CONFIG_PATH: &str = "/etc/flyt/node-mgr.toml";

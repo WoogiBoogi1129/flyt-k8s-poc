@@ -1,0 +1,47 @@
+diff --git a/control-managers/src/servernode-daemon/gpu_manager.rs b/control-managers/src/servernode-daemon/gpu_manager.rs
+index cfcd554..572190c 100644
+--- a/control-managers/src/servernode-daemon/gpu_manager.rs
++++ b/control-managers/src/servernode-daemon/gpu_manager.rs
+@@ -1,7 +1,5 @@
+ // Copyright (c) 2024-2026 SynerG Lab, IITB
+ 
+-use nvml_wrapper::{enum_wrappers::device::Clock, Nvml};
+-
+ extern "C" {
+     fn get_gpu_cores(device_id: u32) -> i32;
+     fn get_cuda_device_count() -> i32;
+@@ -49,8 +47,7 @@ impl GPUManager {
+ 
+ pub fn get_all_gpus() -> Option<Vec<GPU>> {
+-    
++
+-    let nvml = Nvml::init().ok()?;
+     // NVML enumerates physical GPU handles and can report the parent GPU's
+     // memory for a MIG-backed container. CUDA is authoritative for the devices
+     // that the DRA/CDI allocation actually made visible to this GPU Cell.
+     let cuda_device_count = unsafe { get_cuda_device_count() };
+@@ -64,16 +60,19 @@ pub fn get_all_gpus() -> Option<Vec<GPU>> {
+     let mut gpus = Vec::new();
+ 
+     for i in 0..num_devices {
+-        let device = nvml.device_by_index(i).ok()?;
+-        let name = device.name().ok()?;
+         let memory = unsafe { get_gpu_total_memory(i) };
+-        let max_clock = device.max_clock_info(Clock::SM).ok()?;
+         let sm_cores = unsafe { get_gpu_cores(i) };
+-        let total_cores = device.num_cores().ok()?;
+ 
+         if sm_cores == -1 || memory == 0 {
+             log::error!("Error getting SM cores for GPU {}", i);
+             continue;
+-        } 
++        }
++
++        // The cluster manager currently uses only memory and SM capacity for
++        // placement. Avoid parent-GPU NVML properties in MIG containers; they
++        // are either misleading or unavailable depending on the CDI injection.
++        let name = format!("CUDA-visible-device-{}", i);
++        let max_clock = 0;
++        let total_cores = sm_cores as u32;
+ 
+         let gpu_id = i;

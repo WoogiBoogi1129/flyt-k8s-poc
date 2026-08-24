@@ -1,0 +1,231 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: flyt-pytorch-build
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 80Gi
+  storageClassName: __STORAGE_CLASS__
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyt-pytorch-build-input
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+data:
+  build.sh: |-
+    #!/usr/bin/env bash
+    set -Eeuo pipefail
+    exec > >(tee -a /workspace/pytorch-build.log) 2>&1
+    rm -f /workspace/PYTORCH_BUILD_COMPLETE
+    printf 'build_attempt_started=%s\n' "$(date -Is)"
+
+    export DEBIAN_FRONTEND=noninteractive
+    export CUDA_HOME=/usr/local/cuda
+    export PATH=/workspace/venv/bin:/usr/local/cuda/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64
+    export CMAKE_GENERATOR=Ninja
+    export MAX_JOBS=8
+    export BUILD_TEST=0
+    export USE_CUDA=1
+    export USE_CUDNN=1
+    export USE_DISTRIBUTED=0
+    export USE_NCCL=0
+    export USE_MPI=0
+    export USE_GLOO=0
+    export USE_KINETO=0
+    export USE_FBGEMM=0
+    export USE_MKLDNN=0
+    export USE_QNNPACK=0
+    export USE_XNNPACK=0
+    export USE_NNPACK=0
+    export TORCH_CUDA_ARCH_LIST=12.0+PTX
+    export CMAKE_CUDA_ARCHITECTURES=120
+    export CUDA_NVCC_FLAGS=-cudart=shared
+    export EXTRA_NVCCFLAGS=-cudart=shared
+    export NVCC_APPEND_FLAGS=-cudart=shared
+    export CAFFE2_STATIC_LINK_CUDA=0
+    export PYTORCH_BUILD_VERSION=2.11.0+flyt.cu128
+    export PYTORCH_BUILD_NUMBER=1
+    export CCACHE_DIR=/workspace/ccache
+    export CMAKE_C_COMPILER_LAUNCHER=ccache
+    export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+    apt-get update
+    apt-get install -y --no-install-recommends \
+      binutils ca-certificates ccache cmake curl g++ gcc git libblas-dev \
+      liblapack-dev libnuma-dev ninja-build patchelf pkg-config \
+      python3 python3-dev python3-pip python3-venv unzip
+
+    if [[ ! -x /workspace/venv/bin/python ]]; then
+      python3 -m venv /workspace/venv
+    fi
+    python -m pip install --no-cache-dir --upgrade \
+      pip 'setuptools<82,>=70.1.0' wheel
+    python -m pip install --no-cache-dir \
+      astunparse expecttest filelock fsspec hypothesis jinja2 lintrunner \
+      networkx numpy optree packaging psutil pyyaml requests six sympy \
+      typing-extensions
+    ccache --max-size=20G
+
+    source_dir=/workspace/src/pytorch
+    install -d /workspace/src /workspace/wheels /workspace/ccache
+    rm -f -- \
+      /workspace/wheels/SM120_BUILD_FLAGS \
+      /workspace/wheels/SHARED_CUDART_BUILD_FLAGS \
+      /workspace/wheels/DYNAMIC_CUDART_NEEDED
+    if [[ ! -d "$source_dir/.git" ]]; then
+      git clone --recursive --depth=1 --jobs=8 --branch v2.11.0 \
+        __PYTORCH_REPOSITORY__ "$source_dir"
+    fi
+    [[ "$(git -C "$source_dir" rev-parse HEAD)" == \
+      __PYTORCH_COMMIT__ ]]
+
+    cd "$source_dir"
+    git submodule sync --recursive
+    mapfile -t top_level_submodules < <(
+      git config -f .gitmodules --get-regexp '^submodule\..*\.path$' |
+        awk '{print $2}'
+    )
+    for submodule_path in "${top_level_submodules[@]}"; do
+      if [[ ! -f "$source_dir/$submodule_path/.git" ]] || \
+         ! git -C "$source_dir/$submodule_path" \
+           rev-parse --verify 'HEAD^{commit}' >/dev/null 2>&1; then
+        echo "repairing incomplete ${submodule_path} checkout" >&2
+        git submodule deinit -f -- "$submodule_path" || true
+        rm -rf -- \
+          "$source_dir/.git/modules/$submodule_path" \
+          "$source_dir/$submodule_path"
+        git submodule sync -- "$submodule_path"
+      fi
+    done
+    submodules_ready=0
+    for attempt in 1 2 3 4 5; do
+      if git submodule update --init --recursive --depth=1 --jobs=8; then
+        submodules_ready=1
+        break
+      fi
+      echo "submodule update attempt ${attempt} failed" >&2
+      git submodule sync --recursive
+      if [[ "$attempt" != 5 ]]; then
+        sleep 5
+      fi
+    done
+    if [[ "$submodules_ready" != 1 ]]; then
+      echo 'submodule update failed after five attempts' >&2
+      exit 1
+    fi
+    # A previously interrupted shallow checkout can have a valid submodule
+    # HEAD/index but an empty worktree. Materialize every pinned worktree.
+    git submodule foreach --recursive 'git reset --hard HEAD'
+    python -m pip install --no-cache-dir -r requirements.txt
+    rm -rf -- dist
+    python setup.py bdist_wheel
+
+    cp -a dist/torch-*.whl /workspace/wheels/
+    git rev-parse HEAD > /workspace/wheels/PYTORCH_COMMIT
+    python --version > /workspace/wheels/BUILD_TOOLCHAIN
+    cmake --version | head -n 1 >> /workspace/wheels/BUILD_TOOLCHAIN
+    ninja --version >> /workspace/wheels/BUILD_TOOLCHAIN
+    nvcc --version >> /workspace/wheels/BUILD_TOOLCHAIN
+    ccache --show-stats > /workspace/wheels/CCACHE_STATS
+    (
+      cd /workspace/wheels
+      sha256sum torch-*.whl > SHA256SUMS
+    )
+
+    # Static acceptance gate: the built wheel must not contain a static cudart
+    # archive and the build cache must include sm_120 CUDA objects.
+    if unzip -l /workspace/wheels/torch-*.whl | grep -q libcudart_static; then
+      echo 'wheel unexpectedly contains libcudart_static' >&2
+      exit 1
+    fi
+    torch_cuda_so="$(find build -type f -name libtorch_cuda.so -print -quit)"
+    if [[ -z "$torch_cuda_so" ]]; then
+      echo 'libtorch_cuda.so not found in build output' >&2
+      exit 1
+    fi
+    readelf -d "$torch_cuda_so" | grep 'Shared library: \[libcudart.so.12\]' \
+      > /workspace/wheels/DYNAMIC_CUDART_NEEDED || {
+        echo 'libtorch_cuda.so does not dynamically require libcudart.so.12' >&2
+        exit 1
+      }
+    grep -m 1 -- 'arch=compute_120,code=sm_120' build/build.ninja \
+      > /workspace/wheels/SM120_BUILD_FLAGS || {
+        echo 'sm_120 build flags not found' >&2
+        exit 1
+      }
+    grep -q -- 'arch=compute_120,code=compute_120' build/build.ninja || {
+        echo 'compute_120 PTX build flags not found' >&2
+        exit 1
+      }
+    {
+      grep '^CUDA_USE_STATIC_CUDA_RUNTIME:INTERNAL=OFF' build/CMakeCache.txt &&
+      grep '^CAFFE2_STATIC_LINK_CUDA:BOOL=OFF' build/CMakeCache.txt &&
+      grep -m 1 '/usr/local/cuda/lib64/libcudart.so' build/build.ninja
+    } > /workspace/wheels/SHARED_CUDART_BUILD_FLAGS || {
+        echo 'shared cudart CMake/link evidence not found' >&2
+        exit 1
+      }
+
+    date -Is > /workspace/PYTORCH_BUILD_COMPLETE
+    sleep infinity
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: flyt-pytorch-builder
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app: flyt-pytorch-builder
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  nodeSelector:
+    kubernetes.io/hostname: __NODE_NAME__
+  containers:
+    - name: builder
+      image: docker.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04@sha256:ad6d59a3bbf3e82c1c849c9ac09cfc2a3e0bbb8655042fd899be6681b3fe2a85
+      imagePullPolicy: IfNotPresent
+      command: ["/input/build.sh"]
+      resources:
+        requests:
+          cpu: "8"
+          memory: 24Gi
+        limits:
+          cpu: "8"
+          memory: 32Gi
+      readinessProbe:
+        exec:
+          command: ["/bin/bash", "-c", "test -f /workspace/PYTORCH_BUILD_COMPLETE"]
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 2160
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsUser: 0
+        runAsGroup: 0
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        - name: input
+          mountPath: /input
+          readOnly: true
+  volumes:
+    - name: workspace
+      persistentVolumeClaim:
+        claimName: flyt-pytorch-build
+    - name: input
+      configMap:
+        name: flyt-pytorch-build-input
+        defaultMode: 0755

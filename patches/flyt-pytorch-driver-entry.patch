@@ -1,0 +1,149 @@
+diff --git a/cpu/cpu-client-runtime.c b/cpu/cpu-client-runtime.c
+index db9fef3..5ef9698 100644
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -41,6 +41,71 @@ void cpu_runtime_print_api_call_cnt(void)
+ }
+ #endif //WITH_API_CNT
+ 
++/*
++ * CUDA 12.5 and newer use these runtime entry points to discover driver API
++ * functions.  Returning a server-side function pointer over RPC would be
++ * invalid, so resolve the driver wrappers exported by this client process.
++ * This also lets recent PyTorch releases load against Flyt's libcudart ABI.
++ */
++#ifdef cudaGetDriverEntryPoint
++#undef cudaGetDriverEntryPoint
++#endif
++#ifdef cudaGetDriverEntryPointByVersion
++#undef cudaGetDriverEntryPointByVersion
++#endif
++
++static cudaError_t flyt_get_driver_entry_point(
++    const char *symbol,
++    void **funcPtr,
++    enum cudaDriverEntryPointQueryResult *driverStatus)
++{
++    void *entry;
++    const char *error;
++
++    if (symbol == NULL || funcPtr == NULL) {
++        return cudaErrorInvalidValue;
++    }
++
++    dlerror();
++    entry = dlsym(RTLD_DEFAULT, symbol);
++    error = dlerror();
++    if (error != NULL || entry == NULL) {
++        *funcPtr = NULL;
++        if (driverStatus != NULL) {
++            *driverStatus = cudaDriverEntryPointSymbolNotFound;
++        }
++        return cudaSuccess;
++    }
++
++    *funcPtr = entry;
++    if (driverStatus != NULL) {
++        *driverStatus = cudaDriverEntryPointSuccess;
++    }
++    return cudaSuccess;
++}
++
++cudaError_t cudaGetDriverEntryPoint(
++    const char *symbol,
++    void **funcPtr,
++    unsigned long long flags,
++    enum cudaDriverEntryPointQueryResult *driverStatus)
++{
++    (void)flags;
++    return flyt_get_driver_entry_point(symbol, funcPtr, driverStatus);
++}
++
++cudaError_t cudaGetDriverEntryPointByVersion(
++    const char *symbol,
++    void **funcPtr,
++    unsigned int cudaVersion,
++    unsigned long long flags,
++    enum cudaDriverEntryPointQueryResult *driverStatus)
++{
++    (void)cudaVersion;
++    (void)flags;
++    return flyt_get_driver_entry_point(symbol, funcPtr, driverStatus);
++}
++
+ 
+ cudaError_t cudaChooseDevice(int* device, const struct cudaDeviceProp* prop)
+ {
+@@ -852,6 +917,24 @@ cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream)
+     return result;
+ }
+ 
++cudaError_t cudaEventRecordWithFlags(
++    cudaEvent_t event, cudaStream_t stream, unsigned int flags)
++{
++#ifdef WITH_API_CNT
++    api_call_cnt++;
++#endif //WITH_API_CNT
++    int result;
++    enum clnt_stat retval_1;
++    FUNC_BEGIN
++    retval_1 = cuda_event_record_with_flags_1(
++        (ptr)event, (ptr)stream, (int)flags, &result, clnt);
++    FUNC_END
++    if (retval_1 != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++    }
++    return result;
++}
++
+ cudaError_t cudaEventSynchronize(cudaEvent_t event)
+ {
+ #ifdef WITH_API_CNT
+@@ -1122,6 +1205,24 @@ cudaError_t cudaLaunchKernel(const void* func, dim3 gridDim, dim3 blockDim, void
+     return result;
+ }
+ 
++cudaError_t cudaLaunchKernelExC(
++    const cudaLaunchConfig_t *config, const void *func, void **args)
++{
++    if (config == NULL) {
++        return cudaErrorInvalidValue;
++    }
++    if (config->numAttrs != 0) {
++        return cudaErrorNotSupported;
++    }
++    return cudaLaunchKernel(
++        func,
++        config->gridDim,
++        config->blockDim,
++        args,
++        config->dynamicSmemBytes,
++        config->stream);
++}
++
+ DEF_FN(cudaError_t, cudaSetDoubleForDevice, double*, d)
+ DEF_FN(cudaError_t, cudaSetDoubleForHost, double*, d)
+     
+diff --git a/cpu/cpu-elf2.c b/cpu/cpu-elf2.c
+index 98f148c..9c884ff 100644
+--- a/cpu/cpu-elf2.c
++++ b/cpu/cpu-elf2.c
+@@ -551,6 +551,7 @@ static void print_hexmem(void *mem, size_t len)
+ #define EIATTR_CUDA_API_VERSION         0x37
+ 
+ #define EIFMT_NVAL                      0x1
++#define EIFMT_BVAL                      0x2
+ #define EIFMT_HVAL                      0x3
+ #define EIFMT_SVAL                      0x4
+ 
+@@ -733,8 +734,8 @@ static int get_parm_for_kernel(Elf *elf, kernel_info_t *kernel, void* memory, si
+             // }
+             // printf("\n");
+             secpos += sizeof(struct nv_info_kernel_entry) + entry->values_size-4;
+-        } else if (entry->format == EIFMT_NVAL) {
+-            // printf("nval\n");
++        } else if (entry->format == EIFMT_NVAL || entry->format == EIFMT_BVAL) {
++            // Both no-value and byte-value entries occupy one four-byte record.
+             secpos += sizeof(struct nv_info_kernel_entry)-4;
+         } else {
+             LOGE(LOG_WARNING, "unknown format: %#x", entry->format);

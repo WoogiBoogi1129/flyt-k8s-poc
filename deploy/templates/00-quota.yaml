@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: kubevirt-pilot-quota
+  namespace: __FLYT_NAMESPACE__
+spec:
+  hard:
+    pods: "14"
+    requests.cpu: "28"
+    requests.memory: 64Gi
+    requests.storage: 120Gi
+    persistentvolumeclaims: "4"
+    count/virtualmachines.kubevirt.io: "2"
+    count/virtualmachineinstances.kubevirt.io: "2"
+    count/resourceclaimtemplates.resource.k8s.io: "1"
+    count/resourceclaims.resource.k8s.io: "1"

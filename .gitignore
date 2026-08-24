@@ -1,0 +1,17 @@
+config.env
+.cache/
+deploy/rendered/
+artifacts/*
+!artifacts/README.md
+evidence/
+results/*
+!results/reference/
+!results/reference/README.md
+__pycache__/
+*.py[cod]
+*.log
+*.whl
+*.tar.gz
+*.key
+id_ed25519
+id_rsa

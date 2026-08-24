@@ -1,0 +1,174 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flyt-cluster-manager
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app: flyt-cluster-manager
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: flyt-cluster-manager
+  template:
+    metadata:
+      labels:
+        app: flyt-cluster-manager
+        app.kubernetes.io/part-of: flyt-poc
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: __NODE_NAME__
+      containers:
+        - name: cluster-manager
+          image: docker.io/library/ubuntu:22.04@sha256:3b06811b2afd352be909dd088a004166d665dc76d38b13eada33522a9d915c6f
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |-
+              set -Eeuo pipefail
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get update
+              apt-get install -y --no-install-recommends ca-certificates libssl3 tini
+
+              until test -f /workspace/BUILD_COMPLETE; do sleep 5; done
+              install -d /opt/flyt/bin /etc/flyt /run/flyt /tmp/flytckp
+              cp -a /workspace/out/control-plane/. /opt/flyt/bin/
+
+              sed \
+                -e "s/__MONGO_USER__/${MONGO_USER}/g" \
+                -e "s/__MONGO_PASSWORD__/${MONGO_PASSWORD}/g" \
+                /config-template/cluster-mgr.toml.template \
+                > /etc/flyt/cluster-mgr.toml
+              chmod 0600 /etc/flyt/cluster-mgr.toml
+
+              exec /usr/bin/tini -- /opt/flyt/bin/flyt-cluster-manager
+          env:
+            - name: RUST_LOG
+              value: info
+            - name: MONGO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: flyt-mongodb-credentials
+                  key: username
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: flyt-mongodb-credentials
+                  key: password
+          ports:
+            - name: node
+              containerPort: 12401
+            - name: client
+              containerPort: 12402
+            - name: metrics
+              containerPort: 12403
+          startupProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -c
+                - test -S /run/flyt/flyt-frontend-socket
+            periodSeconds: 5
+            failureThreshold: 720
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -c
+                - test -S /run/flyt/flyt-frontend-socket
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -c
+                - test -S /run/flyt/flyt-frontend-socket
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0
+            runAsGroup: 0
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+              readOnly: true
+            - name: config-template
+              mountPath: /config-template
+              readOnly: true
+            - name: runtime-config
+              mountPath: /etc/flyt
+            - name: run
+              mountPath: /run/flyt
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: flyt-build
+        - name: config-template
+          configMap:
+            name: flyt-config
+        - name: runtime-config
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flyt-cluster-manager
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  selector:
+    app: flyt-cluster-manager
+  ports:
+    - name: node
+      port: 12401
+      targetPort: node
+    - name: client
+      port: 12402
+      targetPort: client
+    - name: metrics
+      port: 12403
+      targetPort: metrics
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: flyt-control-plane-ingress
+  namespace: __FLYT_NAMESPACE__
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [flyt-cluster-manager, flyt-mongodb]
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: flyt-poc
+      ports:
+        - protocol: TCP
+          port: 12401
+        - protocol: TCP
+          port: 12402
+        - protocol: TCP
+          port: 12403
+        - protocol: TCP
+          port: 27017

@@ -1,0 +1,369 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: flyt-build
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: __STORAGE_CLASS__
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: flyt-builder
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app: flyt-builder
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  nodeSelector:
+    kubernetes.io/hostname: __NODE_NAME__
+  containers:
+    - name: builder
+      image: docker.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04@sha256:ad6d59a3bbf3e82c1c849c9ac09cfc2a3e0bbb8655042fd899be6681b3fe2a85
+      imagePullPolicy: IfNotPresent
+      command: ["/bin/bash", "-lc"]
+      args:
+        - |-
+          set -Eeuo pipefail
+          rm -f /workspace/BUILD_COMPLETE
+          export DEBIAN_FRONTEND=noninteractive
+          export CARGO_HOME=/workspace/cargo
+          export RUSTUP_HOME=/workspace/rustup
+
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            autoconf automake binutils ca-certificates curl g++ gcc git jq \
+            libegl1-mesa-dev libelf-dev libssl-dev libtool libtool-bin \
+            libvdpau-dev make patch pkg-config rpcbind rpcsvc-proto util-linux
+
+          if [[ ! -x "$CARGO_HOME/bin/cargo" ]]; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+              sh -s -- -y --profile minimal --default-toolchain __RUST_TOOLCHAIN__
+          fi
+          export PATH="$CARGO_HOME/bin:$PATH"
+
+          rm -rf -- /workspace/src /workspace/out /workspace/guest-root
+          mkdir -p /workspace/src /workspace/out/{gpu-cell,control-plane,guest,experiment}
+
+          git clone __FLYT_REPOSITORY__ \
+            /workspace/src/flyt
+          cd /workspace/src/flyt
+          git checkout --detach __FLYT_COMMIT__
+          git submodule update --init submodules/libtirpc submodules/patchelf
+          make -C submodules patchelf/install
+
+          patch -p1 --forward < /source-patches/flyt-k8s-config-paths.patch
+          patch -p1 --forward < /source-patches/flyt-cudnn9.patch
+          patch -p1 --forward < /source-patches/flyt-ipc-ftok.patch
+          patch -p1 --forward < /source-patches/flyt-pytorch-driver-entry.patch
+          patch -p1 --forward < /source-patches/flyt-source-eof.patch
+          patch -p1 --forward < /source-patches/flyt-pytorch-host-memory.patch
+          patch -p1 --forward < /source-patches/flyt-pytorch-host-memory-copy.patch
+          patch -p1 --forward < /source-patches/flyt-pytorch-event-map.patch
+          patch -p1 --forward < /source-patches/flyt-mig-discovery.patch
+          patch -p1 --forward < /source-patches/flyt-mig-cuda-accounting.patch
+          patch -p1 --forward < /source-patches/flyt-core-api-set-device.patch
+          patch -p1 --forward < /source-patches/flyt-core-api-stream-create.patch
+          patch -p1 --forward < /source-patches/flyt-mig-memory-quota.patch
+          patch -p1 --forward < /source-patches/flyt-runtime-function-map.patch
+
+          # Flyt's CPU server/client targets share rpcgen outputs and the
+          # server link also depends on an unmodelled metrics sub-build.
+          # Running the top-level targets in parallel corrupts generated C
+          # files and can link before libprofiler exists.
+          make -C cpu/metrics
+          LOG=INFO make install-cpu
+          LOG=INFO make install-cmgr
+
+          cp bin/cricket-rpc-server cpu/metrics/libprofiler.so \
+            /workspace/out/gpu-cell/
+          cp -a submodules/libtirpc/install/lib/libtirpc.so* \
+            /workspace/out/gpu-cell/
+          cp bin/flyt-node-manager /workspace/out/gpu-cell/
+          cp bin/flyt-cluster-manager bin/flytctl bin/flytctlnet \
+            /workspace/out/control-plane/
+          cp bin/cricket-client.so bin/flyt-client-manager \
+            /workspace/out/guest/
+          cp -a submodules/libtirpc/install/lib/libtirpc.so* \
+            /workspace/out/guest/
+
+          for probe in cap_probe compute_probe memory_probe; do
+            nvcc -O3 -cudart shared \
+              -gencode arch=compute_120,code=sm_120 \
+              -gencode arch=compute_120,code=compute_120 \
+              "/probe-input/${probe}.cu" \
+              -o "/workspace/out/experiment/${probe}"
+            readelf -d "/workspace/out/experiment/${probe}" | \
+              grep 'NEEDED.*libcudart.so'
+          done
+          nvcc -O3 -cudart shared \
+            -gencode arch=compute_120,code=sm_120 \
+            -gencode arch=compute_120,code=compute_120 \
+            /guest-input/dynamic_compute_probe.cu \
+            -o /workspace/out/experiment/dynamic_compute_probe
+          readelf -d /workspace/out/experiment/dynamic_compute_probe | \
+            grep 'NEEDED.*libcudart.so'
+
+          git rev-parse HEAD > /workspace/out/FLYT_COMMIT
+          git diff > /workspace/out/K8S_BUILD_PATCH.diff
+          git submodule status > /workspace/out/FLYT_SUBMODULES
+          rustc --version > /workspace/out/RUST_VERSION
+          cargo --version >> /workspace/out/RUST_VERSION
+
+          mkdir -p \
+            /workspace/guest-root/opt/flyt-client \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64 \
+            /workspace/guest-root/usr/local \
+            /workspace/guest-root/etc/flyt \
+            /workspace/guest-root/etc/systemd/system
+          cp -a /workspace/out/guest/. /workspace/guest-root/opt/flyt-client/
+          cp -a /workspace/out/experiment/. /workspace/guest-root/opt/flyt-client/
+          cp /flyt-config/client-mgr.toml /workspace/guest-root/etc/flyt/
+          shopt -s nullglob
+          cuda_libraries=(
+            /usr/local/cuda/lib64/libcudart.so*
+            /usr/local/cuda/lib64/libcublas.so*
+            /usr/local/cuda/lib64/libcublasLt.so*
+            /usr/local/cuda/lib64/libcusolver.so*
+            /usr/local/cuda/lib64/libcusolverMg.so*
+            /usr/local/cuda/lib64/libcusparse.so*
+            /usr/local/cuda/lib64/libcufft.so*
+            /usr/local/cuda/lib64/libcufftw.so*
+            /usr/local/cuda/lib64/libcufile.so*
+            /usr/local/cuda/lib64/libcufile_rdma.so*
+            /usr/local/cuda/lib64/libcurand.so*
+            /usr/local/cuda/lib64/libnvrtc.so*
+            /usr/local/cuda/lib64/libnvrtc-builtins.so*
+            /usr/local/cuda/lib64/libnvJitLink.so*
+            /usr/local/cuda/lib64/libnvToolsExt.so*
+            /usr/lib/x86_64-linux-gnu/libcudnn.so*
+            /usr/lib/x86_64-linux-gnu/libcudnn_*.so*
+          )
+          [[ ${#cuda_libraries[@]} -gt 20 ]]
+          cp -a "${cuda_libraries[@]}" \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/
+          # cricket-client.so replaces libcudart and forwards selected calls
+          # to a private copy whose SONAME must not collide with the preload.
+          cudart_real="$(readlink -f /usr/local/cuda/lib64/libcudart.so)"
+          cudart_name="$(basename "$cudart_real")"
+          cudarto_name="${cudart_name/libcudart/libcudarto}"
+          cudart_soname="$(submodules/patchelf/install/bin/patchelf \
+            --print-soname "$cudart_real")"
+          cudarto_soname="${cudart_soname/libcudart/libcudarto}"
+          cp -L "$cudart_real" \
+            "/workspace/guest-root/opt/flyt-pytorch/cuda/lib64/$cudarto_name"
+          submodules/patchelf/install/bin/patchelf \
+            --set-soname "$cudarto_soname" \
+            "/workspace/guest-root/opt/flyt-pytorch/cuda/lib64/$cudarto_name"
+          ln -s "$cudarto_name" \
+            "/workspace/guest-root/opt/flyt-pytorch/cuda/lib64/$cudarto_soname"
+          ln -s "$cudarto_soname" \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcudarto.so
+          ln -s /opt/flyt-client/cricket-client.so \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcuda.so.1
+          ln -s libcuda.so.1 \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcuda.so
+          # Flyt's generated CUDA wrappers resolve the real CUDA runtime from
+          # this fixed path. Keep one canonical library tree in /opt and expose
+          # the compatibility path expected by cricket-client.so.
+          ln -s /opt/flyt-pytorch/cuda \
+            /workspace/guest-root/usr/local/cuda
+
+          cp /guest-input/flyt-client-manager.service \
+            /workspace/guest-root/etc/systemd/system/
+          cp /guest-input/run-with-flyt \
+            /workspace/guest-root/opt/flyt-client/
+          chmod 0755 /workspace/guest-root/opt/flyt-client/run-with-flyt
+
+          tar -C /workspace/guest-root -czf /workspace/flyt-guest-bundle.tar.gz \
+            etc opt usr/local/cuda
+          sha256sum /workspace/flyt-guest-bundle.tar.gz \
+            > /workspace/flyt-guest-bundle.tar.gz.sha256
+          find /workspace/out -type f ! -name ARTIFACTS.sha256 \
+            -exec sha256sum {} + > /workspace/ARTIFACTS.sha256.tmp
+          mv /workspace/ARTIFACTS.sha256.tmp \
+            /workspace/out/ARTIFACTS.sha256
+          date -Is > /workspace/BUILD_COMPLETE
+          sleep infinity
+      resources:
+        requests:
+          cpu: "4"
+          memory: 8Gi
+        limits:
+          cpu: "4"
+          memory: 12Gi
+      readinessProbe:
+        exec:
+          command: ["/bin/bash", "-c", "test -f /workspace/BUILD_COMPLETE"]
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        failureThreshold: 720
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsUser: 0
+        runAsGroup: 0
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        - name: probes
+          mountPath: /probe-input
+          readOnly: true
+        - name: flyt-config
+          mountPath: /flyt-config
+          readOnly: true
+        - name: guest-input
+          mountPath: /guest-input
+          readOnly: true
+        - name: source-patches
+          mountPath: /source-patches
+          readOnly: true
+  volumes:
+    - name: workspace
+      persistentVolumeClaim:
+        claimName: flyt-build
+    - name: probes
+      configMap:
+        name: flyt-probes
+    - name: flyt-config
+      configMap:
+        name: flyt-config
+    - name: guest-input
+      configMap:
+        name: flyt-guest-input
+        defaultMode: 0755
+    - name: source-patches
+      configMap:
+        name: flyt-source-patches
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyt-guest-input
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+data:
+  dynamic_compute_probe.cu: |-
+    #include <cuda_runtime.h>
+
+    #include <chrono>
+    #include <cmath>
+    #include <cstdio>
+    #include <cstdlib>
+
+    #define CUDA_OK(call)                                                            \
+      do {                                                                           \
+        cudaError_t error = (call);                                                   \
+        if (error != cudaSuccess) {                                                   \
+          std::fprintf(stderr, "%s failed: %s\n", #call, cudaGetErrorString(error)); \
+          return EXIT_FAILURE;                                                        \
+        }                                                                            \
+      } while (0)
+
+    __global__ void fma_burn(float *output, unsigned long long iterations) {
+      float value = 1.0F +
+          static_cast<float>((blockIdx.x * blockDim.x + threadIdx.x) & 31) *
+              1.0e-6F;
+    #pragma unroll 1
+      for (unsigned long long i = 0; i < iterations; ++i) {
+        value = fmaf(value, 1.000000119F, 0.000000119F);
+      }
+      output[blockIdx.x * blockDim.x + threadIdx.x] = value;
+    }
+
+    int main(int argc, char **argv) {
+      const int seconds = argc > 1 ? std::atoi(argv[1]) : 300;
+      const char *output_path = argc > 2 ? argv[2] : nullptr;
+      const unsigned long long kernel_iterations =
+          argc > 3 ? std::strtoull(argv[3], nullptr, 10) : 200000ULL;
+      const int blocks = argc > 4 ? std::atoi(argv[4]) : 1024;
+      constexpr int threads = 256;
+      if (seconds < 1 || kernel_iterations < 1 || blocks < 1) {
+        std::fprintf(stderr,
+                     "usage: %s [seconds] [output.jsonl] [iterations] [blocks]\n",
+                     argv[0]);
+        return EXIT_FAILURE;
+      }
+
+      FILE *output_file = output_path ? std::fopen(output_path, "w") : nullptr;
+      if (output_path && !output_file) {
+        std::perror("fopen");
+        return EXIT_FAILURE;
+      }
+
+      CUDA_OK(cudaSetDevice(0));
+      const size_t elements = static_cast<size_t>(blocks) * threads;
+      float *device_output = nullptr;
+      CUDA_OK(cudaMalloc(&device_output, elements * sizeof(float)));
+      const auto deadline = std::chrono::steady_clock::now() +
+                            std::chrono::seconds(seconds);
+
+      int iteration = 0;
+      while (std::chrono::steady_clock::now() < deadline) {
+        const auto started = std::chrono::steady_clock::now();
+        fma_burn<<<blocks, threads>>>(device_output, kernel_iterations);
+        CUDA_OK(cudaGetLastError());
+        CUDA_OK(cudaDeviceSynchronize());
+        const auto finished = std::chrono::steady_clock::now();
+        const double epoch_s = std::chrono::duration<double>(
+            std::chrono::system_clock::now().time_since_epoch()).count();
+        const double latency_s =
+            std::chrono::duration<double>(finished - started).count();
+        const double operations = static_cast<double>(elements) *
+                                  static_cast<double>(kernel_iterations) * 2.0;
+        char record[512];
+        std::snprintf(record, sizeof(record),
+                      "{\"iteration\":%d,\"epoch_s\":%.6f,"
+                      "\"latency_s\":%.9f,\"loss\":0.0,\"finite\":true,"
+                      "\"nominal_gflops\":%.3f}",
+                      iteration++, epoch_s, latency_s,
+                      operations / latency_s / 1.0e9);
+        std::puts(record);
+        std::fflush(stdout);
+        if (output_file) {
+          std::fprintf(output_file, "%s\n", record);
+          std::fflush(output_file);
+        }
+      }
+
+      float sample = 0.0F;
+      CUDA_OK(cudaMemcpy(&sample, device_output, sizeof(sample),
+                         cudaMemcpyDeviceToHost));
+      CUDA_OK(cudaFree(device_output));
+      if (output_file) std::fclose(output_file);
+      return std::isfinite(sample) ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
+  flyt-client-manager.service: |-
+    [Unit]
+    Description=Flyt VM client manager
+    After=network-online.target
+    Wants=network-online.target
+
+    [Service]
+    Type=simple
+    Environment=RUST_LOG=info
+    Environment=LD_LIBRARY_PATH=/opt/flyt-client:/opt/flyt-pytorch/cuda/lib64
+    ExecStart=/opt/flyt-client/flyt-client-manager
+    Restart=on-failure
+    RestartSec=3
+
+    [Install]
+    WantedBy=multi-user.target
+  run-with-flyt: |-
+    #!/usr/bin/env bash
+    set -Eeuo pipefail
+    export SM_CORE="${SM_CORE:-46}"
+    export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-backend:native}"
+    export LD_LIBRARY_PATH="/opt/flyt-client:/opt/flyt-pytorch/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+    export LD_PRELOAD="/opt/flyt-client/cricket-client.so${LD_PRELOAD:+:${LD_PRELOAD}}"
+    exec "$@"

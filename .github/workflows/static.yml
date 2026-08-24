@@ -1,0 +1,22 @@
+name: static-validation
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python YAML parser
+        run: python -m pip install PyYAML==6.0.2
+      - name: Static checks
+        run: ./scripts/static-checks.sh
+      - name: Manifest rendering
+        run: ./scripts/test-render.sh
+      - name: Reconstruct patched Flyt source
+        run: ./scripts/verify-patch-series.sh

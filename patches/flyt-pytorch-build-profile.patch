@@ -1,0 +1,134 @@
+diff --git a/pytorch_support/BUILD.md b/pytorch_support/BUILD.md
+index 158524b..fe20241 100644
+--- a/pytorch_support/BUILD.md
++++ b/pytorch_support/BUILD.md
+@@ -1,12 +1,13 @@
+-> Tested on pytorch version 2.3.0
++> Kubernetes PoC profile: PyTorch 2.11.0, CUDA 12.8, Blackwell sm_120.
+ 
+ ## Building Steps
+ 
+-1. Clone/download source code for pytorch 2.3.0
++1. Clone/download source code for PyTorch 2.11.0.
+ ```bash
+ git clone --recursive "https://github.com/pytorch/pytorch"
+ cd pytorch
+-git checkout v2.3.0
++git checkout v2.11.0
++git submodule update --init --recursive
+ PYTORCH_CODE=`pwd`
+ ```
+ 2. Create/activate a conda environment for pytorch and dependency installation.
+@@ -15,13 +16,12 @@ PYTORCH_CODE=`pwd`
+ conda install cmake ninja
+ pip install -r "$PYTORCH_CODE"/requirements.txt
+ conda install intel::mkl-static intel::mkl-include
+-conda install -c pytorch magma-cuda121 
++Use the CUDA 12.8 toolkit and cuDNN development libraries from the builder
++image. NCCL and distributed support are disabled for this single-GPU PoC.
+ ```
+ 3. Configure pytorch build and install
+ ```bash
+-./build_pytorch.sh
++./build_pytorch.sh "$PYTORCH_CODE"
+ ```
+ 
+ 4. In case pytorch build is terminated due to out of memory issue restart the build. First load the environment variables `source build_env.sh` in flyt/pytorch_support directory. Then start the build again by running `python3 setup.py install` in the pytorch directory.
+-
+-
+diff --git a/pytorch_support/build_env.sh b/pytorch_support/build_env.sh
+index ae16168..964c7be 100644
+--- a/pytorch_support/build_env.sh
++++ b/pytorch_support/build_env.sh
+@@ -1,14 +1,26 @@
+ # Copyright (c) 2024-2026 SynerG Lab, IITB
+ 
+-export CUDA_NVCC_FLAGS="-cudart=shared "
+-export PYTORCH_CUDA_ALLOC_CONF="backend:native"
+-export TORCH_CUDA_ARCH_LIST="8.6"
+-export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
++export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-12.8}"
++export PATH="${CUDA_HOME}/bin:${PATH}"
++export LIBRARY_PATH="${CUDA_HOME}/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}"
++export LD_LIBRARY_PATH="${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
++
++# Flyt interposes the CUDA runtime. PyTorch and its CUDA objects therefore must
++# use the shared CUDA runtime rather than embedding cudart statically.
++export CUDA_NVCC_FLAGS="-cudart=shared"
+ export EXTRA_NVCCFLAGS="-cudart=shared"
+-export NVCC_APPEND_FLAGS='-cudart=shared'
+-export LIBRARY_PATH='/usr/local/cuda-12.3/lib64/'
++export NVCC_APPEND_FLAGS="-cudart=shared"
++export CAFFE2_STATIC_LINK_CUDA="0"
++
++# RTX PRO 6000 Blackwell Server Edition reports compute capability 12.0.
++export TORCH_CUDA_ARCH_LIST="12.0+PTX"
++export CMAKE_CUDA_ARCHITECTURES="120"
++export PYTORCH_CUDA_ALLOC_CONF="backend:native"
++export CMAKE_PREFIX_PATH="${CONDA_PREFIX:-/usr/local}"
++
+ export BUILD_TEST="OFF"
+-export USE_CUDNN="OFF"
++export USE_CUDA="ON"
++export USE_CUDNN="ON"
+ export USE_DISTRIBUTED="OFF"
+ export USE_NCCL="OFF"
+-export USE_CUDA="ON"
+\ No newline at end of file
++export USE_KINETO="OFF"
+diff --git a/pytorch_support/build_pytorch.sh b/pytorch_support/build_pytorch.sh
+index 01d3a81..fb6f59c 100644
+--- a/pytorch_support/build_pytorch.sh
++++ b/pytorch_support/build_pytorch.sh
+@@ -1,33 +1,41 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ # Copyright (c) 2024-2026 SynerG Lab, IITB
++set -Eeuo pipefail
+ 
+-
+-# This script is used to configure the build environment for PyTorch 
+-# to work with Flyt
++# Configure and build a PyTorch source tree for Flyt. The resulting CUDA
++# objects link to shared cudart and include Blackwell sm_120/PTX code.
+ 
+ if [ -z "$1" ]; then
+     echo "Usage: $0 <path-to-pytorch>"
+     exit 1
+ fi
+ 
+-PYTORCH_DIR=$1
++PYTORCH_DIR=$(realpath "$1")
+ 
+ if [ ! -d "$PYTORCH_DIR" ]; then
+     echo "Error: $PYTORCH_DIR does not exist"
+     exit 1
+ fi
+ 
+-SCRIPT_DIR=`pwd`
++SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+ 
+ # set the environment variables
+-source $CURRENT_DIR/build_env.sh
++source "$SCRIPT_DIR/build_env.sh"
+ 
+ # Go to the PyTorch directory
+-cd $PYTORCH_DIR
++cd "$PYTORCH_DIR"
+ python setup.py build --cmake-only
+ 
+ # configure and generate the build files
+-cmake -DCUDA_NVCC_FLAGS="-cudart=shared" build
++cmake -S . -B build -DCUDA_NVCC_FLAGS="-cudart=shared"
+ 
+ # install pytorch
+-python setup.py install
++python setup.py bdist_wheel
++
++TORCH_CUDA_SO=$(find build -type f -name libtorch_cuda.so -print -quit)
++if [ -z "$TORCH_CUDA_SO" ]; then
++    echo "Error: libtorch_cuda.so was not produced"
++    exit 1
++fi
++readelf -d "$TORCH_CUDA_SO" | \
++    grep 'Shared library: \[libcudart.so.12\]'

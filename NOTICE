@@ -1,0 +1,9 @@
+This repository contains patches for Flyt, which is distributed under the MIT
+License and includes a CUDA API virtualization layer derived from Cricket.
+
+Flyt baseline copyright notices:
+Copyright (c) 2018-2023 Niklas Eiling
+Copyright (c) 2024-2026 SynerG Lab, IITB
+
+NVIDIA CUDA and cuDNN, PyTorch, MongoDB, Ubuntu, KubeVirt, and Kubernetes are
+third-party projects governed by their respective licenses and terms.

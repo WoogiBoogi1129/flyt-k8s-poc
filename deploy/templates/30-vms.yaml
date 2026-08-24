@@ -1,0 +1,147 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: flyt-vm-a
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: flyt-vm-a
+        app.kubernetes.io/part-of: flyt-poc
+        flyt.vm/name: vm-a
+    spec:
+      terminationGracePeriodSeconds: 60
+      domain:
+        machine:
+          type: q35
+        cpu:
+          cores: 4
+        resources:
+          requests:
+            cpu: "4"
+            memory: 8Gi
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: pytorchdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          containerDisk:
+            image: __VM_CONTAINERDISK_IMAGE__
+            imagePullPolicy: IfNotPresent
+        - name: pytorchdisk
+          emptyDisk:
+            capacity: 20Gi
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |-
+              #cloud-config
+              hostname: flyt-vm-a
+              users:
+                - name: experiment
+                  groups: [sudo]
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  shell: /bin/bash
+                  ssh_authorized_keys:
+                    - __SSH_PUBLIC_KEY__
+              ssh_pwauth: false
+              runcmd:
+                - [mkdir, -p, /opt/flyt-pytorch]
+                - [bash, -lc, 'until test -b /dev/vdb; do sleep 1; done']
+                - [bash, -lc, 'blkid /dev/vdb || mkfs.ext4 -F /dev/vdb']
+                - [bash, -lc, 'grep -q " /opt/flyt-pytorch " /etc/fstab || echo "/dev/vdb /opt/flyt-pytorch ext4 defaults,nofail 0 2" >> /etc/fstab']
+                - [mount, /opt/flyt-pytorch]
+                - [chown, -R, 'experiment:experiment', /opt/flyt-pytorch]
+                - [systemctl, enable, --now, ssh]
+                - [touch, /var/lib/cloud/instance/flyt-ready]
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: flyt-vm-b
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: flyt-vm-b
+        app.kubernetes.io/part-of: flyt-poc
+        flyt.vm/name: vm-b
+    spec:
+      terminationGracePeriodSeconds: 60
+      domain:
+        machine:
+          type: q35
+        cpu:
+          cores: 4
+        resources:
+          requests:
+            cpu: "4"
+            memory: 8Gi
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: pytorchdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          containerDisk:
+            image: __VM_CONTAINERDISK_IMAGE__
+            imagePullPolicy: IfNotPresent
+        - name: pytorchdisk
+          emptyDisk:
+            capacity: 20Gi
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |-
+              #cloud-config
+              hostname: flyt-vm-b
+              users:
+                - name: experiment
+                  groups: [sudo]
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  shell: /bin/bash
+                  ssh_authorized_keys:
+                    - __SSH_PUBLIC_KEY__
+              ssh_pwauth: false
+              runcmd:
+                - [mkdir, -p, /opt/flyt-pytorch]
+                - [bash, -lc, 'until test -b /dev/vdb; do sleep 1; done']
+                - [bash, -lc, 'blkid /dev/vdb || mkfs.ext4 -F /dev/vdb']
+                - [bash, -lc, 'grep -q " /opt/flyt-pytorch " /etc/fstab || echo "/dev/vdb /opt/flyt-pytorch ext4 defaults,nofail 0 2" >> /etc/fstab']
+                - [mount, /opt/flyt-pytorch]
+                - [chown, -R, 'experiment:experiment', /opt/flyt-pytorch]
+                - [systemctl, enable, --now, ssh]
+                - [touch, /var/lib/cloud/instance/flyt-ready]

@@ -1,0 +1,47 @@
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -1399,6 +1399,17 @@
+     //pthread_mutex_unlock(&hamutex);
+     return -1;
+ }
++
++static int hainfo_gettransferindex(void *client_ptr)
++{
++    int index = hainfo_getindex(client_ptr);
++
++    if (index < 0 || hainfo[index].idx < 0) {
++        return -1;
++    }
++    return index;
++}
++
+ cudaError_t cudaFreeHost(void* ptr)
+ {
+ #ifdef WITH_API_CNT
+@@ -1898,7 +1909,7 @@
+     //pthread_mutex_lock(&hamutex);
+     if (kind == cudaMemcpyHostToDevice) {
+         // get index of mem reg (src: cpu reg memregion)
+-        int index = hainfo_getindex((void*)src);
++        int index = hainfo_gettransferindex((void*)src);
+         // not a cudaHostAlloc'ed memory 
+         if (index == -1) {
+ #ifdef WITH_MT_MEMCPY
+@@ -1952,7 +1963,7 @@
+         }
+     } else if (kind == cudaMemcpyDeviceToHost) {
+         //get the dst, reg cpu mem reg/ buffer
+-        int index = hainfo_getindex(dst);
++        int index = hainfo_gettransferindex(dst);
+         /* not a cudaHostAlloc'ed memory */
+         if (index == -1) {
+ #ifdef WITH_MT_MEMCPY
+@@ -2071,7 +2082,7 @@
+     enum clnt_stat retval;
+     //pthread_mutex_lock(&hamutex);
+     if (kind == cudaMemcpyHostToDevice) {
+-        int index = hainfo_getindex((void*)src);
++        int index = hainfo_gettransferindex((void*)src);
+         /* not a cudaHostAlloc'ed memory */
+         if (index == -1) {
+             mem_data src_mem;

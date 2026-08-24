@@ -1,0 +1,11 @@
+diff --git a/cpu/cpu-elf2.c b/cpu/cpu-elf2.c
+index 9c884ff..6ad5f44 100644
+--- a/cpu/cpu-elf2.c
++++ b/cpu/cpu-elf2.c
+@@ -1007,4 +1007,4 @@ int elf2_load(void *elf, size_t elfSize, int (*callback)(char* kernel_name, int *
+ void* elf2_symbol_address(const char *symbol)
+ {
+     return dlsym(RTLD_DEFAULT, symbol);
+-}
+\ No newline at end of file
++}

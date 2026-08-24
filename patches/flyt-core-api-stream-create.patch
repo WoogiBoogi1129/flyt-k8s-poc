@@ -1,0 +1,27 @@
+diff --git a/cpu/cpu-server-runtime.c b/cpu/cpu-server-runtime.c
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -685,7 +685,6 @@ bool_t cuda_stream_create_1_svc(ptr_result *result, struct svc_req *rqstp)
+             cudaStreamDestroy(newStream);
+         }
+ 
+-        server_driver_reload_modules_data(client);
+     }
+ 
+ 
+@@ -723,7 +722,6 @@ bool_t cuda_stream_create_with_flags_1_svc(int flags, ptr_result *result, struct
+             cudaStreamDestroy(newStream);
+         }
+ 
+-        server_driver_reload_modules_data(client);
+     }
+ 
+ 
+@@ -761,7 +759,6 @@ bool_t cuda_stream_create_with_priority_1_svc(int flags, int priority, ptr_resul
+             cudaStreamDestroy(newStream);
+         }
+ 
+-        server_driver_reload_modules_data(client);
+     }
+     
+ 

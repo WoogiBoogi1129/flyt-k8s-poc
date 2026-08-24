@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyt-config
+  namespace: __FLYT_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: flyt-poc
+data:
+  cluster-mgr.toml.template: |-
+    [vm-resource-db]
+    host = "flyt-mongodb"
+    port = 27017
+    user = "__MONGO_USER__"
+    password = "__MONGO_PASSWORD__"
+    dbname = "flyt"
+
+    [ports]
+    node = 12401
+    client = 12402
+
+    [virt-server-auto-deallocate]
+    enabled = false
+    grace-period = 60
+
+    [ipc]
+    mqueue-path = "/tmp/flyt-rmgr-queue"
+    frontend-socket = "/run/flyt/flyt-frontend-socket"
+
+    [migration]
+    ckp-path = "/tmp/flytckp"
+
+    [metrics]
+    port = 12403
+    interval = 30
+  node-mgr.toml: |-
+    [resource-manager]
+    address = "flyt-cluster-manager"
+    port = 12401
+
+    [virt-server]
+    program-path = "/opt/flyt/bin/cricket-rpc-server"
+    thread-mode = 0
+    program-args = ""
+
+    [ipc]
+    mqueue-path = "/tmp/flyt-servernode-queue"
+  client-mgr.toml: |-
+    [resource-manager]
+    address = "flyt-cluster-manager.__FLYT_NAMESPACE__.svc.cluster.local"
+    port = 12402
+    metrics-port = 12403
+
+    [vcuda-client]
+    process-monitor-period = 60
+
+    [ipc]
+    mqueue-path = "/tmp/flyt-client-mgr"
+
+    [resource-metrics]
+    scaleup-factor = 60
+    scaledown-factor = 60
+    metric-interval = 3
+    log-file = "/tmp/flyt_shmem.log"
