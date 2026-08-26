@@ -1,12 +1,14 @@
 SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 
-.PHONY: help render validate preflight namespace inputs build control-plane gpu-cell vms start-vms deploy test evidence cleanup purge fetch-source
+.PHONY: help render render-managed validate validate-managed preflight namespace inputs build control-plane gpu-cell vms start-vms deploy test evidence cleanup purge fetch-source
 
 help:
 	@printf '%s\n' \
 	  'make render         Render environment-specific manifests' \
+	  'make render-managed Render fail-closed whole-GPU managed manifests' \
 	  'make validate       Run local static validation' \
+	  'make validate-managed Validate managed manifests without changing the cluster' \
 	  'make preflight      Run the non-mutating GPU/DRA safety gate' \
 	  'make build          Deploy Flyt and PyTorch builders' \
 	  'make control-plane  Deploy MongoDB and Cluster Manager' \
@@ -21,6 +23,13 @@ help:
 
 render:
 	./scripts/render-manifests.sh
+
+render-managed:
+	./scripts/render-managed-overlay.sh
+
+validate-managed: render-managed
+	kubectl apply --dry-run=server -f deploy/rendered/managed/all.yaml >/dev/null
+	@printf '%s\n' 'managed_server_dry_run=PASS'
 
 validate:
 	./scripts/static-checks.sh

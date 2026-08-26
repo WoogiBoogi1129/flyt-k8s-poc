@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: flyt-default-deny-ingress
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: flyt-control-plane-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: cluster-manager
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values: ["gpu-cell", "session-adapter"]
+      ports:
+        - protocol: TCP
+          port: 12401
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: flyt
+      ports:
+        - protocol: TCP
+          port: 12402
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: flyt-mongodb-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: database
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: cluster-manager
+      ports:
+        - protocol: TCP
+          port: 27017

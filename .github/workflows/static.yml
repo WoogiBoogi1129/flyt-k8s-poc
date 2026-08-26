@@ -18,5 +18,7 @@ jobs:
         run: ./scripts/static-checks.sh
       - name: Manifest rendering
         run: ./scripts/test-render.sh
+      - name: Managed Kustomize safety defaults
+        run: ./scripts/test-managed-kustomize.sh
       - name: Reconstruct patched Flyt source
         run: ./scripts/verify-patch-series.sh

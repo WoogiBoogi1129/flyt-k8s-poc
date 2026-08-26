@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flyt-cluster-manager
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: cluster-manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: cluster-manager
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: cluster-manager
+          image: registry.invalid/flyt/cluster-manager:replace-me
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: RUST_LOG
+              value: info
+            - name: FLYT_CLUSTER_MANAGER_CONFIG
+              value: /etc/flyt/cluster-mgr.toml
+          ports:
+            - name: node
+              containerPort: 12401
+            - name: client
+              containerPort: 12402
+          startupProbe:
+            tcpSocket:
+              port: node
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            tcpSocket:
+              port: node
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: node
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/flyt/cluster-mgr.toml
+              subPath: cluster-mgr.toml
+              readOnly: true
+            - name: run
+              mountPath: /run/flyt
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          secret:
+            secretName: flyt-cluster-manager-config
+        - name: run
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flyt-cluster-manager
+spec:
+  selector:
+    app.kubernetes.io/component: cluster-manager
+  ports:
+    - name: node
+      port: 12401
+      targetPort: node
+    - name: client
+      port: 12402
+      targetPort: client

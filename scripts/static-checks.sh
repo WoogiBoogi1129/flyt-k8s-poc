@@ -26,7 +26,8 @@ fi
 
 prohibited='(/home/ubuntu/|GPU-c654d43e|taeuk-vm|10\.0\.0\.(27|185|222))'
 if rg -n "$prohibited" "$ROOT_DIR" \
-  --glob '!scripts/static-checks.sh' --glob '!.git/**'; then
+  --glob '!scripts/static-checks.sh' --glob '!.git/**' \
+  --glob '!deploy/rendered/**' --glob '!evidence/**' --glob '!results/**'; then
   die "environment-specific identifiers remain outside the archived report"
 fi
 

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: flyt-system
+resources:
+  - ../../base
+  - gpu-cells.yaml
+patches:
+  - path: gpu-cell-local-values.yaml
+images:
+  - name: registry.invalid/flyt/cluster-manager
+    newName: registry.invalid/flyt/cluster-manager
+    newTag: replace-me
+  - name: registry.invalid/flyt/gpu-cell
+    newName: registry.invalid/flyt/gpu-cell
+    newTag: replace-me

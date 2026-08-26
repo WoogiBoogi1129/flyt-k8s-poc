@@ -1,0 +1,6 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flyt-gpu-cell
+spec:
+  replicas: 0

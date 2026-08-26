@@ -1,0 +1,139 @@
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: flyt-whole-gpu
+spec:
+  spec:
+    devices:
+      requests:
+        - name: gpu
+          exactly:
+            allocationMode: ExactCount
+            count: 1
+            deviceClassName: gpu.nvidia.com
+            selectors:
+              - cel:
+                  # Fail closed. render-managed-overlay.sh replaces this with
+                  # an allow-list containing only the explicitly approved GPUs.
+                  expression: "false"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flyt-gpu-cell
+spec:
+  # Fail closed. The local rendered overlay changes this to the number of
+  # explicitly approved UUIDs.
+  replicas: 0
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: gpu-cell
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: gpu-cell
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: flyt-whole-gpu
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: gpu-cell
+          image: registry.invalid/flyt/gpu-cell:replace-me
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: RUST_LOG
+              value: info
+            - name: FLYT_NODE_MANAGER_CONFIG
+              value: /etc/flyt/node-manager.toml
+            - name: FLYT_ALLOWED_GPU_UUIDS
+              # The renderer replaces this fail-closed sentinel with the same
+              # UUID allow-list used by the DRA CEL selector.
+              value: RENDER_REQUIRED
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "4"
+              memory: 16Gi
+            claims:
+              - name: gpu
+          startupProbe:
+            exec:
+              command: ["/bin/bash", "-lc", "test -s /run/flyt-mps/gpu.uuid && pgrep -f '^/opt/flyt/bin/flyt-node-manager$' >/dev/null"]
+            periodSeconds: 5
+            failureThreshold: 120
+          readinessProbe:
+            exec:
+              command: ["/bin/bash", "-lc", "pgrep -f '^/opt/flyt/bin/flyt-node-manager$' >/dev/null && rpcinfo -p 127.0.0.1 >/dev/null"]
+            periodSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["NET_BIND_SERVICE"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/flyt/node-manager.toml
+              subPath: node-manager.toml
+              readOnly: true
+            - name: mps-run
+              mountPath: /run/flyt-mps
+            - name: mps-log
+              mountPath: /var/log/flyt-mps
+            - name: rpcbind-run
+              mountPath: /run/rpcbind
+            - name: shm
+              mountPath: /dev/shm
+      volumes:
+        - name: config
+          configMap:
+            name: flyt-node-manager-config
+        - name: mps-run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+        - name: mps-log
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: rpcbind-run
+          emptyDir: {}
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: flyt-gpu-cell-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: gpu-cell
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: flyt
+      ports:
+        - protocol: TCP
+          port: 111
+        - protocol: UDP
+          port: 111
+    # Cricket currently registers a dynamic TCP port through rpcbind. Keep
+    # this namespace-local exception until the fixed-port gateway lands.
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: flyt
+      ports:
+        - protocol: TCP
