@@ -1,0 +1,207 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -277,13 +277,13 @@
+         int          CUDA_CTX_RESET_PERSISTING_L2CACHE(void)                    = 250;
+         /*int        CUDA_STREAM_ADD_CALLBACK(ptr, ptr, mem_data, int)          = 251;*/
+         /*int        CUDA_STREAM_ATTACH_MEM_ASYNC(ptr, ptr, size_t, int)        = 252;*/
+-        /*int        CUDA_STREAM_BEGIN_CAPTURE(ptr, int)                        = 253;*/
++        int          CUDA_STREAM_BEGIN_CAPTURE(ptr, int)                        = 253;
+         int          CUDA_STREAM_COPY_ATTRIBUTES(ptr, ptr)                      = 254;
+         ptr_result   CUDA_STREAM_CREATE(void)                                   = 255;
+         ptr_result   CUDA_STREAM_CREATE_WITH_FLAGS(int)                         = 256;
+         ptr_result   CUDA_STREAM_CREATE_WITH_PRIORITY(int, int)                 = 257;
+         int          CUDA_STREAM_DESTROY(ptr)                                   = 258;
+-        /*ptr_result CUDA_STREAM_END_CAPTURE(ptr)                               = 259;*/
++        ptr_result   CUDA_STREAM_END_CAPTURE(ptr)                               = 259;
+         /* ?         CUDA_STREAM_GET_ATTRIBUTE(ptr, int)                        = 260;*/
+         /* ?         CUDA_STREAM_GET_CAPTURE_INFO(ptr)                          = 261;*/
+         int_result   CUDA_STREAM_GET_FLAGS(ptr)                                 = 262;
+@@ -413,7 +413,10 @@
+         int_result   CUDA_RUNTIME_GET_VERSION(void)                             = 511;
+ 
+         /* ### Graph Management ### */
+-        /* NOT IMPLEMENTED */
++        int          CUDA_GRAPH_DESTROY(ptr)                                    = 600;
++        int          CUDA_GRAPH_EXEC_DESTROY(ptr)                               = 601;
++        ptr_result   CUDA_GRAPH_INSTANTIATE(ptr, uint64_t)                      = 602;
++        int          CUDA_GRAPH_LAUNCH(ptr, ptr)                                = 603;
+ 
+         /* ### Profiler Control ### */
+         int          CUDA_PROFILER_START(void)                                  = 701;
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -604,9 +604,13 @@
+ /* See the driver API guard in cpu-client-driver.c. */
+ cudaError_t cudaStreamBeginCapture(cudaStream_t stream, enum cudaStreamCaptureMode mode)
+ {
+-    (void)stream;
+-    (void)mode;
+-    return cudaErrorNotSupported;
++    int result = cudaErrorUnknown;
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_stream_begin_capture_1((ptr)stream, mode, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) return cudaErrorUnknown;
++    return result;
+ }
+ 
+ cudaError_t cudaStreamCreate(cudaStream_t* pStream)
+@@ -682,7 +686,18 @@
+     return result;
+ }
+ 
+-DEF_FN(cudaError_t, cudaStreamEndCapture, cudaStream_t, stream, cudaGraph_t*, pGraph)
++cudaError_t cudaStreamEndCapture(cudaStream_t stream, cudaGraph_t *pGraph)
++{
++    if (pGraph == NULL) return cudaErrorInvalidValue;
++    ptr_result result = {0};
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_stream_end_capture_1((ptr)stream, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) return cudaErrorUnknown;
++    if (result.err == cudaSuccess) *pGraph = (cudaGraph_t)result.ptr_result_u.ptr;
++    return result.err;
++}
+ #if CUDART_VERSION >= 11000
+ DEF_FN(cudaError_t, cudaStreamGetAttribute, cudaStream_t, hStream, enum cudaStreamAttrID, attr, union cudaStreamAttrValue*, value_out )
+ #endif
+@@ -2361,9 +2376,19 @@
+ DEF_FN(cudaError_t, cudaGraphChildGraphNodeGetGraph, cudaGraphNode_t, node, cudaGraph_t*, pGraph)
+ DEF_FN(cudaError_t, cudaGraphClone, cudaGraph_t*, pGraphClone, cudaGraph_t, originalGraph)
+ DEF_FN(cudaError_t, cudaGraphCreate, cudaGraph_t*, pGraph, unsigned int, flags)
+-DEF_FN(cudaError_t, cudaGraphDestroy, cudaGraph_t, graph)
++cudaError_t cudaGraphDestroy(cudaGraph_t graph)
++{
++    int result = cudaErrorUnknown;
++    enum clnt_stat retval = cuda_graph_destroy_1((ptr)graph, &result, clnt);
++    return retval == RPC_SUCCESS ? result : cudaErrorUnknown;
++}
+ DEF_FN(cudaError_t, cudaGraphDestroyNode, cudaGraphNode_t, node)
+-DEF_FN(cudaError_t, cudaGraphExecDestroy, cudaGraphExec_t, graphExec)
++cudaError_t cudaGraphExecDestroy(cudaGraphExec_t graphExec)
++{
++    int result = cudaErrorUnknown;
++    enum clnt_stat retval = cuda_graph_exec_destroy_1((ptr)graphExec, &result, clnt);
++    return retval == RPC_SUCCESS ? result : cudaErrorUnknown;
++}
+ DEF_FN(cudaError_t, cudaGraphExecKernelNodeSetParams, cudaGraphExec_t, hGraphExec, cudaGraphNode_t, node, const struct cudaKernelNodeParams*, pNodeParams)
+ DEF_FN(cudaError_t, cudaGraphGetEdges, cudaGraph_t, graph, cudaGraphNode_t*, from, cudaGraphNode_t*, to, size_t*, numEdges)
+ DEF_FN(cudaError_t, cudaGraphGetNodes, cudaGraph_t, graph, cudaGraphNode_t*, nodes, size_t*, numNodes)
+@@ -2371,13 +2396,26 @@
+ DEF_FN(cudaError_t, cudaGraphHostNodeGetParams, cudaGraphNode_t, node, struct cudaHostNodeParams*, pNodeParams)
+ DEF_FN(cudaError_t, cudaGraphHostNodeSetParams, cudaGraphNode_t, node, const struct cudaHostNodeParams*, pNodeParams)
+ #if CUDART_VERSION >= 12000
+-DEF_FN(cudaError_t, cudaGraphInstantiate, cudaGraphExec_t*, pGraphExec, cudaGraph_t, graph, unsigned long long, flags)
++cudaError_t cudaGraphInstantiate(cudaGraphExec_t *pGraphExec, cudaGraph_t graph, unsigned long long flags)
++{
++    if (pGraphExec == NULL) return cudaErrorInvalidValue;
++    ptr_result result = {0};
++    enum clnt_stat retval = cuda_graph_instantiate_1((ptr)graph, flags, &result, clnt);
++    if (retval != RPC_SUCCESS) return cudaErrorUnknown;
++    if (result.err == cudaSuccess) *pGraphExec = (cudaGraphExec_t)result.ptr_result_u.ptr;
++    return result.err;
++}
+ #else
+ DEF_FN(cudaError_t, cudaGraphInstantiate, cudaGraphExec_t*, pGraphExec, cudaGraph_t, graph, cudaGraphNode_t*, pErrorNode, char*, pLogBuffer, size_t, bufferSize)
+ #endif
+ DEF_FN(cudaError_t, cudaGraphKernelNodeGetParams, cudaGraphNode_t, node, struct cudaKernelNodeParams*, pNodeParams)
+ DEF_FN(cudaError_t, cudaGraphKernelNodeSetParams, cudaGraphNode_t, node, const struct cudaKernelNodeParams*, pNodeParams)
+-DEF_FN(cudaError_t, cudaGraphLaunch, cudaGraphExec_t, graphExec, cudaStream_t, stream)
++cudaError_t cudaGraphLaunch(cudaGraphExec_t graphExec, cudaStream_t stream)
++{
++    int result = cudaErrorUnknown;
++    enum clnt_stat retval = cuda_graph_launch_1((ptr)graphExec, (ptr)stream, &result, clnt);
++    return retval == RPC_SUCCESS ? result : cudaErrorUnknown;
++}
+ DEF_FN(cudaError_t, cudaGraphMemcpyNodeGetParams, cudaGraphNode_t, node, struct cudaMemcpy3DParms*, pNodeParams)
+ DEF_FN(cudaError_t, cudaGraphMemcpyNodeSetParams, cudaGraphNode_t, node, const struct cudaMemcpy3DParms*, pNodeParams)
+ DEF_FN(cudaError_t, cudaGraphMemsetNodeGetParams, cudaGraphNode_t, node, struct cudaMemsetParams*, pNodeParams)
+@@ -2529,6 +2567,5 @@
+ }
+ 
+ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t* pGraphExec, cudaGraph_t graph, unsigned long long flags ) {
+-    LOGE(LOG_ERROR, "cudaGraphInstantiateWithFlags Not implemented");
+-    return cudaErrorUnknown;
++    return cudaGraphInstantiate(pGraphExec, graph, flags);
+ }
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -661,6 +661,76 @@
+ #endif
+ }
+ 
++bool_t cuda_stream_begin_capture_1_svc(ptr stream, int mode, int *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    cudaStream_t stream_ptr;
++    GET_CLIENT(*result)
++    GET_STREAM(stream_ptr, stream, *result)
++    /*
++     * ONC RPC does not guarantee that consecutive requests from one guest
++     * are dispatched by the same host thread.  CUDA requires begin/end to
++     * run on the same thread for GLOBAL and THREAD_LOCAL capture modes.
++     * The guest proxy already serializes the caller's CUDA API sequence, so
++     * use RELAXED on the server to make capture transport-thread agnostic.
++     */
++    (void)mode;
++    *result = cuStreamBeginCapture((CUstream)stream_ptr,
++                                   CU_STREAM_CAPTURE_MODE_RELAXED);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_stream_end_capture_1_svc(ptr stream, ptr_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    cudaStream_t stream_ptr;
++    GET_CLIENT(result->err)
++    GET_STREAM(stream_ptr, stream, result->err)
++    CUgraph graph = NULL;
++    result->err = cuStreamEndCapture((CUstream)stream_ptr, &graph);
++    if (result->err == cudaSuccess) result->ptr_result_u.ptr = (ptr)graph;
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_graph_destroy_1_svc(ptr graph, int *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    *result = cuGraphDestroy((CUgraph)graph);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_graph_exec_destroy_1_svc(ptr graph_exec, int *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    *result = cuGraphExecDestroy((CUgraphExec)graph_exec);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_graph_instantiate_1_svc(ptr graph, uint64_t flags, ptr_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    CUgraphExec graph_exec = NULL;
++    result->err = cuGraphInstantiate(&graph_exec, (CUgraph)graph, flags);
++    if (result->err == cudaSuccess) result->ptr_result_u.ptr = (ptr)graph_exec;
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_graph_launch_1_svc(ptr graph_exec, ptr stream, int *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    cudaStream_t stream_ptr;
++    GET_CLIENT(*result)
++    GET_STREAM(stream_ptr, stream, *result)
++    *result = cuGraphLaunch((CUgraphExec)graph_exec, (CUstream)stream_ptr);
++    GSCHED_RELEASE;
++    return 1;
++}
++
+ bool_t cuda_stream_create_1_svc(ptr_result *result, struct svc_req *rqstp)
+ {
+     GSCHED_RETAIN;

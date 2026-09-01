@@ -1,0 +1,107 @@
+diff --git a/cpu/cpu-common.h b/cpu/cpu-common.h
+--- a/cpu/cpu-common.h
++++ b/cpu/cpu-common.h
+@@ -19,6 +19,7 @@ typedef struct kernel_info {
+     uint16_t *param_offsets;
+     uint16_t *param_sizes;
+     void *host_fun;
++    void *module;
+ } kernel_info_t;
+ 
+ enum socktype_t {UNIX, TCP, UDP} socktype;
+diff --git a/cpu/cpu-elf2.c b/cpu/cpu-elf2.c
+--- a/cpu/cpu-elf2.c
++++ b/cpu/cpu-elf2.c
+@@ -891,6 +891,7 @@ int elf2_parameter_info(list *kernel_infos, void* memory, size_t memsize)
+     int ret = -1;
+     kernel_info_t *ki = NULL;
+     const char *kernel_str;
++    size_t initial_kernel_count = kernel_infos != NULL ? kernel_infos->length : 0;
+ 
+     if (memory == NULL || memsize == 0) {
+         LOGE(LOG_ERROR, "memory was NULL or memsize was 0");
+@@ -969,7 +970,19 @@ int elf2_parameter_info(list *kernel_infos, void* memory, size_t memsize)
+             continue;
+         }
+ 
+-        if (utils_search_info(kernel_infos, kernel_str) != NULL) {
++        /* Kernel names are only unique within one module.  Preserve a record
++         * for the same-named kernel in every separately loaded JIT module. */
++        int found_in_module = 0;
++        for (size_t kernel_idx = initial_kernel_count;
++             kernel_idx < kernel_infos->length; ++kernel_idx) {
++            kernel_info_t *existing = NULL;
++            if (list_at(kernel_infos, kernel_idx, (void **)&existing) == 0 &&
++                existing != NULL && strcmp(existing->name, kernel_str) == 0) {
++                found_in_module = 1;
++                break;
++            }
++        }
++        if (found_in_module) {
+             continue;
+         }
+ 
+diff --git a/cpu/cpu-client-driver.c b/cpu/cpu-client-driver.c
+--- a/cpu/cpu-client-driver.c
++++ b/cpu/cpu-client-driver.c
+@@ -447,6 +447,7 @@ CUresult cuModuleLoad(CUmodule* module, const char* fname)
+     mem_data mem = {0};
+     FILE *file = NULL;
+     long file_size;
++    size_t first_kernel = kernel_infos.length;
+ 
+     if (fname == NULL) {
+         LOGE(LOG_ERROR, "fname is NULL!");
+@@ -491,6 +492,12 @@ CUresult cuModuleLoad(CUmodule* module, const char* fname)
+            result.err, (void*)result.ptr_result_u.ptr);
+     if (module != NULL) {
+        *module = (CUmodule)result.ptr_result_u.ptr;
++       for (size_t i = first_kernel; i < kernel_infos.length; ++i) {
++           kernel_info_t *info = NULL;
++           if (list_at(&kernel_infos, i, (void **)&info) == 0 && info != NULL) {
++               info->module = *module;
++           }
++       }
+     }
+     return result.err;
+ }
+@@ -501,6 +508,7 @@ CUresult cuModuleLoadData(CUmodule* module, const void* image)
+ 	enum clnt_stat retval;
+     ptr_result result;
+     mem_data mem;
++    size_t first_kernel = kernel_infos.length;
+ 
+     if (image == NULL) {
+         LOGE(LOG_ERROR, "image is NULL!");
+@@ -534,6 +542,12 @@ CUresult cuModuleLoadData(CUmodule* module, const void* image)
+ 	}
+     if (module != NULL) {
+        *module = (CUmodule)result.ptr_result_u.ptr;
++       for (size_t i = first_kernel; i < kernel_infos.length; ++i) {
++           kernel_info_t *info = NULL;
++           if (list_at(&kernel_infos, i, (void **)&info) == 0 && info != NULL) {
++               info->module = *module;
++           }
++       }
+     }
+     return result.err;
+ }
+@@ -565,7 +579,17 @@ CUresult cuModuleGetFunction(CUfunction* hfun, CUmodule hmod, const char* name)
+         return CUDA_ERROR_UNKNOWN;
+ 	}
+     *hfun = (CUfunction)result.ptr_result_u.ptr;
+-    if ((info = utils_search_info(&kernel_infos, (char*)name)) == NULL) {
++    info = NULL;
++    for (size_t i = 0; i < kernel_infos.length; ++i) {
++        kernel_info_t *candidate = NULL;
++        if (list_at(&kernel_infos, i, (void **)&candidate) == 0 &&
++            candidate != NULL && candidate->module == hmod &&
++            strcmp(candidate->name, name) == 0) {
++            info = candidate;
++            break;
++        }
++    }
++    if (info == NULL) {
+         LOGE(LOG_ERROR, "cannot find kernel %s kernel_info_t", name);
+         return CUDA_ERROR_UNKNOWN;
+     }

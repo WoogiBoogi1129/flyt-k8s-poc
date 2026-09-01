@@ -7,7 +7,15 @@ need kubectl
 need jq
 need python3
 need comm
+need flock
 need "$VIRTCTL"
+
+lock_dir="$ROOT_DIR/.local/locks"
+mkdir -p "$lock_dir"
+exec 8>"$lock_dir/$VM_A.lock"
+exec 9>"$lock_dir/$VM_B.lock"
+flock -n 8 || die "another Flyt experiment is using $VM_A"
+flock -n 9 || die "another Flyt experiment is using $VM_B"
 
 result_dir="${RESULT_DIR:-$ROOT_DIR/results/$(date -u +%Y%m%dT%H%M%SZ)-pytorch}"
 mkdir -p "$result_dir"
@@ -25,10 +33,39 @@ has_active_clients() {
   '
 }
 
+has_server_allocations() {
+  flytctl list-servernodes | awk -F '[|]' '
+    {
+      memory=$5; compute=$7
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", memory)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", compute)
+      if ((memory ~ /^[0-9]+$/ && memory != 0) ||
+          (compute ~ /^[0-9]+$/ && compute != 0)) found=1
+    }
+    END { exit(found ? 0 : 1) }
+  '
+}
+
 runtime_healthy() {
   [[ "$(kubectl -n "$NAMESPACE" get pod flyt-gpu-cell \
     -o jsonpath='{.status.containerStatuses[0].ready}' 2>/dev/null)" == "true" ]] && \
-    flytctl list-servernodes | grep -q 'NVIDIA RTX PRO 6000 Blackwell'
+    flytctl list-servernodes | awk -F '[|]' -v expected="$EXPECTED_MIG_SM" '
+      {
+        gpu=$2; compute=$6
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", gpu)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", compute)
+        if (gpu ~ /^[0-9]+$/ && compute == expected) found=1
+      }
+      END { exit(found ? 0 : 1) }
+    '
+}
+
+gpu_cell_manifest() {
+  if [[ "$GPU_MODE" == "whole" ]]; then
+    printf '%s\n' "$RENDERED_DIR/21-gpu-cell-whole-pvc.yaml"
+  else
+    printf '%s\n' "$RENDERED_DIR/20-gpu-cell.yaml"
+  fi
 }
 
 reset_flyt_runtime() {
@@ -45,7 +82,7 @@ reset_flyt_runtime() {
   kubectl -n "$NAMESPACE" rollout restart deployment/flyt-cluster-manager
   kubectl -n "$NAMESPACE" rollout status deployment/flyt-cluster-manager \
     --timeout=5m
-  kubectl apply -f "$RENDERED_DIR/20-gpu-cell.yaml"
+  kubectl apply -f "$(gpu_cell_manifest)"
   kubectl -n "$NAMESPACE" wait --for=condition=Ready \
     pod/flyt-gpu-cell --timeout=10m
   for vm_name in "$VM_A" "$VM_B"; do
@@ -55,29 +92,74 @@ reset_flyt_runtime() {
   done
 }
 
+reset_guest_session() {
+  local vm_name="$1"
+  virt_ssh "$vm_name" '
+    set -Eeuo pipefail
+    sudo systemctl stop flyt-client-manager.service 2>/dev/null || true
+    sudo ipcrm --all=msg 2>/dev/null || true
+    sudo unlink /tmp/flyt-client-mgr 2>/dev/null || true
+    sudo systemctl restart flyt-client-manager.service
+    test "$(systemctl is-active flyt-client-manager.service)" = active
+  '
+}
+
 compat_groups=(
-  'base:environment,tensor_runtime,autograd_optimizer,cublas,amp,allocator,serialization,rng'
-  'math:fft,sparse,linalg'
-  'extended:compile_modes,allocator_cuda_malloc_async'
-  'stream:stream_event'
-  'graph:cuda_graph'
+  'environment:environment'
+  'tensor-runtime:tensor_runtime'
+  'autograd-optimizer:autograd_optimizer'
+  'cublas:cublas'
+  'amp:amp'
+  'allocator:allocator'
+  'serialization:serialization'
+  'rng:rng'
+  'fft:fft'
+  'sparse:sparse'
+  'linalg:linalg'
+  'compile-modes:compile_modes'
+  'allocator-async:allocator_cuda_malloc_async'
+  'stream-event:stream_event'
+  'cuda-graph:cuda_graph'
   'models:models'
   'cudnn:cudnn'
   'sdpa:sdpa'
-  'pinned:pinned_memory'
+  'pinned-memory:pinned_memory'
 )
 
-if ! runtime_healthy || has_active_clients; then
+read -r -a compatibility_vms <<< "${COMPAT_VMS:-$VM_A $VM_B}"
+(( ${#compatibility_vms[@]} > 0 )) || die 'COMPAT_VMS selected no virtual machines'
+for vm_name in "${compatibility_vms[@]}"; do
+  [[ "$vm_name" == "$VM_A" || "$vm_name" == "$VM_B" ]] || \
+    die "COMPAT_VMS contains an unsupported virtual machine: $vm_name"
+done
+
+group_selected() {
+  local group_name="$1"
+  [[ -z "${COMPAT_GROUPS:-}" ]] || \
+    [[ ",${COMPAT_GROUPS}," == *",${group_name},"* ]]
+}
+
+if [[ "${RESET_RUNTIME_FIRST:-false}" == "true" ]] || \
+   ! runtime_healthy || has_active_clients || has_server_allocations; then
   reset_flyt_runtime
 fi
 
 compat_failures=0
 if [[ "${RUN_COMPATIBILITY:-true}" == "true" ]]; then
   : > "$result_dir/compat-exit-codes.txt"
-  for vm_name in "$VM_A" "$VM_B"; do
+  for vm_name in "${compatibility_vms[@]}"; do
     for group_spec in "${compat_groups[@]}"; do
     group_name="${group_spec%%:*}"
     group_tests="${group_spec#*:}"
+    group_selected "$group_name" || continue
+    # A crashed CUDA process can leave guest IPC/manager state unusable even
+    # after the server has removed its allocation.  Isolate every group so a
+    # real failure cannot turn all subsequent groups into init failures.
+    if has_active_clients || has_server_allocations || ! runtime_healthy; then
+      reset_flyt_runtime
+    else
+      reset_guest_session "$vm_name"
+    fi
     compat_rc=0
     set +e
     virt_ssh "$vm_name" \
@@ -98,11 +180,13 @@ if [[ "${RUN_COMPATIBILITY:-true}" == "true" ]]; then
       compat_failures=$((compat_failures + 1))
     fi
     sleep 2
-      if ! runtime_healthy || has_active_clients; then
+      if ! runtime_healthy || has_active_clients || has_server_allocations; then
         printf 'reset_after vm=%s group=%s reason=unhealthy-or-stale-runtime\n' \
           "$vm_name" "$group_name" | \
           tee -a "$result_dir/compat-exit-codes.txt"
         reset_flyt_runtime
+      else
+        reset_guest_session "$vm_name"
       fi
     done
   done

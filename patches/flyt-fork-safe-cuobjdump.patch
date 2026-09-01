@@ -1,0 +1,36 @@
+diff --git a/cpu/cpu-utils.c b/cpu/cpu-utils.c
+index 3fe0813..7147454 100644
+--- a/cpu/cpu-utils.c
++++ b/cpu/cpu-utils.c
+@@ -69,7 +69,9 @@ int cpu_utils_launch_child(const char *file, char **args)
+         close(filedes[0]);
+         char *env[] = {NULL};
+         execvpe(file, args, env);
+-        exit(1);
++        /* Never run the preloaded Flyt destructor in a post-fork child.  It
++         * would send rpc_deinit on the parent's inherited TCP connection. */
++        _exit(127);
+     }
+     close(filedes[1]);
+     return filedes[0];
+@@ -270,6 +272,8 @@ int cpu_utils_parameter_info(list *kernel_infos, char *path)
+     int ret = 1;
+     char linktarget[PATH_MAX] = {0};
+-    char *args[] = {"/usr/local/cuda/bin/cuobjdump", "--dump-elf", NULL, NULL};
++    const char *cuobjdump = getenv("FLYT_CUOBJDUMP");
++    if (cuobjdump == NULL) cuobjdump = "/opt/flyt-client/bin/cuobjdump";
++    char *args[] = {(char *)cuobjdump, "--dump-elf", NULL, NULL};
+     int output;
+     FILE *fdesc; //fd to read subcommands output from
+     int child_exit = 0;
+@@ -368,7 +372,9 @@ int cpu_utils_parameter_info(list *kernel_infos, char *path)
+     LOG(LOG_DBG(1), "child exit code: %d", child_exit);
+  out:
+     free(line);
+-    return ret == 0 && child_exit == 0;
++    /* The API's callers use the conventional zero-on-success contract. */
++    return (ret == 0 && WIFEXITED(child_exit) &&
++            WEXITSTATUS(child_exit) == 0) ? 0 : 1;
+ }
+ 
+ void kernel_infos_free(kernel_info_t *infos, size_t kernelnum)

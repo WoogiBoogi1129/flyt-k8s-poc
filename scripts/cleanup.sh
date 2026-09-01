@@ -29,10 +29,14 @@ if [[ "${1:-}" == "--purge" ]]; then
   kubectl -n "$NAMESPACE" delete pod flyt-pytorch-builder \
     --ignore-not-found
   kubectl -n "$NAMESPACE" delete networkpolicy \
-    flyt-control-plane-ingress flyt-gpu-cell-ingress --ignore-not-found
+    flyt-control-plane-ingress flyt-gpu-cell-ingress \
+    flyt-whole-gpu-cell-ingress --ignore-not-found
+  kubectl -n "$NAMESPACE" delete resourceclaimtemplate \
+    flyt-mig-1g24gb flyt-whole-gpu --ignore-not-found
   kubectl -n "$NAMESPACE" delete configmap \
     flyt-config flyt-source-patches flyt-guest-input \
     flyt-gpu-cell-input \
+    flyt-whole-gpu-cell-input \
     flyt-pytorch-build-input \
     --ignore-not-found
   kubectl -n "$NAMESPACE" delete secret flyt-mongodb-credentials \

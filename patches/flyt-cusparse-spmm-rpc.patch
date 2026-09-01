@@ -1,0 +1,112 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -593,6 +593,19 @@
+         int rpc_cufftSetWorkArea(int plan, ptr area) = 5505;
+         sz_result rpc_cufftXtMakePlanMany(int plan, int rank, mem_data n, mem_data inembed, ll istride, ll idist, int inputtype, mem_data onembed, ll ostride, ll odist, int outputtype, ll batch, int executiontype) = 5506;
+         int rpc_cufftXtExec(int plan, ptr input, ptr output, int direction) = 5507;
++        ptr_result rpc_cusparseCreate(void)=5601;
++        int rpc_cusparseDestroy(ptr h)=5602;
++        int rpc_cusparseSetStream(ptr h,ptr s)=5603;
++        int rpc_cusparseSetPointerMode(ptr h,int mode)=5604;
++        ptr_result rpc_cusparseCreateCoo(ll rows,ll cols,ll nnz,ptr ri,ptr ci,ptr v,int it,int ib,int vt)=5605;
++        ptr_result rpc_cusparseCreateCsr(ll rows,ll cols,ll nnz,ptr ro,ptr ci,ptr v,int rt,int ct,int ib,int vt)=5606;
++        int rpc_cusparseCsrSetPointers(ptr d,ptr ro,ptr ci,ptr v)=5607;
++        int rpc_cusparseDestroySpMat(ptr d)=5608;
++        ptr_result rpc_cusparseCreateDnMat(ll rows,ll cols,ll ld,ptr v,int vt,int ord)=5609;
++        int rpc_cusparseDestroyDnMat(ptr d)=5610;
++        sz_result rpc_cusparseSpMM_bufferSize(ptr h,int a,int b,cudnn_scaling_t alpha,ptr A,ptr B,cudnn_scaling_t beta,ptr C,int t,int alg)=5611;
++        int rpc_cusparseSpMM(ptr h,int a,int b,cudnn_scaling_t alpha,ptr A,ptr B,cudnn_scaling_t beta,ptr C,int t,int alg,ptr buf)=5612;
++        int rpc_cusparseXcoo2csr(ptr h,ptr coo,int nnz,int m,ptr csr,int base)=5613;
+         mem_result rpc_cudnnGetConvolutionBackwardDataAlgorithm_v7(ptr handle, ptr filterDesc, ptr diffDesc, ptr convDesc, ptr gradDesc, int requestedAlgoCount) = 5410;
+         sz_result rpc_cudnnGetConvolutionBackwardDataWorkspaceSize(ptr handle, ptr wDesc, ptr dyDesc, ptr convDesc, ptr dxDesc, int algo) = 5411;
+         int rpc_cudnnConvolutionBackwardData(ptr handle, cudnn_scaling_t alpha, ptr wDesc, ptr w, ptr dyDesc, ptr dy, ptr convDesc, int algo, ptr workspace, size_t workspaceSize, cudnn_scaling_t beta, ptr dxDesc, ptr dx) = 5412;
+--- a/cpu/Makefile
++++ b/cpu/Makefile
+@@ -51,6 +51,7 @@
+ 			 cpu-server-nvml.c			\
+ 			 cpu-server-cudnn.c         \
+ 			 cpu-server-cufft.c         \
++			 cpu-server-cusparse.c      \
+ 			 cpu-server-cublaslt.c      \
+ 			 cpu-server-mgr-listener.c  \
+ 			 cpu-server-resource-controller.c \
+@@ -84,6 +85,7 @@
+ 			 cpu-client-nvml.c          \
+ 			 cpu-client-cudnn.c			\
+ 			 cpu-client-cufft.c			\
++			 cpu-client-cusparse.c		\
+ 			 cpu-client-cublas.c        \
+ 			 cpu-client-cublaslt.c      \
+ 			 cpu-client-mgr-handler.c   \
+@@ -135,7 +137,7 @@
+ CC_FLAGS += -DWITH_IB=$(WITH_IB)
+ endif
+ 
+-SERVER_LD_FLAGS = $(LD_FLAGS) -lcudart -lcupti -lcusolver -lcuda -lcublas -lrt -lpthread -lnvidia-ml -lcudnn -lcublasLt -lcufft
++SERVER_LD_FLAGS = $(LD_FLAGS) -lcudart -lcupti -lcusolver -lcuda -lcublas -lrt -lpthread -lnvidia-ml -lcudnn -lcublasLt -lcufft -lcusparse
+ SERVER_METRICS_FLAGS =  -lnvperf_host -lnvperf_target -L $(METRICS_SRC)/ -lprofiler -lstdc++ -lm
+ SERVER_BIN_LD_FLAGS = $(SERVER_LD_FLAGS) -Wl,--unresolved-symbols=ignore-in-object-files
+ CLIENT_LD_FLAGS = -Wl,-soname,$(CLIENT_TARGET_LIB) $(LD_FLAGS) -lrt
+--- a/cpu/flyt-public-cuda.map
++++ b/cpu/flyt-public-cuda.map
+@@ -22,6 +22,7 @@
+     global:
+         cufft*;
+ };
++libcusparse.so.12 { global: cusparse*; };
+ 
+ libcudart.so.12 {
+     global:
+--- /dev/null
++++ b/cpu/cpu-client-cusparse.c
+@@ -0,0 +1,27 @@
++#include <cusparse.h>
++#include "cpu_rpc_prot.h"
++#include "cpu-common.h"
++
++static int scalar(cudaDataType t,const void *p,cudnn_scaling_t *v){
++    v->dataType=t;
++    if(t==CUDA_R_32F){v->cudnn_scaling_t_u.f=*(const float*)p;return 0;}
++    if(t==CUDA_R_64F){v->cudnn_scaling_t_u.d=*(const double*)p;return 0;}
++    return -1;
++}
++#define CALL(expr) do{int r=CUSPARSE_STATUS_INTERNAL_ERROR;if((expr)!=RPC_SUCCESS)return CUSPARSE_STATUS_INTERNAL_ERROR;return r;}while(0)
++cusparseStatus_t cusparseCreate(cusparseHandle_t *h){ptr_result r={.err=CUSPARSE_STATUS_INTERNAL_ERROR};if(!h)return CUSPARSE_STATUS_INVALID_VALUE;if(rpc_cusparsecreate_1(&r,clnt)!=RPC_SUCCESS)return CUSPARSE_STATUS_INTERNAL_ERROR;if(!r.err)*h=(void*)r.ptr_result_u.ptr;return r.err;}
++cusparseStatus_t cusparseDestroy(cusparseHandle_t h){CALL(rpc_cusparsedestroy_1((ptr)h,&r,clnt));}
++cusparseStatus_t cusparseSetStream(cusparseHandle_t h,cudaStream_t s){CALL(rpc_cusparsesetstream_1((ptr)h,(ptr)s,&r,clnt));}
++cusparseStatus_t cusparseSetPointerMode(cusparseHandle_t h,cusparsePointerMode_t m){CALL(rpc_cusparsesetpointermode_1((ptr)h,m,&r,clnt));}
++#define CREATE(call,out) do{ptr_result r={.err=CUSPARSE_STATUS_INTERNAL_ERROR};if((call)!=RPC_SUCCESS)return CUSPARSE_STATUS_INTERNAL_ERROR;if(!r.err)*(out)=(void*)r.ptr_result_u.ptr;return r.err;}while(0)
++cusparseStatus_t cusparseCreateCoo(cusparseSpMatDescr_t*d,int64_t rows,int64_t cols,int64_t nnz,void*ri,void*ci,void*v,cusparseIndexType_t it,cusparseIndexBase_t ib,cudaDataType vt){CREATE(rpc_cusparsecreatecoo_1(rows,cols,nnz,(ptr)ri,(ptr)ci,(ptr)v,it,ib,vt,&r,clnt),d);}
++cusparseStatus_t cusparseCreateCsr(cusparseSpMatDescr_t*d,int64_t rows,int64_t cols,int64_t nnz,void*ro,void*ci,void*v,cusparseIndexType_t rt,cusparseIndexType_t ct,cusparseIndexBase_t ib,cudaDataType vt){CREATE(rpc_cusparsecreatecsr_1(rows,cols,nnz,(ptr)ro,(ptr)ci,(ptr)v,rt,ct,ib,vt,&r,clnt),d);}
++cusparseStatus_t cusparseCsrSetPointers(cusparseSpMatDescr_t d,void*ro,void*ci,void*v){CALL(rpc_cusparsecsrsetpointers_1((ptr)d,(ptr)ro,(ptr)ci,(ptr)v,&r,clnt));}
++cusparseStatus_t cusparseDestroySpMat(cusparseConstSpMatDescr_t d){CALL(rpc_cusparsedestroyspmat_1((ptr)d,&r,clnt));}
++cusparseStatus_t cusparseCreateDnMat(cusparseDnMatDescr_t*d,int64_t rows,int64_t cols,int64_t ld,void*v,cudaDataType vt,cusparseOrder_t o){CREATE(rpc_cusparsecreatednmat_1(rows,cols,ld,(ptr)v,vt,o,&r,clnt),d);}
++cusparseStatus_t cusparseDestroyDnMat(cusparseConstDnMatDescr_t d){CALL(rpc_cusparsedestroydnmat_1((ptr)d,&r,clnt));}
++cusparseStatus_t cusparseSpMM_bufferSize(cusparseHandle_t h,cusparseOperation_t a,cusparseOperation_t b,const void*alpha,cusparseConstSpMatDescr_t A,cusparseConstDnMatDescr_t B,const void*beta,cusparseDnMatDescr_t C,cudaDataType t,cusparseSpMMAlg_t alg,size_t*size){cudnn_scaling_t x,y;if(!size||scalar(t,alpha,&x)||scalar(t,beta,&y))return CUSPARSE_STATUS_NOT_SUPPORTED;sz_result r={.err=CUSPARSE_STATUS_INTERNAL_ERROR};if(rpc_cusparsespmm_buffersize_1((ptr)h,a,b,x,(ptr)A,(ptr)B,y,(ptr)C,t,alg,&r,clnt)!=RPC_SUCCESS)return CUSPARSE_STATUS_INTERNAL_ERROR;if(!r.err)*size=r.sz_result_u.data;return r.err;}
++cusparseStatus_t cusparseSpMM(cusparseHandle_t h,cusparseOperation_t a,cusparseOperation_t b,const void*alpha,cusparseConstSpMatDescr_t A,cusparseConstDnMatDescr_t B,const void*beta,cusparseDnMatDescr_t C,cudaDataType t,cusparseSpMMAlg_t alg,void*buf){cudnn_scaling_t x,y;if(scalar(t,alpha,&x)||scalar(t,beta,&y))return CUSPARSE_STATUS_NOT_SUPPORTED;int r=CUSPARSE_STATUS_INTERNAL_ERROR;if(rpc_cusparsespmm_1((ptr)h,a,b,x,(ptr)A,(ptr)B,y,(ptr)C,t,alg,(ptr)buf,&r,clnt)!=RPC_SUCCESS)return CUSPARSE_STATUS_INTERNAL_ERROR;return r;}
++cusparseStatus_t cusparseXcoo2csr(cusparseHandle_t h,const int*coo,int nnz,int m,int*csr,cusparseIndexBase_t base){CALL(rpc_cusparsexcoo2csr_1((ptr)h,(ptr)coo,nnz,m,(ptr)csr,base,&r,clnt));}
++#undef CALL
++#undef CREATE
+--- /dev/null
++++ b/cpu/cpu-server-cusparse.c
+@@ -0,0 +1,20 @@
++#include <cusparse.h>
++#include "cpu_rpc_prot.h"
++#include "cpu-server-client-mgr.h"
++#include "gsched.h"
++static const void*sc(cudnn_scaling_t*v){return v->dataType==CUDA_R_64F?(void*)&v->cudnn_scaling_t_u.d:(void*)&v->cudnn_scaling_t_u.f;}
++bool_t rpc_cusparsecreate_1_svc(ptr_result*r,struct svc_req*q){cusparseHandle_t h;r->err=cusparseCreate(&h);if(!r->err)r->ptr_result_u.ptr=(ptr)h;return 1;}
++bool_t rpc_cusparsedestroy_1_svc(ptr h,int*r,struct svc_req*q){*r=cusparseDestroy((void*)h);return 1;}
++bool_t rpc_cusparsesetstream_1_svc(ptr h,ptr s,int*r,struct svc_req*rqstp){GSCHED_RETAIN;cricket_client*c=get_client(rqstp->rq_xprt->xp_fd);if(!c){*r=CUSPARSE_STATUS_INVALID_VALUE;GSCHED_RELEASE;return 1;}cudaStream_t t=c->default_stream;if(s){if(!resource_map_contains(c->custom_streams,(void*)s)){*r=CUSPARSE_STATUS_INVALID_VALUE;GSCHED_RELEASE;return 1;}t=resource_map_get_addr(c->custom_streams,(void*)s);}*r=cusparseSetStream((void*)h,t);GSCHED_RELEASE;return 1;}
++bool_t rpc_cusparsesetpointermode_1_svc(ptr h,int m,int*r,struct svc_req*q){*r=cusparseSetPointerMode((void*)h,m);return 1;}
++#define RETDESC(call) do{void*d=NULL;r->err=(call);if(!r->err)r->ptr_result_u.ptr=(ptr)d;return 1;}while(0)
++bool_t rpc_cusparsecreatecoo_1_svc(ll rows,ll cols,ll nnz,ptr ri,ptr ci,ptr v,int it,int ib,int vt,ptr_result*r,struct svc_req*q){RETDESC(cusparseCreateCoo((void*)&d,rows,cols,nnz,(void*)ri,(void*)ci,(void*)v,it,ib,vt));}
++bool_t rpc_cusparsecreatecsr_1_svc(ll rows,ll cols,ll nnz,ptr ro,ptr ci,ptr v,int rt,int ct,int ib,int vt,ptr_result*r,struct svc_req*q){RETDESC(cusparseCreateCsr((void*)&d,rows,cols,nnz,(void*)ro,(void*)ci,(void*)v,rt,ct,ib,vt));}
++bool_t rpc_cusparsecsrsetpointers_1_svc(ptr d,ptr ro,ptr ci,ptr v,int*r,struct svc_req*q){*r=cusparseCsrSetPointers((void*)d,(void*)ro,(void*)ci,(void*)v);return 1;}
++bool_t rpc_cusparsedestroyspmat_1_svc(ptr d,int*r,struct svc_req*q){*r=cusparseDestroySpMat((void*)d);return 1;}
++bool_t rpc_cusparsecreatednmat_1_svc(ll rows,ll cols,ll ld,ptr v,int vt,int o,ptr_result*r,struct svc_req*q){RETDESC(cusparseCreateDnMat((void*)&d,rows,cols,ld,(void*)v,vt,o));}
++bool_t rpc_cusparsedestroydnmat_1_svc(ptr d,int*r,struct svc_req*q){*r=cusparseDestroyDnMat((void*)d);return 1;}
++bool_t rpc_cusparsespmm_buffersize_1_svc(ptr h,int a,int b,cudnn_scaling_t x,ptr A,ptr B,cudnn_scaling_t y,ptr C,int t,int alg,sz_result*r,struct svc_req*q){r->err=cusparseSpMM_bufferSize((void*)h,a,b,sc(&x),(void*)A,(void*)B,sc(&y),(void*)C,t,alg,&r->sz_result_u.data);return 1;}
++bool_t rpc_cusparsespmm_1_svc(ptr h,int a,int b,cudnn_scaling_t x,ptr A,ptr B,cudnn_scaling_t y,ptr C,int t,int alg,ptr buf,int*r,struct svc_req*q){*r=cusparseSpMM((void*)h,a,b,sc(&x),(void*)A,(void*)B,sc(&y),(void*)C,t,alg,(void*)buf);return 1;}
++bool_t rpc_cusparsexcoo2csr_1_svc(ptr h,ptr coo,int nnz,int m,ptr csr,int base,int*r,struct svc_req*q){*r=cusparseXcoo2csr((void*)h,(int*)coo,nnz,m,(int*)csr,base);return 1;}
++#undef RETDESC

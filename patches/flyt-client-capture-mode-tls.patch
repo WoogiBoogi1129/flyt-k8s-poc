@@ -1,0 +1,35 @@
+diff --git a/cpu/cpu-client-runtime.c b/cpu/cpu-client-runtime.c
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -818,21 +818,20 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t stream, cudaEvent_t event, unsigned
+ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode* mode)
+ {
+ #ifdef WITH_API_CNT
+     api_call_cnt++;
+ #endif //WITH_API_CNT
+-    int_result result;
+-    enum clnt_stat retval_1;
+-    FUNC_BEGIN 
+-    retval_1 = cuda_thread_exchange_stream_capture_mode_1(*mode, &result, clnt);
+-    FUNC_END
+-    if (retval_1 != RPC_SUCCESS) {
+-        clnt_perror (clnt, "call failed");
+-    }
+-    if (result.err == 0) {
+-        *mode = result.int_result_u.data;
+-    }
+-    return result.err;
++    static __thread enum cudaStreamCaptureMode current_mode =
++        cudaStreamCaptureModeGlobal;
++    if (mode == NULL) return cudaErrorInvalidValue;
++    if (*mode < cudaStreamCaptureModeGlobal ||
++        *mode > cudaStreamCaptureModeRelaxed) {
++        return cudaErrorInvalidValue;
++    }
++    enum cudaStreamCaptureMode previous_mode = current_mode;
++    current_mode = *mode;
++    *mode = previous_mode;
++    return cudaSuccess;
+ }
+ 
+ cudaError_t cudaEventCreate(cudaEvent_t* event)

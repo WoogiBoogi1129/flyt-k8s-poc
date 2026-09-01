@@ -1,0 +1,59 @@
+diff --git a/cpu/Makefile b/cpu/Makefile
+index 17d3ca0..c0f0f01 100644
+--- a/cpu/Makefile
++++ b/cpu/Makefile
+@@ -110,6 +110,7 @@ endif
+ SERVER_METRICS_FLAGS =  -lnvperf_host -lnvperf_target -L $(METRICS_SRC)/ -lprofiler -lstdc++ -lm
+ SERVER_BIN_LD_FLAGS = $(SERVER_LD_FLAGS) -Wl,--unresolved-symbols=ignore-in-object-files
+ CLIENT_LD_FLAGS = -Wl,-soname,$(CLIENT_TARGET_LIB) $(LD_FLAGS) -lrt
++CLIENT_LD_FLAGS += -Wl,--version-script=flyt-public-cuda.map
+ 
+ # Targets
+ .PHONY: all clean
+@@ -145,6 +146,6 @@ $(CLIENT_STATIC): $(OBJ_CLIENT)
+ 	ar rcs $@ $^
+ 
+-$(CLIENT) : $(OBJ_CLIENT) 
++$(CLIENT) : $(OBJ_CLIENT) flyt-public-cuda.map
+-	$(LD) $(CC_FLAGS) -shared -o $@ $^ $(LIBTIRPC_PREFIX)/lib/libtirpc.a $(CLIENT_LD_FLAGS) 
++	$(LD) $(CC_FLAGS) -shared -o $@ $(filter-out flyt-public-cuda.map,$^) $(LIBTIRPC_PREFIX)/lib/libtirpc.a $(CLIENT_LD_FLAGS)
+ 
+ $(SERVER_LIB) : $(OBJ_SERVER) $(SRC_SERVER_EXE:%.c=%.o) $(METRICS)
+diff --git a/cpu/flyt-public-cuda.map b/cpu/flyt-public-cuda.map
+new file mode 100644
+index 0000000..24eeea1
+--- /dev/null
++++ b/cpu/flyt-public-cuda.map
+@@ -0,0 +1,32 @@
++libcublas.so.12 {
++    global:
++        cublas*;
++};
++
++libcublasLt.so.12 {
++    global:
++        cublasLt*;
++};
++
++libcusolver.so.11 {
++    global:
++        cusolver*;
++};
++
++libcudnn.so.9 {
++    global:
++        cudnn*;
++};
++
++libcudart.so.12 {
++    global:
++        cuda*;
++        __cuda*;
++        cu[A-Z]*;
++    local:
++        *;
++};
++
++# Validated hybrid vendor ABIs use Flyt RPC instead of depending on NVIDIA's
++# private cuGetExportTable ABI. Other vendor libraries remain native until
++# their wrappers are validated.

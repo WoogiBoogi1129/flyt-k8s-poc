@@ -12,7 +12,18 @@ mkdir -p "$result_dir"
 kubectl -n "$NAMESPACE" exec deploy/flyt-cluster-manager -- \
   /opt/flyt/bin/flytctl list-servernodes | tee "$result_dir/servernodes-before.txt"
 
-for vm_name in "$VM_A" "$VM_B"; do
+if [[ -n "${TEST_VMS:-}" ]]; then
+  read -r -a test_vms <<< "$TEST_VMS"
+else
+  test_vms=()
+  for candidate in "$VM_A" "$VM_B"; do
+    kubectl -n "$NAMESPACE" get vmi "$candidate" >/dev/null 2>&1 && \
+      test_vms+=("$candidate")
+  done
+fi
+(( ${#test_vms[@]} > 0 )) || die "no running Flyt test VMs"
+
+for vm_name in "${test_vms[@]}"; do
   {
     printf 'vm=%s ip=%s started=%s\n' \
       "$vm_name" "$(vmi_ip "$vm_name")" "$(date -Is)"

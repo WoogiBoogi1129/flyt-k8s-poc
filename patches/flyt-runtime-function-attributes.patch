@@ -1,0 +1,68 @@
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -976,23 +976,23 @@
+ #ifdef WITH_API_CNT
+     api_call_cnt++;
+ #endif //WITH_API_CNT
+-    mem_result result;
++    if (attr == NULL || func == NULL) return cudaErrorInvalidValue;
++    mem_result result = {0};
+     enum clnt_stat retval_1;
+     FUNC_BEGIN 
+-    //retval_1 = cuda_func_get_attributes_1((ptr)func, &result, clnt);
+-    // this is temporary fix
+-    retval_1 = RPC_SUCCESS;
+-    attr->maxThreadsPerBlock = 1024;
+-    result.err = 0;
+-
++    retval_1 = cuda_func_get_attributes_1((ptr)func, &result, clnt);
+     FUNC_END
+     if (retval_1 != RPC_SUCCESS) {
+         clnt_perror (clnt, "call failed");
++        return cudaErrorUnknown;
++    }
++    if (result.err == cudaSuccess &&
++        result.mem_result_u.data.mem_data_len == sizeof(*attr)) {
++        memcpy(attr, result.mem_result_u.data.mem_data_val, sizeof(*attr));
++    } else if (result.err == cudaSuccess) {
++        result.err = cudaErrorUnknown;
+     }
+-    //if (result.err == 0) {
+-    //    memcpy(attr, result.mem_result_u.data.mem_data_val,
+-    //                 result.mem_result_u.data.mem_data_len);
+-    //}
++    free(result.mem_result_u.data.mem_data_val);
+     return result.err;
+ }
+ 
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -1134,8 +1134,26 @@
+         &attr->maxThreadsPerBlock,
+         CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK,
+         (CUfunction)func_ptr->addr);
++
++    if (result->err == CUDA_SUCCESS) result->err = cuFuncGetAttribute(
++        &attr->binaryVersion, CU_FUNC_ATTRIBUTE_BINARY_VERSION,
++        (CUfunction)func_ptr->addr);
++    if (result->err == CUDA_SUCCESS) result->err = cuFuncGetAttribute(
++        &attr->ptxVersion, CU_FUNC_ATTRIBUTE_PTX_VERSION,
++        (CUfunction)func_ptr->addr);
++    if (result->err == CUDA_SUCCESS) result->err = cuFuncGetAttribute(
++        &attr->numRegs, CU_FUNC_ATTRIBUTE_NUM_REGS,
++        (CUfunction)func_ptr->addr);
++    if (result->err == CUDA_SUCCESS) result->err = cuFuncGetAttribute(
++        &val, CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES,
++        (CUfunction)func_ptr->addr);
++    attr->localSizeBytes = val;
++    if (result->err == CUDA_SUCCESS) result->err = cuFuncGetAttribute(
++        &val, CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES,
++        (CUfunction)func_ptr->addr);
++    attr->constSizeBytes = val;
+     
+-    result->err != cuFuncGetAttribute(
++    if (result->err == CUDA_SUCCESS) result->err = cuFuncGetAttribute(
+         &val,
+         CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES,
+         (CUfunction)func_ptr->addr);
+

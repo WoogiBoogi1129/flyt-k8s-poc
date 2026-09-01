@@ -1,0 +1,116 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -285,7 +285,7 @@
+         int          CUDA_STREAM_DESTROY(ptr)                                   = 258;
+         ptr_result   CUDA_STREAM_END_CAPTURE(ptr)                               = 259;
+         /* ?         CUDA_STREAM_GET_ATTRIBUTE(ptr, int)                        = 260;*/
+-        /* ?         CUDA_STREAM_GET_CAPTURE_INFO(ptr)                          = 261;*/
++        mem_result   CUDA_STREAM_GET_CAPTURE_INFO(ptr)                          = 261;
+         int_result   CUDA_STREAM_GET_FLAGS(ptr)                                 = 262;
+         int_result   CUDA_STREAM_GET_PRIORITY(ptr)                              = 263;
+         int_result   CUDA_STREAM_IS_CAPTURING(ptr)                              = 264;
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -2562,8 +2562,53 @@
+ DEF_FN(cudaError_t, cudaGraphDebugDotPrint, cudaGraph_t, graph, const char*, path, unsigned int, flags)
+ 
+ cudaError_t cudaStreamGetCaptureInfo(cudaStream_t stream, enum cudaStreamCaptureStatus *captureStatus_out, unsigned long long *id_out, cudaGraph_t *graph_out, const cudaGraphNode_t **dependencies_out, size_t *numDependencies_out) {
+-    LOGE(LOG_ERROR, "cudaStreamGetCaptureInfo Not implemented");
+-    return cudaErrorUnknown;
++    if (captureStatus_out == NULL) return cudaErrorInvalidValue;
++    struct capture_info_wire {
++        int status;
++        uint32_t padding;
++        uint64_t id;
++        ptr graph;
++        uint64_t dependency_count;
++    } wire = {0};
++    static cudaGraphNode_t *dependency_cache;
++    static size_t dependency_capacity;
++    mem_result result = {0};
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_stream_get_capture_info_1((ptr)stream, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) return cudaErrorUnknown;
++    if (result.err != cudaSuccess) return result.err;
++    if (result.mem_result_u.data.mem_data_len < sizeof(wire)) {
++        free(result.mem_result_u.data.mem_data_val);
++        return cudaErrorUnknown;
++    }
++    memcpy(&wire, result.mem_result_u.data.mem_data_val, sizeof(wire));
++    size_t node_bytes = (size_t)wire.dependency_count * sizeof(cudaGraphNode_t);
++    if (result.mem_result_u.data.mem_data_len != sizeof(wire) + node_bytes) {
++        free(result.mem_result_u.data.mem_data_val);
++        return cudaErrorUnknown;
++    }
++    *captureStatus_out = (enum cudaStreamCaptureStatus)wire.status;
++    if (id_out != NULL) *id_out = wire.id;
++    if (graph_out != NULL) *graph_out = (cudaGraph_t)wire.graph;
++    if (dependencies_out != NULL) {
++        if (wire.dependency_count > dependency_capacity) {
++            void *resized = realloc(dependency_cache, node_bytes);
++            if (resized == NULL) {
++                free(result.mem_result_u.data.mem_data_val);
++                return cudaErrorMemoryAllocation;
++            }
++            dependency_cache = resized;
++            dependency_capacity = wire.dependency_count;
++        }
++        if (node_bytes != 0) memcpy(dependency_cache,
++            result.mem_result_u.data.mem_data_val + sizeof(wire), node_bytes);
++        *dependencies_out = wire.dependency_count == 0 ? NULL : dependency_cache;
++    }
++    if (numDependencies_out != NULL) *numDependencies_out = wire.dependency_count;
++    free(result.mem_result_u.data.mem_data_val);
++    return cudaSuccess;
+ }
+ 
+ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t* pGraphExec, cudaGraph_t graph, unsigned long long flags ) {
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -686,6 +686,44 @@
+     return 1;
+ }
+ 
++bool_t cuda_stream_get_capture_info_1_svc(ptr stream, mem_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    cudaStream_t stream_ptr;
++    GET_CLIENT(result->err)
++    GET_STREAM(stream_ptr, stream, result->err)
++    CUstreamCaptureStatus status = CU_STREAM_CAPTURE_STATUS_NONE;
++    unsigned long long id = 0;
++    CUgraph graph = NULL;
++    const CUgraphNode *dependencies = NULL;
++    size_t dependency_count = 0;
++    result->err = cuStreamGetCaptureInfo((CUstream)stream_ptr, &status, &id,
++                                         &graph, &dependencies,
++                                         &dependency_count);
++    if (result->err == cudaSuccess) {
++        struct capture_info_wire {
++            int status;
++            uint32_t padding;
++            uint64_t id;
++            ptr graph;
++            uint64_t dependency_count;
++        } wire = {status, 0, id, (ptr)graph, dependency_count};
++        size_t node_bytes = dependency_count * sizeof(CUgraphNode);
++        result->mem_result_u.data.mem_data_len = sizeof(wire) + node_bytes;
++        result->mem_result_u.data.mem_data_val = malloc(sizeof(wire) + node_bytes);
++        if (result->mem_result_u.data.mem_data_val == NULL) {
++            result->err = cudaErrorMemoryAllocation;
++        } else {
++            memcpy(result->mem_result_u.data.mem_data_val, &wire, sizeof(wire));
++            if (node_bytes != 0) memcpy(
++                result->mem_result_u.data.mem_data_val + sizeof(wire),
++                dependencies, node_bytes);
++        }
++    }
++    GSCHED_RELEASE;
++    return 1;
++}
++
+ bool_t cuda_graph_destroy_1_svc(ptr graph, int *result, struct svc_req *rqstp)
+ {
+     GSCHED_RETAIN;

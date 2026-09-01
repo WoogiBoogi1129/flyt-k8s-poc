@@ -1,0 +1,65 @@
+diff --git a/control-managers/src/client-manager-daemon/main.rs b/control-managers/src/client-manager-daemon/main.rs
+index 1500b85..33f4ffc 100644
+--- a/control-managers/src/client-manager-daemon/main.rs
++++ b/control-managers/src/client-manager-daemon/main.rs
+@@ -58,7 +58,6 @@ fn main() {
+     let mut metrics = VMMetrics::new(&client_mgr, shared_mem_path, &address);
+ 
+     thread::scope(|s| {
+-        /*
+         s.spawn(|| {
+             let period = get_vcuda_process_monitor_period();
+             loop {
+@@ -66,7 +65,6 @@ fn main() {
+                 client_mgr.remove_closed_clients(|| res_mgr.notify_zero_clients());
+             }
+         });
+-        */
+ 
+         s.spawn(|| {
+             client_mgr.listen_to_clients(|gid, sm_core, rmgrflag | res_mgr.get_virt_server(s, gid, sm_core, rmgrflag ));
+diff --git a/control-managers/src/client-manager-daemon/vcuda_client_handler.rs b/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
+index 1f8f576..4fa5c09 100644
+--- a/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
++++ b/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
+@@ -205,12 +205,16 @@ impl VCudaClientManager {
+ 
+     pub fn remove_closed_clients<F>(&self, notify_fn: F) 
+     where F: Fn() -> bool {
+-
+-        self.clients.write().unwrap().retain(|client| {
++        let mut clients = self.clients.write().unwrap();
++        let before = clients.len();
++        clients.retain(|client| {
+             Utils::is_ping_active(&self.message_queue, client.send_id, client.recv_id)
+         });
++        let removed = before - clients.len();
++        let became_empty = removed > 0 && clients.is_empty();
++        drop(clients);
+ 
+-        if self.clients.write().unwrap().len() == 0 {
+-            log::info!("No client connected... notifying...");
++        if became_empty {
++            log::info!("Removed {} closed client(s); notifying resource manager", removed);
+             notify_fn();
+         }
+     }
+diff --git a/control-managers/src/common/utils.rs b/control-managers/src/common/utils.rs
+index 4ace041..59565e4 100644
+--- a/control-managers/src/common/utils.rs
++++ b/control-managers/src/common/utils.rs
+@@ -15,11 +15,13 @@ impl Utils {
+ 
+ 
+     pub fn is_ping_active(mqueue: &MessageQueue, send_id: i64, recv_id: i64) -> bool {
+         let cmd = MqueueClientControlCommand::new(FlytApiCommand::PING, "").as_bytes();
+-        mqueue.send(&cmd, send_id).unwrap();
+-        let response = mqueue.recv_type_timed(recv_id, Duration::from_secs(350));
++        if mqueue.send(&cmd, send_id).is_err() {
++            return false;
++        }
++        let response = mqueue.recv_type_timed(recv_id, Duration::from_secs(3));
+         response.is_ok()
+     }
+ 
+ 

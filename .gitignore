@@ -1,4 +1,5 @@
 config.env
+.local/
 .cache/
 deploy/rendered/
 artifacts/*

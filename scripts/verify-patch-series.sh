@@ -16,7 +16,11 @@ while IFS= read -r patch_name; do
     < "$root_dir/patches/$patch_name"
 done < "$root_dir/patches/series"
 git -C "$work_dir/flyt" diff --check
-actual="$(git -C "$work_dir/flyt" diff --binary | sha256sum | awk '{print $1}')"
+# New source files introduced by a patch are untracked until staged and would
+# otherwise be omitted from `git diff`.  Hash the complete staged source delta.
+git -C "$work_dir/flyt" add -A
+git -C "$work_dir/flyt" diff --cached --check
+actual="$(git -C "$work_dir/flyt" diff --cached --binary | sha256sum | awk '{print $1}')"
 [[ "$actual" == "$expected" ]] || {
   printf 'expected=%s actual=%s\n' "$expected" "$actual" >&2
   exit 1

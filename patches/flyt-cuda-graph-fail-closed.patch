@@ -1,0 +1,60 @@
+diff --git a/cpu/cpu-client-driver.c b/cpu/cpu-client-driver.c
+index a1a389d..234b483 100644
+--- a/cpu/cpu-client-driver.c
++++ b/cpu/cpu-client-driver.c
+@@ -885,10 +885,32 @@ DEF_FN(CUresult, cuGraphExecDestroy, CUgraphExec, hGraphExec)
+ DEF_FN(CUresult, cuGraphDestroyNode, CUgraphNode, hNode)
+ DEF_FN(CUresult, cuGraphDestroy, CUgraph, hGraph)
+ DEF_FN(CUresult, cuGraphDestroy_ptsz, CUgraph, hGraph)
+-DEF_FN(CUresult, cuStreamBeginCapture_ptsz, CUstream, hStream)
++
++/* CUDA Graph capture is not implemented by Flyt's RPC protocol.  Never pass
++ * a guest-side stream handle to the host CUDA library: it is not a valid
++ * pointer in that process and can cause a segmentation fault. */
++#undef cuStreamBeginCapture_ptsz
++CUresult cuStreamBeginCapture_ptsz(CUstream hStream)
++{
++    (void)hStream;
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++
+ #undef cuStreamBeginCapture
+-DEF_FN(CUresult, cuStreamBeginCapture, CUstream, hStream, CUstreamCaptureMode, mode)
+-DEF_FN(CUresult, cuStreamBeginCapture_v2_ptsz, CUstream, hStream)
++CUresult cuStreamBeginCapture(CUstream hStream, CUstreamCaptureMode mode)
++{
++    (void)hStream;
++    (void)mode;
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++
++#undef cuStreamBeginCapture_v2_ptsz
++CUresult cuStreamBeginCapture_v2_ptsz(CUstream hStream)
++{
++    (void)hStream;
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++
+ DEF_FN(CUresult, cuStreamEndCapture, CUstream, hStream, CUgraph*, phGraph)
+ DEF_FN(CUresult, cuStreamEndCapture_ptsz, CUstream, hStream, CUgraph*, phGraph)
+ DEF_FN(CUresult, cuStreamIsCapturing, CUstream, hStream, CUstreamCaptureStatus*, captureStatus)
+diff --git a/cpu/cpu-client-runtime.c b/cpu/cpu-client-runtime.c
+index c83b792..ed2b633 100644
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -600,7 +600,14 @@ cudaError_t cudaPeekAtLastError(void)
+ 
+ DEF_FN(cudaError_t, cudaStreamAddCallback, cudaStream_t, stream, cudaStreamCallback_t, callback, void*, userData, unsigned int,  flags)
+ DEF_FN(cudaError_t, cudaStreamAttachMemAsync, cudaStream_t, stream, void*, devPtr, size_t, length, unsigned int,  flags)
+-DEF_FN(cudaError_t, cudaStreamBeginCapture, cudaStream_t, stream, enum cudaStreamCaptureMode, mode)
++
++/* See the driver API guard in cpu-client-driver.c. */
++cudaError_t cudaStreamBeginCapture(cudaStream_t stream, enum cudaStreamCaptureMode mode)
++{
++    (void)stream;
++    (void)mode;
++    return cudaErrorNotSupported;
++}
+ 
+ cudaError_t cudaStreamCreate(cudaStream_t* pStream)
+ {

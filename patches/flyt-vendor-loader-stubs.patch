@@ -1,0 +1,58 @@
+diff --git a/cpu/Makefile b/cpu/Makefile
+--- a/cpu/Makefile
++++ b/cpu/Makefile
+@@ -76,6 +76,7 @@ SRC_CLIENT = $(RPC_XDR)                 \
+ 			 cpu-libwrap.c              \
+ 			 msg-handler.c              \
+ 			 cpu-client-cusolver.c 		\
++			 cpu-client-vendor-stubs.c  \
+ 			 oob.c 					    \
+ 			 cpu-client-mt-memcpy.c			\
+ 			 cpu-elf2.c					\
+diff --git a/cpu/cpu-client-vendor-stubs.c b/cpu/cpu-client-vendor-stubs.c
+new file mode 100644
+--- /dev/null
++++ b/cpu/cpu-client-vendor-stubs.c
+@@ -0,0 +1,42 @@
++/* Loader-completeness stubs for vendor entry points required by PyTorch's
++ * shared objects but not implemented by Flyt.  They must fail closed if a
++ * workload selects one of these algorithms. */
++#define CUSOLVER_NOT_SUPPORTED 9
++#define CUSOLVER_STUB(name) \
++    __attribute__((visibility("default"))) int name(void) \
++    { return CUSOLVER_NOT_SUPPORTED; }
++
++CUSOLVER_STUB(cusolverDnCgesvdaStridedBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnCheevjBatched)
++CUSOLVER_STUB(cusolverDnCheevjBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnCpotrfBatched)
++CUSOLVER_STUB(cusolverDnCpotrsBatched)
++CUSOLVER_STUB(cusolverDnCreateParams)
++CUSOLVER_STUB(cusolverDnDestroyParams)
++CUSOLVER_STUB(cusolverDnDgesvdaStridedBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnDpotrfBatched)
++CUSOLVER_STUB(cusolverDnDpotrsBatched)
++CUSOLVER_STUB(cusolverDnDsyevjBatched)
++CUSOLVER_STUB(cusolverDnDsyevjBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnSgesvdaStridedBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnSpotrfBatched)
++CUSOLVER_STUB(cusolverDnSsyevjBatched)
++CUSOLVER_STUB(cusolverDnSsyevjBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnXgeev)
++CUSOLVER_STUB(cusolverDnXgeev_bufferSize)
++CUSOLVER_STUB(cusolverDnXgeqrf)
++CUSOLVER_STUB(cusolverDnXgeqrf_bufferSize)
++CUSOLVER_STUB(cusolverDnXpotrf)
++CUSOLVER_STUB(cusolverDnXpotrf_bufferSize)
++CUSOLVER_STUB(cusolverDnXpotrs)
++CUSOLVER_STUB(cusolverDnXsyevBatched)
++CUSOLVER_STUB(cusolverDnXsyevBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnXsyevd)
++CUSOLVER_STUB(cusolverDnXsyevd_bufferSize)
++CUSOLVER_STUB(cusolverDnXsytrs)
++CUSOLVER_STUB(cusolverDnXsytrs_bufferSize)
++CUSOLVER_STUB(cusolverDnZgesvdaStridedBatched_bufferSize)
++CUSOLVER_STUB(cusolverDnZheevjBatched)
++CUSOLVER_STUB(cusolverDnZheevjBatched_bufferSize)
++
++#undef CUSOLVER_STUB

@@ -1,0 +1,57 @@
+diff --git a/cpu/cpu-client-driver.c b/cpu/cpu-client-driver.c
+index 1dc799b..4c81c26 100644
+--- a/cpu/cpu-client-driver.c
++++ b/cpu/cpu-client-driver.c
+@@ -18,6 +18,25 @@
+ #include "cpu-utils.h"
+ #include "cpu-elf2.h"
+ 
++/*
++ * DEF_FN is also used by vendor-library wrappers, but CUDA Driver fallbacks
++ * are special: libwrap_get_sohandle() opens the renamed CUDA Runtime library,
++ * which does not provide cu* Driver entry points.  The generic macro leaves
++ * its return value uninitialised when dlsym fails, allowing callers to treat a
++ * random value as CUDA_SUCCESS and frequently segfault afterwards.  Keep the
++ * fallback local to this translation unit and fail closed until an RPC-backed
++ * implementation exists.
++ */
++#undef DEF_DLSYM
++#define DEF_DLSYM(RET, NAME) \
++    RET ret = (RET)CUDA_ERROR_NOT_SUPPORTED; char* error_str; \
++    dlerror(); \
++    *(void **)(&fun) = dlsym(libwrap_get_sohandle(), #NAME); \
++    if ((error_str = dlerror()) != NULL) { \
++        LOGE(LOG_ERROR, "[driver-fallback] %s", error_str); \
++        return ret; \
++    }
++
+ 
+ DEF_FN(CUresult, cuProfilerInitialize, const char*, configFile, const char*, outputFile, int, outputMode)
+ DEF_FN(CUresult, cuProfilerStart)
+@@ -941,7 +960,7 @@ CUresult cuGetProcAddress(const char* symbol, void** pfn, int cudaVersion, cuuint
+         if (symbolStatus != NULL) {
+             *symbolStatus = CU_GET_PROC_ADDRESS_SYMBOL_NOT_FOUND;
+         }
+-        return CUDA_SUCCESS;
++        return CUDA_ERROR_NOT_FOUND;
+     }
+     // Pytorch uses the 11.3 API of this function which does not have the symbolStatus parameter
+     // Because we do not support API versioning yet and to avoid segfaults, we ignore this parameter for now.
+@@ -969,7 +988,7 @@ CUresult cuGetProcAddress(const char* symbol, void** pfn, int cudaVersion, cuuint
+     *pfn = elf2_symbol_address(symbol);
+     if (*pfn == NULL) {
+         LOGE(LOG_WARNING, "symbol %s not found.", symbol);
+-        return CUDA_ERROR_UNKNOWN;
++        return CUDA_ERROR_NOT_FOUND;
+     }
+     // Pytorch uses the 11.3 API of this function which does not have the symbolStatus parameter
+     // Because we do not support API versioning yet and to avoid segfaults, we ignore this parameter for now.
+@@ -1038,7 +1057,7 @@ DEF_FN(CUresult, cuStreamSetAttribute, CUstream, hStream, CUstreamAttrID, attr,
+ CUresult cuGetExportTable(const void** ppExportTable, const CUuuid* pExportTableId)
+ {
+    *ppExportTable = NULL;
+-   return CUDA_SUCCESS;
++   return CUDA_ERROR_NOT_SUPPORTED;
+ }
+ DEF_FN(CUresult, cuOccupancyAvailableDynamicSMemPerBlock, size_t*, dynamicSmemSize, CUfunction, func, int, numBlocks, int, blockSize)
+ DEF_FN(CUresult, cuOccupancyMaxPotentialClusterSize, int*, clusterSize, CUfunction, func, const CUlaunchConfig*, config)

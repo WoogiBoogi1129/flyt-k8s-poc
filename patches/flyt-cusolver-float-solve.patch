@@ -1,0 +1,173 @@
+diff --git a/cpu/cpu_rpc_prot.x b/cpu/cpu_rpc_prot.x
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -465,6 +465,11 @@ program CRICKET_PROG {
+         int          rpc_cusolverDnDgetrs(ptr, int, int, int, ptr,
+                          int, ptr, ptr, int, ptr)                              = 2005;
+         int          rpc_cusolverDnDestroy(ptr)                                = 2006;
++        int_result   rpc_cusolverDnSgetrf_bufferSize(ptr, int, int, ptr, int)  = 2007;
++        int          rpc_cusolverDnSgetrf(ptr, int, int, ptr,
++                         int, ptr, ptr, ptr)                                   = 2008;
++        int          rpc_cusolverDnSgetrs(ptr, int, int, int, ptr,
++                         int, ptr, ptr, int, ptr)                              = 2009;
+ 
+         /* CUBLAS */
+         ptr_result   rpc_cublasCreate(void)                                    = 3001;
+diff --git a/cpu/cpu-client-cusolver.c b/cpu/cpu-client-cusolver.c
+--- a/cpu/cpu-client-cusolver.c
++++ b/cpu/cpu-client-cusolver.c
+@@ -914,13 +914,23 @@ DEF_FN(cusolverStatus_t, cusolverDnZlauum,
+ 
+ 
+ 
+-DEF_FN(cusolverStatus_t, cusolverDnSgetrf_bufferSize,
+-    cusolverDnHandle_t, handle,
+-    int, m,
+-    int, n,
+-    float*, A,
+-    int, lda,
+-    int*, Lwork )
++cusolverStatus_t cusolverDnSgetrf_bufferSize(
++    cusolverDnHandle_t handle, int m, int n, float* A, int lda, int* Lwork)
++{
++    int_result result;
++    enum clnt_stat retval;
++    api_call_cnt++;
++    retval = rpc_cusolverdnsgetrf_buffersize_1(
++        (ptr)handle, m, n, (ptr)A, lda, &result, clnt);
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return CUSOLVER_STATUS_INTERNAL_ERROR;
++    }
++    if (result.err == CUSOLVER_STATUS_SUCCESS) {
++        *Lwork = result.int_result_u.data;
++    }
++    return result.err;
++}
+ 
+ cusolverStatus_t cusolverDnDgetrf_bufferSize(
+     cusolverDnHandle_t handle,
+@@ -964,15 +974,22 @@ DEF_FN(cusolverStatus_t, cusolverDnZgetrf_bufferSize,
+     int*, Lwork )
+ 
+ 
+-DEF_FN(cusolverStatus_t, cusolverDnSgetrf, 
+-    cusolverDnHandle_t, handle, 
+-    int, m, 
+-    int, n, 
+-    float*, A, 
+-    int, lda, 
+-    float*, Workspace, 
+-    int*, devIpiv, 
+-    int*, devInfo )
++cusolverStatus_t cusolverDnSgetrf(
++    cusolverDnHandle_t handle, int m, int n, float* A, int lda,
++    float* Workspace, int* devIpiv, int* devInfo)
++{
++    int result;
++    enum clnt_stat retval;
++    api_call_cnt++;
++    retval = rpc_cusolverdnsgetrf_1(
++        (ptr)handle, m, n, (ptr)A, lda, (ptr)Workspace,
++        (ptr)devIpiv, (ptr)devInfo, &result, clnt);
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return CUSOLVER_STATUS_INTERNAL_ERROR;
++    }
++    return result;
++}
+ 
+ cusolverStatus_t cusolverDnDgetrf(
+     cusolverDnHandle_t handle, 
+@@ -1058,17 +1075,23 @@ DEF_FN(cusolverStatus_t, cusolverDnZlaswp,
+     const int*, devIpiv, 
+     int, incx)
+ 
+-DEF_FN(cusolverStatus_t, cusolverDnSgetrs, 
+-    cusolverDnHandle_t, handle, 
+-    cublasOperation_t, trans, 
+-    int, n, 
+-    int, nrhs, 
+-    const float*, A, 
+-    int, lda, 
+-    const int*, devIpiv, 
+-    float*, B, 
+-    int, ldb, 
+-    int*, devInfo )
++cusolverStatus_t cusolverDnSgetrs(
++    cusolverDnHandle_t handle, cublasOperation_t trans, int n, int nrhs,
++    const float* A, int lda, const int* devIpiv, float* B, int ldb,
++    int* devInfo)
++{
++    int result;
++    enum clnt_stat retval;
++    api_call_cnt++;
++    retval = rpc_cusolverdnsgetrs_1(
++        (ptr)handle, (int)trans, n, nrhs, (ptr)A, lda,
++        (ptr)devIpiv, (ptr)B, ldb, (ptr)devInfo, &result, clnt);
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return CUSOLVER_STATUS_INTERNAL_ERROR;
++    }
++    return result;
++}
+ 
+ cusolverStatus_t cusolverDnDgetrs( 
+     cusolverDnHandle_t handle, 
+diff --git a/cpu/cpu-server-cusolver.c b/cpu/cpu-server-cusolver.c
+--- a/cpu/cpu-server-cusolver.c
++++ b/cpu/cpu-server-cusolver.c
+@@ -157,3 +157,53 @@ bool_t rpc_cusolverdndestroy_1_svc(ptr handle, int *result, struct svc_req *rqstp)
+     GSCHED_RELEASE;
+     return 1;
+ }
++
++bool_t rpc_cusolverdnsgetrf_buffersize_1_svc(ptr handle, int m, int n,
++        ptr A, int lda, int_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    GET_CLIENT(result->err);
++    GET_MEMORY(mem_ptr_A, A, result->err)
++    CHECK_MEMORY(A, m*n, result->err)
++    result->err = cusolverDnSgetrf_bufferSize(
++        resource_mg_get_or_null(&rm_cusolver, (void*)handle),
++        m, n, mem_ptr_A, lda, &result->int_result_u.data);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t rpc_cusolverdnsgetrf_1_svc(ptr handle, int m, int n, ptr A, int lda,
++        ptr Workspace, ptr devIpiv, ptr devInfo, int *result,
++        struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    GET_CLIENT(*result);
++    GET_MEMORY(mem_ptr_A, A, *result)
++    GET_MEMORY(mem_ptr_Workspace, Workspace, *result)
++    GET_MEMORY(mem_ptr_devIpiv, devIpiv, *result)
++    GET_MEMORY(mem_ptr_devInfo, devInfo, *result)
++    *result = cusolverDnSgetrf(
++        resource_mg_get_or_null(&rm_cusolver, (void*)handle),
++        m, n, mem_ptr_A, lda, mem_ptr_Workspace,
++        mem_ptr_devIpiv, mem_ptr_devInfo);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t rpc_cusolverdnsgetrs_1_svc(ptr handle, int trans, int n, int nrhs,
++        ptr A, int lda, ptr devIpiv, ptr B, int ldb, ptr devInfo,
++        int *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    GET_CLIENT(*result);
++    GET_MEMORY(mem_ptr_A, A, *result)
++    GET_MEMORY(mem_ptr_devIpiv, devIpiv, *result)
++    GET_MEMORY(mem_ptr_B, B, *result)
++    GET_MEMORY(mem_ptr_devInfo, devInfo, *result)
++    *result = cusolverDnSgetrs(
++        resource_mg_get_or_null(&rm_cusolver, (void*)handle),
++        (cublasOperation_t)trans, n, nrhs, mem_ptr_A, lda,
++        mem_ptr_devIpiv, mem_ptr_B, ldb, mem_ptr_devInfo);
++    GSCHED_RELEASE;
++    return 1;
++}

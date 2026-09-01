@@ -1,0 +1,97 @@
+diff --git a/cpu/cpu_rpc_prot.x b/cpu/cpu_rpc_prot.x
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -417,6 +417,7 @@ program CPU_RPC_PROG {
+         int          CUDA_GRAPH_EXEC_DESTROY(ptr)                               = 601;
+         ptr_result   CUDA_GRAPH_INSTANTIATE(ptr, uint64_t)                      = 602;
+         int          CUDA_GRAPH_LAUNCH(ptr, ptr)                                = 603;
++        mem_result   CUDA_GRAPH_GET_NODES(ptr)                                  = 604;
+ 
+         /* ### Profiler Control ### */
+         int          CUDA_PROFILER_START(void)                                  = 701;
+diff --git a/cpu/cpu-client-runtime.c b/cpu/cpu-client-runtime.c
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -2390,7 +2390,31 @@ cudaError_t cudaGraphExecDestroy(cudaGraphExec_t graphExec)
+ }
+ DEF_FN(cudaError_t, cudaGraphExecKernelNodeSetParams, cudaGraphExec_t, hGraphExec, cudaGraphNode_t, node, const struct cudaKernelNodeParams*, pNodeParams)
+ DEF_FN(cudaError_t, cudaGraphGetEdges, cudaGraph_t, graph, cudaGraphNode_t*, from, cudaGraphNode_t*, to, size_t*, numEdges)
+-DEF_FN(cudaError_t, cudaGraphGetNodes, cudaGraph_t, graph, cudaGraphNode_t*, nodes, size_t*, numNodes)
++cudaError_t cudaGraphGetNodes(cudaGraph_t graph, cudaGraphNode_t *nodes,
++                              size_t *numNodes)
++{
++    if (numNodes == NULL) return cudaErrorInvalidValue;
++    size_t capacity = nodes == NULL ? 0 : *numNodes;
++    mem_result result = {0};
++    enum clnt_stat retval = cuda_graph_get_nodes_1((ptr)graph, &result, clnt);
++    if (retval != RPC_SUCCESS) return cudaErrorUnknown;
++    if (result.err != cudaSuccess) return result.err;
++    mem_data *data = &result.mem_result_u.data;
++    if (data->mem_data_len < sizeof(uint64_t)) return cudaErrorUnknown;
++    uint64_t count = 0;
++    memcpy(&count, data->mem_data_val, sizeof(count));
++    if (count > (data->mem_data_len - sizeof(count)) / sizeof(ptr)) {
++        return cudaErrorUnknown;
++    }
++    if (nodes == NULL) {
++        *numNodes = (size_t)count;
++        return cudaSuccess;
++    }
++    size_t copied = capacity < count ? capacity : (size_t)count;
++    memcpy(nodes, data->mem_data_val + sizeof(count), copied * sizeof(ptr));
++    *numNodes = copied;
++    return cudaSuccess;
++}
+ DEF_FN(cudaError_t, cudaGraphGetRootNodes, cudaGraph_t, graph, cudaGraphNode_t*, pRootNodes, size_t*, pNumRootNodes)
+ DEF_FN(cudaError_t, cudaGraphHostNodeGetParams, cudaGraphNode_t, node, struct cudaHostNodeParams*, pNodeParams)
+ DEF_FN(cudaError_t, cudaGraphHostNodeSetParams, cudaGraphNode_t, node, const struct cudaHostNodeParams*, pNodeParams)
+diff --git a/cpu/cpu-server-runtime.c b/cpu/cpu-server-runtime.c
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -734,6 +734,46 @@ bool_t cuda_graph_launch_1_svc(ptr graph_exec, ptr stream, int *result, struct s
+     return 1;
+ }
+ 
++bool_t cuda_graph_get_nodes_1_svc(ptr graph, mem_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    size_t count = 0;
++    result->err = cuGraphGetNodes((CUgraph)graph, NULL, &count);
++    if (result->err != CUDA_SUCCESS) {
++        GSCHED_RELEASE;
++        return 1;
++    }
++    if (count > (SIZE_MAX - sizeof(uint64_t)) / sizeof(CUgraphNode)) {
++        result->err = cudaErrorInvalidValue;
++        GSCHED_RELEASE;
++        return 1;
++    }
++    size_t bytes = sizeof(uint64_t) + count * sizeof(CUgraphNode);
++    char *wire = malloc(bytes);
++    if (wire == NULL) {
++        result->err = cudaErrorMemoryAllocation;
++        GSCHED_RELEASE;
++        return 1;
++    }
++    size_t returned = count;
++    if (count != 0) {
++        result->err = cuGraphGetNodes((CUgraph)graph,
++                                      (CUgraphNode *)(wire + sizeof(uint64_t)),
++                                      &returned);
++    }
++    if (result->err == CUDA_SUCCESS) {
++        uint64_t wire_count = returned;
++        memcpy(wire, &wire_count, sizeof(wire_count));
++        result->mem_result_u.data.mem_data_val = wire;
++        result->mem_result_u.data.mem_data_len =
++            sizeof(uint64_t) + returned * sizeof(CUgraphNode);
++    } else {
++        free(wire);
++    }
++    GSCHED_RELEASE;
++    return 1;
++}
++
+ bool_t cuda_stream_create_1_svc(ptr_result *result, struct svc_req *rqstp)
+ {
+     GSCHED_RETAIN;

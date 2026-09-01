@@ -60,20 +60,11 @@ spec:
           git submodule update --init submodules/libtirpc submodules/patchelf
           make -C submodules patchelf/install
 
-          patch -p1 --forward < /source-patches/flyt-k8s-config-paths.patch
-          patch -p1 --forward < /source-patches/flyt-cudnn9.patch
-          patch -p1 --forward < /source-patches/flyt-ipc-ftok.patch
-          patch -p1 --forward < /source-patches/flyt-pytorch-driver-entry.patch
-          patch -p1 --forward < /source-patches/flyt-source-eof.patch
-          patch -p1 --forward < /source-patches/flyt-pytorch-host-memory.patch
-          patch -p1 --forward < /source-patches/flyt-pytorch-host-memory-copy.patch
-          patch -p1 --forward < /source-patches/flyt-pytorch-event-map.patch
-          patch -p1 --forward < /source-patches/flyt-mig-discovery.patch
-          patch -p1 --forward < /source-patches/flyt-mig-cuda-accounting.patch
-          patch -p1 --forward < /source-patches/flyt-core-api-set-device.patch
-          patch -p1 --forward < /source-patches/flyt-core-api-stream-create.patch
-          patch -p1 --forward < /source-patches/flyt-mig-memory-quota.patch
-          patch -p1 --forward < /source-patches/flyt-runtime-function-map.patch
+          while IFS= read -r patch_name; do
+            [[ -n "$patch_name" && "$patch_name" != \#* ]] || continue
+            [[ "$patch_name" =~ ^[a-z0-9][a-z0-9._-]*\.patch$ ]]
+            patch -p1 --forward < "/source-patches/$patch_name"
+          done < /source-patches/series
 
           # Flyt's CPU server/client targets share rpcgen outputs and the
           # server link also depends on an unmodelled metrics sub-build.
@@ -167,10 +158,46 @@ spec:
             "/workspace/guest-root/opt/flyt-pytorch/cuda/lib64/$cudarto_soname"
           ln -s "$cudarto_soname" \
             /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcudarto.so
+          # The public Flyt proxy is the VM's CUDA Runtime and Driver boundary.
+          # The public proxy also exposes validated Flyt vendor RPC ABIs;
+          # other vendor libraries remain native until validated individually.
+          rm -f /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcudart.so \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcudart.so.12 \
+            "/workspace/guest-root/opt/flyt-pytorch/cuda/lib64/$cudart_name"
+          ln -s /opt/flyt-client/cricket-client.so \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcudart.so.12
+          ln -s libcudart.so.12 \
+            /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcudart.so
           ln -s /opt/flyt-client/cricket-client.so \
             /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcuda.so.1
           ln -s libcuda.so.1 \
             /workspace/guest-root/opt/flyt-pytorch/cuda/lib64/libcuda.so
+          # Resolve validated vendor SONAMEs to the same proxy object. Their
+          # dedicated ELF version nodes preserve libtorch_cuda's ABI checks.
+          ln -s cricket-client.so \
+            /workspace/guest-root/opt/flyt-client/libcublas.so.12
+          ln -s libcublas.so.12 \
+            /workspace/guest-root/opt/flyt-client/libcublas.so
+          ln -s cricket-client.so \
+            /workspace/guest-root/opt/flyt-client/libcublasLt.so.12
+          ln -s libcublasLt.so.12 \
+            /workspace/guest-root/opt/flyt-client/libcublasLt.so
+          ln -s cricket-client.so \
+            /workspace/guest-root/opt/flyt-client/libcusolver.so.11
+          ln -s libcusolver.so.11 \
+            /workspace/guest-root/opt/flyt-client/libcusolver.so
+          ln -s cricket-client.so \
+            /workspace/guest-root/opt/flyt-client/libcudnn.so.9
+          ln -s libcudnn.so.9 \
+            /workspace/guest-root/opt/flyt-client/libcudnn.so
+          ln -s cricket-client.so \
+            /workspace/guest-root/opt/flyt-client/libcufft.so.11
+          ln -s libcufft.so.11 \
+            /workspace/guest-root/opt/flyt-client/libcufft.so
+          ln -s cricket-client.so \
+            /workspace/guest-root/opt/flyt-client/libcusparse.so.12
+          ln -s libcusparse.so.12 \
+            /workspace/guest-root/opt/flyt-client/libcusparse.so
           # Flyt's generated CUDA wrappers resolve the real CUDA runtime from
           # this fixed path. Keep one canonical library tree in /opt and expose
           # the compatibility path expected by cricket-client.so.
@@ -181,9 +208,14 @@ spec:
             /workspace/guest-root/etc/systemd/system/
           cp /guest-input/run-with-flyt \
             /workspace/guest-root/opt/flyt-client/
+          install -D -m 0755 /usr/local/cuda/bin/cuobjdump \
+            /workspace/guest-root/opt/flyt-client/bin/cuobjdump
           chmod 0755 /workspace/guest-root/opt/flyt-client/run-with-flyt
 
-          tar -C /workspace/guest-root -czf /workspace/flyt-guest-bundle.tar.gz \
+          # CUDA shared objects are already dense; fast gzip avoids spending
+          # several minutes recompressing the 2-GiB development bundle.
+          tar -C /workspace/guest-root -I 'gzip -1' \
+            -cf /workspace/flyt-guest-bundle.tar.gz \
             etc opt usr/local/cuda
           sha256sum /workspace/flyt-guest-bundle.tar.gz \
             > /workspace/flyt-guest-bundle.tar.gz.sha256
@@ -364,6 +396,25 @@ data:
     set -Eeuo pipefail
     export SM_CORE="${SM_CORE:-46}"
     export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-backend:native}"
+    # Flyt currently proxies the typed cuDNN legacy API. The cuDNN v8 backend
+    # descriptor API is intentionally disabled until its variable-size
+    # attribute serialization is complete. Callers may explicitly override it.
+    export TORCH_CUDNN_V8_API_DISABLED="${TORCH_CUDNN_V8_API_DISABLED:-1}"
+    # Keep optional, large development packages on the experiment volume. The
+    # KubeVirt containerDisk root filesystem is intentionally only 2 GiB.
+    if [[ -d /tmp/flyt-python-packages ]]; then
+      export PYTHONPATH="/tmp/flyt-python-packages${PYTHONPATH:+:${PYTHONPATH}}"
+    fi
+    # A relocatable GCC toolchain lives on the larger experiment volume. This
+    # keeps torch.compile/Triton usable without filling the 2-GiB VM root.
+    toolchain=/tmp/flyt-toolchain/root
+    if [[ -x "/tmp/flyt-toolchain/bin/gcc" ]]; then
+      export PATH="/tmp/flyt-toolchain/bin:$toolchain/usr/bin:$PATH"
+      export CC="${CC:-/tmp/flyt-toolchain/bin/gcc}"
+      export GCC_EXEC_PREFIX="$toolchain/usr/lib/gcc/"
+      export CPATH="$toolchain/usr/include/python3.10:$toolchain/usr/include:$toolchain/usr/include/x86_64-linux-gnu${CPATH:+:${CPATH}}"
+      export LIBRARY_PATH="$toolchain/usr/lib/gcc/x86_64-linux-gnu/11:$toolchain/usr/lib/x86_64-linux-gnu${LIBRARY_PATH:+:${LIBRARY_PATH}}"
+      export LD_LIBRARY_PATH="$toolchain/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+    fi
     export LD_LIBRARY_PATH="/opt/flyt-client:/opt/flyt-pytorch/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-    export LD_PRELOAD="/opt/flyt-client/cricket-client.so${LD_PRELOAD:+:${LD_PRELOAD}}"
     exec "$@"

@@ -61,6 +61,8 @@ whole-GPU 실험에서 검증한 별도 profile이므로 현재 MIG manifest에�
 않는다.
 
 상세 절차와 판정 기준은 [REPRODUCING.md](docs/REPRODUCING.md)에 있다.
+공유 클러스터에서 whole GPU 한 개와 VM 한 대부터 검증하는 실행 경로는
+[WHOLE_GPU_EXPERIMENT.md](docs/WHOLE_GPU_EXPERIMENT.md)에 정리했다.
 새 GitHub 저장소에 게시하는 절차는
 [GITHUB_PUBLISHING.md](docs/GITHUB_PUBLISHING.md)에 정리했다.
 

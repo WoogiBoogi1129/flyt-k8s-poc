@@ -1,0 +1,220 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -360,6 +360,11 @@
+         /*mem_result CUDA_MEM_RANGE_GET_ATTRIBUTE(int, ptr, size_t)             = 425;*/
+         /*mem_result CUDA_MEM_RANGE_GET_ATTRIBUTES(mem_data, size_t, 
+                           ptr, size_t)                                          = 426;*/
++        ptr_result   CUDA_DEVICE_GET_DEFAULT_MEM_POOL(int)                      = 427;
++        u64_result   CUDA_MEM_POOL_GET_ATTRIBUTE(ptr, int)                      = 428;
++        int          CUDA_MEM_POOL_SET_ATTRIBUTE(ptr, int, uint64_t)            = 429;
++        ptr_result   CUDA_MALLOC_ASYNC(size_t, ptr)                             = 430;
++        int          CUDA_FREE_ASYNC(ptr, ptr)                                  = 431;
+ 
+         /* ### CUDA_MEMCPY Family ### */
+         int          CUDA_MEMCPY_HTOD(ptr, mem_data, size_t)                    = 440;
+--- a/cpu/cpu-client-runtime.c
++++ b/cpu/cpu-client-runtime.c
+@@ -2420,13 +2420,31 @@
+ 
+ 
+ cudaError_t cudaMallocAsync ( void** devPtr, size_t size, cudaStream_t hStream ) {
+-    LOGE(LOG_ERROR, "cudaMallocAsync Not implemented");
+-    return cudaErrorUnknown;
++    if (devPtr == NULL) return cudaErrorInvalidValue;
++    ptr_result result = {0};
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_malloc_async_1(size, (ptr)hStream, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return cudaErrorUnknown;
++    }
++    if (result.err == cudaSuccess) *devPtr = (void*)result.ptr_result_u.ptr;
++    return result.err;
+ }
+ 
+ cudaError_t cudaFreeAsync ( void* devPtr, cudaStream_t hStream ) {
+-    LOGE(LOG_ERROR, "cudaFreeAsync Not implemented");
+-    return cudaErrorUnknown;
++    int result = cudaErrorUnknown;
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_free_async_1((ptr)devPtr, (ptr)hStream, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return cudaErrorUnknown;
++    }
++    return result;
+ }
+ 
+ cudaError_t cudaMemPoolTrimTo ( cudaMemPool_t memPool, size_t minBytesToKeep ) {
+@@ -2435,18 +2453,63 @@
+ }
+ 
+ cudaError_t cudaMemPoolGetAttribute ( cudaMemPool_t memPool, enum cudaMemPoolAttr attr, void* value ) {
+-    LOGE(LOG_ERROR, "cudaMemPoolGetAttribute Not implemented");
+-    return cudaErrorUnknown;
++    if (memPool == NULL || value == NULL) return cudaErrorInvalidValue;
++    u64_result result = {0};
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_mem_pool_get_attribute_1((ptr)memPool, attr, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return cudaErrorUnknown;
++    }
++    if (result.err == cudaSuccess) {
++        if (attr == cudaMemPoolReuseFollowEventDependencies ||
++            attr == cudaMemPoolReuseAllowOpportunistic ||
++            attr == cudaMemPoolReuseAllowInternalDependencies) {
++            *(int*)value = (int)result.u64_result_u.u64;
++        } else {
++            *(uint64_t*)value = result.u64_result_u.u64;
++        }
++    }
++    return result.err;
+ }
+ 
+ cudaError_t cudaMemPoolSetAttribute ( cudaMemPool_t memPool, enum cudaMemPoolAttr attr, void* value ) {
+-    LOGE(LOG_ERROR, "cudaMemPoolSetAttribute Not implemented");
+-    return cudaErrorUnknown;
++    if (memPool == NULL || value == NULL) return cudaErrorInvalidValue;
++    uint64_t data = 0;
++    if (attr == cudaMemPoolReuseFollowEventDependencies ||
++        attr == cudaMemPoolReuseAllowOpportunistic ||
++        attr == cudaMemPoolReuseAllowInternalDependencies) {
++        data = *(int*)value;
++    } else {
++        data = *(uint64_t*)value;
++    }
++    int result = cudaErrorUnknown;
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_mem_pool_set_attribute_1((ptr)memPool, attr, data, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return cudaErrorUnknown;
++    }
++    return result;
+ }
+ 
+ cudaError_t cudaDeviceGetDefaultMemPool ( cudaMemPool_t* memPool, int  device ) {
+-    LOGE(LOG_ERROR, "cudaDeviceGetDefaultMemPool Not implemented");
+-    return cudaErrorUnknown;
++    if (memPool == NULL) return cudaErrorInvalidValue;
++    ptr_result result = {0};
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_device_get_default_mem_pool_1(device, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) {
++        clnt_perror(clnt, "call failed");
++        return cudaErrorUnknown;
++    }
++    if (result.err == cudaSuccess) *memPool = (cudaMemPool_t)result.ptr_result_u.ptr;
++    return result.err;
+ }
+ 
+ cudaError_t cudaMemPoolSetAccess ( cudaMemPool_t memPool, const struct cudaMemAccessDesc* descList, size_t count ) {
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -1997,6 +1997,95 @@
+     return 1;
+ }
+ 
++bool_t cuda_device_get_default_mem_pool_1_svc(int device, ptr_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    cudaMemPool_t pool = NULL;
++    result->err = cudaDeviceGetDefaultMemPool(&pool, device);
++    if (result->err == cudaSuccess) result->ptr_result_u.ptr = (ptr)pool;
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_mem_pool_get_attribute_1_svc(ptr pool, int attr, u64_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    uint64_t value = 0;
++    result->err = cudaMemPoolGetAttribute((cudaMemPool_t)pool,
++                                          (enum cudaMemPoolAttr)attr, &value);
++    if (result->err == cudaSuccess) result->u64_result_u.u64 = value;
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_mem_pool_set_attribute_1_svc(ptr pool, int attr, uint64_t value, int *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    *result = cudaMemPoolSetAttribute((cudaMemPool_t)pool,
++                                      (enum cudaMemPoolAttr)attr, &value);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_malloc_async_1_svc(size_t size, ptr stream, ptr_result *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    cricket_client *client = get_client(rqstp->rq_xprt->xp_fd);
++    if (client == NULL || allow_mem_alloc(size) == 0) {
++        result->err = client == NULL ? cudaErrorInvalidValue : cudaErrorMemoryAllocation;
++        GSCHED_RELEASE;
++        return 1;
++    }
++    void *dev_ptr = NULL;
++    cudaStream_t stream_ptr;
++    GET_STREAM(stream_ptr, stream, result->err)
++    PRIMARY_CTX_RETAIN;
++    result->err = cudaMallocAsync(&dev_ptr, size, stream_ptr);
++    PRIMARY_CTX_RELEASE;
++    if (result->err == cudaSuccess) {
++        mem_alloc_args_t *args = malloc(sizeof(*args));
++        if (args == NULL) {
++            cudaFreeAsync(dev_ptr, stream_ptr);
++            result->err = cudaErrorMemoryAllocation;
++        } else {
++            args->type = MEM_ALLOC_TYPE_DEFAULT;
++            args->size = size;
++            args->padded_size = size;
++            args->idx = client->malloc_idx++;
++            resource_mg_add_sorted(&client->gpu_mem, dev_ptr, args);
++            inc_mem_usage(size);
++            result->ptr_result_u.ptr = (ptr)dev_ptr;
++        }
++    }
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t cuda_free_async_1_svc(ptr dev_ptr, ptr stream, int *result, struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    cricket_client *client = get_client(rqstp->rq_xprt->xp_fd);
++    mem_alloc_args_t *args = client == NULL ? NULL :
++        resource_mg_get_or_null(&client->gpu_mem, (void*)dev_ptr);
++    if (args == NULL) {
++        *result = cudaErrorInvalidValue;
++        GSCHED_RELEASE;
++        return 1;
++    }
++    size_t accounted_size = args->padded_size;
++    cudaStream_t stream_ptr;
++    GET_STREAM(stream_ptr, stream, *result)
++    PRIMARY_CTX_RETAIN;
++    *result = cudaFreeAsync((void*)dev_ptr, stream_ptr);
++    PRIMARY_CTX_RELEASE;
++    if (*result == cudaSuccess) {
++        dec_mem_usage(accounted_size);
++        resource_mg_remove(&client->gpu_mem, (void*)dev_ptr);
++    }
++    GSCHED_RELEASE;
++    return 1;
++}
++
+ bool_t cuda_malloc_3d_1_svc(size_t depth, size_t height, size_t width, pptr_result *result, struct svc_req *rqstp)
+ {
+     GSCHED_RETAIN;

@@ -1,0 +1,183 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -581,6 +581,8 @@
+         mem_result rpc_cudnnFindConvolutionForwardAlgorithm(ptr handle, ptr xDesc, ptr wDesc, ptr convDesc, ptr yDesc, int requestedAlgoCount) = 5306;
+         sz_result rpc_cudnnGetConvolutionForwardWorkspaceSize(ptr handle, ptr xDesc, ptr wDesc, ptr convDesc, ptr yDesc, int algo) = 5307;
+         int rpc_cudnnConvolutionForward(ptr handle, cudnn_scaling_t alpha, ptr xDesc, ptr x, ptr wDesc, ptr w, ptr convDesc, int algo, ptr workSpace, size_t workSpaceSizeInBytes, cudnn_scaling_t beta, ptr yDesc, ptr y) = 5308;
++        int rpc_cudnnBatchNormalizationForwardTrainingEx(ptr handle, int mode, int bnOps, cudnn_scaling_t alpha, cudnn_scaling_t beta, ptr xDesc, ptr xData, ptr zDesc, ptr zData, ptr yDesc, ptr yData, ptr bnDesc, ptr bnScale, ptr bnBias, double exponentialAverageFactor, ptr runningMean, ptr runningVariance, double epsilon, ptr saveMean, ptr saveInvVariance, ptr activationDesc, ptr workspace, size_t workspaceSize, ptr reserveSpace, size_t reserveSpaceSize) = 5401;
++        int rpc_cudnnBatchNormalizationBackwardEx(ptr handle, int mode, int bnOps, cudnn_scaling_t alphaDataDiff, cudnn_scaling_t betaDataDiff, cudnn_scaling_t alphaParamDiff, cudnn_scaling_t betaParamDiff, ptr xDesc, ptr xData, ptr yDesc, ptr yData, ptr dyDesc, ptr dyData, ptr dzDesc, ptr dzData, ptr dxDesc, ptr dxData, ptr bnDesc, ptr bnScale, ptr bnBias, ptr dBnScale, ptr dBnBias, double epsilon, ptr savedMean, ptr savedInvVariance, ptr activationDesc, ptr workspace, size_t workspaceSize, ptr reserveSpace, size_t reserveSpaceSize) = 5402;
+         ptr_result rpc_cudnnBackendCreateDescriptor(int descriptorType) = 5309;
+         int rpc_cudnnBackendDestroyDescriptor(ptr descriptor) = 5310;
+         int rpc_cudnnBackendInitialize(ptr descriptor) = 5311;
+--- a/cpu/cpu-client-cudnn.c
++++ b/cpu/cpu-client-cudnn.c
+@@ -1798,6 +1798,80 @@
+     return result;
+ }
+ 
++cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(
++    cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps,
++    const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc,
++    const void *xData, const cudnnTensorDescriptor_t zDesc, const void *zData,
++    const cudnnTensorDescriptor_t yDesc, void *yData,
++    const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale,
++    const void *bnBias, double exponentialAverageFactor, void *resultRunningMean,
++    void *resultRunningVariance, double epsilon, void *resultSaveMean,
++    void *resultSaveInvVariance, cudnnActivationDescriptor_t activationDesc,
++    void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace,
++    size_t reserveSpaceSizeInBytes)
++{
++    int result = CUDNN_STATUS_INTERNAL_ERROR;
++    enum clnt_stat retval_1;
++    cudnn_scaling_t rpc_alpha = {.dataType = CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f = *((const float*)alpha)};
++    cudnn_scaling_t rpc_beta = {.dataType = CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f = *((const float*)beta)};
++    FUNC_BEGIN
++    retval_1 = rpc_cudnnbatchnormalizationforwardtrainingex_1(
++        (ptr)handle, mode, bnOps, rpc_alpha, rpc_beta, (ptr)xDesc, (ptr)xData,
++        (ptr)zDesc, (ptr)zData, (ptr)yDesc, (ptr)yData,
++        (ptr)bnScaleBiasMeanVarDesc, (ptr)bnScale, (ptr)bnBias,
++        exponentialAverageFactor, (ptr)resultRunningMean,
++        (ptr)resultRunningVariance, epsilon, (ptr)resultSaveMean,
++        (ptr)resultSaveInvVariance, (ptr)activationDesc, (ptr)workspace,
++        workSpaceSizeInBytes, (ptr)reserveSpace, reserveSpaceSizeInBytes,
++        &result, clnt);
++    FUNC_END
++    if (retval_1 != RPC_SUCCESS) {
++        LOGE(LOG_ERROR, "%s failed (%d)", __FUNCTION__, retval_1);
++        return CUDNN_STATUS_INTERNAL_ERROR;
++    }
++    return result;
++}
++
++cudnnStatus_t cudnnBatchNormalizationBackwardEx(
++    cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps,
++    const void *alphaDataDiff, const void *betaDataDiff,
++    const void *alphaParamDiff, const void *betaParamDiff,
++    const cudnnTensorDescriptor_t xDesc, const void *xData,
++    const cudnnTensorDescriptor_t yDesc, const void *yData,
++    const cudnnTensorDescriptor_t dyDesc, const void *dyData,
++    const cudnnTensorDescriptor_t dzDesc, void *dzData,
++    const cudnnTensorDescriptor_t dxDesc, void *dxData,
++    const cudnnTensorDescriptor_t dBnScaleBiasDesc, const void *bnScaleData,
++    const void *bnBiasData, void *dBnScaleData, void *dBnBiasData,
++    double epsilon, const void *savedMean, const void *savedInvVariance,
++    cudnnActivationDescriptor_t activationDesc, void *workSpace,
++    size_t workSpaceSizeInBytes, void *reserveSpace,
++    size_t reserveSpaceSizeInBytes)
++{
++    int result = CUDNN_STATUS_INTERNAL_ERROR;
++    enum clnt_stat retval_1;
++    cudnn_scaling_t a_data = {.dataType = CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f = *((const float*)alphaDataDiff)};
++    cudnn_scaling_t b_data = {.dataType = CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f = *((const float*)betaDataDiff)};
++    cudnn_scaling_t a_param = {.dataType = CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f = *((const float*)alphaParamDiff)};
++    cudnn_scaling_t b_param = {.dataType = CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f = *((const float*)betaParamDiff)};
++    FUNC_BEGIN
++    retval_1 = rpc_cudnnbatchnormalizationbackwardex_1(
++        (ptr)handle, mode, bnOps, a_data, b_data, a_param, b_param,
++        (ptr)xDesc, (ptr)xData, (ptr)yDesc, (ptr)yData, (ptr)dyDesc,
++        (ptr)dyData, (ptr)dzDesc, (ptr)dzData, (ptr)dxDesc, (ptr)dxData,
++        (ptr)dBnScaleBiasDesc, (ptr)bnScaleData, (ptr)bnBiasData,
++        (ptr)dBnScaleData, (ptr)dBnBiasData, epsilon, (ptr)savedMean,
++        (ptr)savedInvVariance, (ptr)activationDesc, (ptr)workSpace,
++        workSpaceSizeInBytes, (ptr)reserveSpace, reserveSpaceSizeInBytes,
++        &result, clnt);
++    FUNC_END
++    if (retval_1 != RPC_SUCCESS) {
++        LOGE(LOG_ERROR, "%s failed (%d)", __FUNCTION__, retval_1);
++        return CUDNN_STATUS_INTERNAL_ERROR;
++    }
++    return result;
++}
++
+ DEF_FN(cudnnStatus_t, cudnnConvolutionBiasActivationForward,  cudnnHandle_t, handle,  const void*, alpha1,  const cudnnTensorDescriptor_t, xDesc,  const void*, x,  const cudnnFilterDescriptor_t, wDesc,  const void*, w,  const cudnnConvolutionDescriptor_t, convDesc,  cudnnConvolutionFwdAlgo_t, algo,  void*, workSpace,  size_t, workSpaceSizeInBytes,  const void*, alpha2,  const cudnnTensorDescriptor_t, zDesc,  const void*, z,  const cudnnTensorDescriptor_t, biasDesc,  const void*, bias,  const cudnnActivationDescriptor_t, activationDesc,  const cudnnTensorDescriptor_t, yDesc,  void*, y)
+ DEF_FN(cudnnStatus_t, cudnnGetConvolutionBackwardDataAlgorithmMaxCount,  cudnnHandle_t, handle,  int*, count)
+ DEF_FN(cudnnStatus_t, cudnnFindConvolutionBackwardDataAlgorithm,  cudnnHandle_t, handle,  const cudnnFilterDescriptor_t, wDesc,  const cudnnTensorDescriptor_t, dyDesc,  const cudnnConvolutionDescriptor_t, convDesc,  const cudnnTensorDescriptor_t, dxDesc,  const int, requestedAlgoCount,  int*, returnedAlgoCount,  cudnnConvolutionBwdDataAlgoPerf_t*, perfResults)
+--- a/cpu/cpu-server-cudnn.c
++++ b/cpu/cpu-server-cudnn.c
+@@ -1241,6 +1241,75 @@
+     return 1;
+ }
+ 
++#define CUDNN_SCALE_PTR(value) ((value).dataType == CUDNN_DATA_DOUBLE ? \
++    (const void*)&(value).cudnn_scaling_t_u.d : \
++    (const void*)&(value).cudnn_scaling_t_u.f)
++
++bool_t rpc_cudnnbatchnormalizationforwardtrainingex_1_svc(
++    ptr handle, int mode, int bnOps, cudnn_scaling_t alpha,
++    cudnn_scaling_t beta, ptr xDesc, ptr xData, ptr zDesc, ptr zData,
++    ptr yDesc, ptr yData, ptr bnDesc, ptr bnScale, ptr bnBias,
++    double exponentialAverageFactor, ptr runningMean, ptr runningVariance,
++    double epsilon, ptr saveMean, ptr saveInvVariance, ptr activationDesc,
++    ptr workspace, size_t workspaceSize, ptr reserveSpace,
++    size_t reserveSpaceSize, int *result, struct svc_req *rqstp)
++{
++    LOGE(LOG_DEBUG, "%s", __FUNCTION__);
++    GSCHED_RETAIN;
++    GET_CLIENT(*result)
++    *result = cudnnBatchNormalizationForwardTrainingEx(
++        resource_mg_get_or_null(&rm_cudnn, (void*)handle), mode, bnOps,
++        CUDNN_SCALE_PTR(alpha), CUDNN_SCALE_PTR(beta),
++        resource_mg_get_or_null(&rm_cudnn_tensors, (void*)xDesc),
++        (const void*)xData,
++        zDesc ? resource_mg_get_or_null(&rm_cudnn_tensors, (void*)zDesc) : NULL,
++        (const void*)zData,
++        resource_mg_get_or_null(&rm_cudnn_tensors, (void*)yDesc), (void*)yData,
++        resource_mg_get_or_null(&rm_cudnn_tensors, (void*)bnDesc),
++        (const void*)bnScale, (const void*)bnBias, exponentialAverageFactor,
++        (void*)runningMean, (void*)runningVariance, epsilon, (void*)saveMean,
++        (void*)saveInvVariance,
++        activationDesc ? resource_mg_get_or_null(&rm_cudnn_activations, (void*)activationDesc) : NULL,
++        (void*)workspace, workspaceSize, (void*)reserveSpace, reserveSpaceSize);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++bool_t rpc_cudnnbatchnormalizationbackwardex_1_svc(
++    ptr handle, int mode, int bnOps, cudnn_scaling_t alphaDataDiff,
++    cudnn_scaling_t betaDataDiff, cudnn_scaling_t alphaParamDiff,
++    cudnn_scaling_t betaParamDiff, ptr xDesc, ptr xData, ptr yDesc,
++    ptr yData, ptr dyDesc, ptr dyData, ptr dzDesc, ptr dzData, ptr dxDesc,
++    ptr dxData, ptr bnDesc, ptr bnScale, ptr bnBias, ptr dBnScale,
++    ptr dBnBias, double epsilon, ptr savedMean, ptr savedInvVariance,
++    ptr activationDesc, ptr workspace, size_t workspaceSize,
++    ptr reserveSpace, size_t reserveSpaceSize, int *result,
++    struct svc_req *rqstp)
++{
++    LOGE(LOG_DEBUG, "%s", __FUNCTION__);
++    GSCHED_RETAIN;
++    GET_CLIENT(*result)
++    *result = cudnnBatchNormalizationBackwardEx(
++        resource_mg_get_or_null(&rm_cudnn, (void*)handle), mode, bnOps,
++        CUDNN_SCALE_PTR(alphaDataDiff), CUDNN_SCALE_PTR(betaDataDiff),
++        CUDNN_SCALE_PTR(alphaParamDiff), CUDNN_SCALE_PTR(betaParamDiff),
++        resource_mg_get_or_null(&rm_cudnn_tensors, (void*)xDesc), (const void*)xData,
++        yDesc ? resource_mg_get_or_null(&rm_cudnn_tensors, (void*)yDesc) : NULL, (const void*)yData,
++        resource_mg_get_or_null(&rm_cudnn_tensors, (void*)dyDesc), (const void*)dyData,
++        dzDesc ? resource_mg_get_or_null(&rm_cudnn_tensors, (void*)dzDesc) : NULL, (void*)dzData,
++        resource_mg_get_or_null(&rm_cudnn_tensors, (void*)dxDesc), (void*)dxData,
++        resource_mg_get_or_null(&rm_cudnn_tensors, (void*)bnDesc),
++        (const void*)bnScale, (const void*)bnBias, (void*)dBnScale,
++        (void*)dBnBias, epsilon, (const void*)savedMean,
++        (const void*)savedInvVariance,
++        activationDesc ? resource_mg_get_or_null(&rm_cudnn_activations, (void*)activationDesc) : NULL,
++        (void*)workspace, workspaceSize, (void*)reserveSpace, reserveSpaceSize);
++    GSCHED_RELEASE;
++    return 1;
++}
++
++#undef CUDNN_SCALE_PTR
++
+ bool_t rpc_cudnnaddtensor_1_svc(ptr handle, cudnn_scaling_t alpha, ptr aDesc, ptr A, cudnn_scaling_t beta, ptr cDesc, ptr C, int *result, struct svc_req *rqstp)
+ {
+     RECORD_API(rpc_cudnnaddtensor_1_argument);
+--- a/cpu/cpu-client-vendor-stubs.c
++++ b/cpu/cpu-client-vendor-stubs.c
+@@ -46,8 +46,6 @@
+     __attribute__((visibility("default"))) int name(void) \
+     { return CUDNN_NOT_SUPPORTED; }
+ 
+-CUDNN_STUB(cudnnBatchNormalizationBackwardEx)
+-CUDNN_STUB(cudnnBatchNormalizationForwardTrainingEx)
+ CUDNN_STUB(cudnnCTCLoss)
+ CUDNN_STUB(cudnnCTCLoss_v8)
+ CUDNN_STUB(cudnnConvolutionBackwardFilter)

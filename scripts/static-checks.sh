@@ -16,11 +16,21 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 for path in root.rglob("*.py"):
+    if any(part in {".git", ".cache", ".local", "artifacts", "evidence", "results"}
+           for part in path.parts):
+        continue
     ast.parse(path.read_text(), filename=str(path))
 PY
 
-if find "$ROOT_DIR" -type f -size +20M -not -path '*/.git/*' | grep -q .; then
-  find "$ROOT_DIR" -type f -size +20M -not -path '*/.git/*' -print >&2
+large_files() {
+  find "$ROOT_DIR" \
+    \( -path '*/.git' -o -path '*/.cache' -o -path '*/.local' \
+       -o -path '*/artifacts' -o -path '*/evidence' -o -path '*/results' \
+       -o -path '*/deploy/rendered' \) -prune -o \
+    -type f -size +20M -print
+}
+if large_files | grep -q .; then
+  large_files >&2
   die "files larger than 20 MiB must not be committed"
 fi
 

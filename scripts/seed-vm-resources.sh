@@ -10,7 +10,12 @@ sm_b="${SM_B:-46}"
 memory_a_mib="${MEMORY_A_MIB:-8192}"
 memory_b_mib="${MEMORY_B_MIB:-8192}"
 ip_a="$(vmi_ip "$VM_A")"
-ip_b="$(vmi_ip "$VM_B")"
+ip_b=""
+if kubectl -n "$NAMESPACE" get vmi "$VM_B" >/dev/null 2>&1; then
+  ip_b="$(vmi_ip "$VM_B")"
+elif [[ "${REQUIRE_VM_B:-false}" == "true" ]]; then
+  die "required VMI $VM_B is not running"
+fi
 
 for value in "$sm_a" "$sm_b" "$memory_a_mib" "$memory_b_mib"; do
   [[ "$value" =~ ^[1-9][0-9]*$ ]] || die "resource values must be positive integers"
@@ -28,14 +33,15 @@ kubectl -n "$NAMESPACE" exec deploy/flyt-mongodb -- env \
       --authenticationDatabase admin \
       --eval '\''
         const c = db.getSiblingDB("flyt").vm_required_resources;
+        const activeIPs = [process.env.VM_A_IP, process.env.VM_B_IP].filter(Boolean);
         c.deleteMany({
           host_ip: process.env.NODE_NAME,
-          vm_ip: {$nin: [process.env.VM_A_IP, process.env.VM_B_IP]}
+          vm_ip: {$nin: activeIPs}
         });
         for (const item of [
           {vm_ip: process.env.VM_A_IP, compute_units: Number(process.env.SM_A), memory: Number(process.env.MEMORY_A_MIB)},
           {vm_ip: process.env.VM_B_IP, compute_units: Number(process.env.SM_B), memory: Number(process.env.MEMORY_B_MIB)}
-        ]) {
+        ].filter(item => item.vm_ip)) {
           c.updateOne(
             {vm_ip: item.vm_ip},
             {$set: {vm_ip: item.vm_ip, host_ip: process.env.NODE_NAME,
@@ -48,4 +54,8 @@ kubectl -n "$NAMESPACE" exec deploy/flyt-mongodb -- env \
   '
 
 printf 'seeded_vm_a=%s sm=%s memory_mib=%s\n' "$ip_a" "$sm_a" "$memory_a_mib"
-printf 'seeded_vm_b=%s sm=%s memory_mib=%s\n' "$ip_b" "$sm_b" "$memory_b_mib"
+if [[ -n "$ip_b" ]]; then
+  printf 'seeded_vm_b=%s sm=%s memory_mib=%s\n' "$ip_b" "$sm_b" "$memory_b_mib"
+else
+  printf 'seeded_vm_b=skipped reason=not-running\n'
+fi

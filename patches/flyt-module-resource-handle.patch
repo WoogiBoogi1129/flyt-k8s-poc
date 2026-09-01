@@ -1,0 +1,13 @@
+diff --git a/cpu/cpu-server-driver.c b/cpu/cpu-server-driver.c
+index 83ed14c..cd72b61 100644
+--- a/cpu/cpu-server-driver.c
++++ b/cpu/cpu-server-driver.c
+@@ -765,7 +765,7 @@ bool_t rpc_cumodulegetfunction_1_svc(uint64_t module, char *name, ptr_result *re
+     }
+ 
+     result->err = cuModuleGetFunction((CUfunction*)&result->ptr_result_u.ptr,
+-                    (CUmodule)module_ptr,
++                    (CUmodule)module_ptr->addr,
+                     name);
+ 
+     if (result->err == 0) {

@@ -1,0 +1,34 @@
+diff --git a/cpu/cpu-client-driver.c b/cpu/cpu-client-driver.c
+--- a/cpu/cpu-client-driver.c
++++ b/cpu/cpu-client-driver.c
+@@ -1027,8 +1027,28 @@ CUresult cuStreamBeginCapture_v2_ptsz(CUstream hStream)
+     return CUDA_ERROR_NOT_SUPPORTED;
+ }
+ 
+-DEF_FN(CUresult, cuStreamEndCapture, CUstream, hStream, CUgraph*, phGraph)
+-DEF_FN(CUresult, cuStreamEndCapture_ptsz, CUstream, hStream, CUgraph*, phGraph)
++#undef cuStreamEndCapture
++CUresult cuStreamEndCapture(CUstream hStream, CUgraph *phGraph)
++{
++    if (phGraph == NULL) return CUDA_ERROR_INVALID_VALUE;
++    ptr_result result = {0};
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = cuda_stream_end_capture_1((ptr)hStream, &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) return CUDA_ERROR_UNKNOWN;
++    if (result.err == CUDA_SUCCESS) {
++        *phGraph = (CUgraph)result.ptr_result_u.ptr;
++    }
++    return (CUresult)result.err;
++}
++
++#undef cuStreamEndCapture_ptsz
++CUresult cuStreamEndCapture_ptsz(CUstream hStream, CUgraph *phGraph)
++{
++    return cuStreamEndCapture(hStream, phGraph);
++}
++
+ DEF_FN(CUresult, cuStreamIsCapturing, CUstream, hStream, CUstreamCaptureStatus*, captureStatus)
+ DEF_FN(CUresult, cuStreamIsCapturing_ptsz, CUstream, hStream, CUstreamCaptureStatus*, captureStatus)
+ DEF_FN(CUresult, cuThreadExchangeStreamCaptureMode, CUstreamCaptureMode*, mode)

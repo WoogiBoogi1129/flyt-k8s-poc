@@ -51,7 +51,8 @@ data:
     metrics-port = 12403
 
     [vcuda-client]
-    process-monitor-period = 60
+    # Rust's TOML lookup uses an underscore. Keep recovery bounded for tests.
+    process_monitor_period = 10
 
     [ipc]
     mqueue-path = "/tmp/flyt-client-mgr"

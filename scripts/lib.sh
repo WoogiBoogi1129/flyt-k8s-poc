@@ -65,6 +65,15 @@ wait_for_vmi() {
   local vm_name="$1"
   kubectl -n "$NAMESPACE" wait --for=condition=Ready \
     "vmi/$vm_name" --timeout=10m
-  virt_ssh "$vm_name" \
-    'cloud-init status --wait; test -f /var/lib/cloud/instance/flyt-ready'
+  local attempt
+  for attempt in $(seq 1 60); do
+    if virt_ssh "$vm_name" \
+      'cloud-init status --wait; test -f /var/lib/cloud/instance/flyt-ready' \
+      >/dev/null 2>&1; then
+      printf 'vmi=%s guest_ready=true attempts=%s\n' "$vm_name" "$attempt"
+      return 0
+    fi
+    sleep 5
+  done
+  die "VMI $vm_name became Ready but guest SSH/cloud-init did not"
 }

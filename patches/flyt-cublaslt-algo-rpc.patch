@@ -1,0 +1,69 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -646,7 +646,7 @@
+         ptr_result rpc_cublasltmatmulpreferencecreate(void) = 5324;
+         int rpc_cublasltmatmulpreferencedestroy(ptr pref) = 5325;
+         int rpc_cublasltmatrixlayoutdestroy(ptr matLayout) = 5326;
+-        int rpc_cublasltmatmul(ptr lightHandle,ptr computeDesc,float alpha,ptr A,ptr Adesc,ptr B,ptr Bdesc,float beta,ptr C,ptr Cdesc,ptr D,ptr Ddesc,ptr algo,ptr workspace,size_t workspaceSizeInBytes,ptr stream) = 5327;
++        int rpc_cublasltmatmul(ptr lightHandle,ptr computeDesc,float alpha,ptr A,ptr Adesc,ptr B,ptr Bdesc,float beta,ptr C,ptr Cdesc,ptr D,ptr Ddesc,mem_data algo,ptr workspace,size_t workspaceSizeInBytes,ptr stream) = 5327;
+         int_result rpc_cublasgetmathmode(ptr handle) = 5328;
+         int rpc_cublasgemmstridedbatchedex(ptr handle, int transa, int transb, int m,int n,int k,float alpha,ptr A, int Atype, int lda, ll strideA,ptr B,int Btype,int ldb, ll strideB,float beta,   ptr C,int Ctype,int ldc, ll strideC,int batchCount,int computeType,int algo) = 5329;
+         int rpc_cublasgemmex(ptr, int, int, int, int, int, float,ptr, int, int, ptr, int, int, float, ptr, int, int, int, int) = 5330;
+--- a/cpu/cpu-client-cublaslt.c
++++ b/cpu/cpu-client-cublaslt.c
+@@ -336,6 +336,10 @@
+ #endif //WITH_API_CNT
+ 
+     int result;
++    mem_data algo_data = {
++      .mem_data_len = algo == NULL ? 0 : sizeof(*algo),
++      .mem_data_val = (char *)algo
++    };
+     enum clnt_stat retval_1;
+     FUNC_BEGIN 
+     retval_1 = rpc_cublasltmatmul_1(
+@@ -351,7 +355,7 @@
+       (ptr)Cdesc,
+       (ptr)D,
+       (ptr)Ddesc,
+-      (ptr)algo,
++      algo_data,
+       (ptr)workspace,
+       workspaceSizeInBytes,
+       (ptr)stream,
+--- a/cpu/cpu-server-cublaslt.c
++++ b/cpu/cpu-server-cublaslt.c
+@@ -248,7 +248,7 @@
+     ptr Cdesc,
+     ptr D,
+     ptr Ddesc,
+-    ptr algo,
++    mem_data algo,
+     ptr workspace,
+     size_t workspaceSizeInBytes,
+     ptr stream,
+@@ -267,6 +267,13 @@
+     GET_MEMORY(mem_ptr_D, D, *result)
+     GET_MEMORY(mem_ptr_workspace, workspace, *result)
+ 
++    if (algo.mem_data_len != 0 &&
++        algo.mem_data_len != sizeof(cublasLtMatmulAlgo_t)) {
++        *result = CUBLAS_STATUS_INVALID_VALUE;
++        GSCHED_RELEASE;
++        return 1;
++    }
++
+     *result = cublasLtMatmul(
+         (cublasLtHandle_t)resource_mg_get_or_null(&rm_cublaslt, (void*)lightHandle),
+         (cublasLtMatmulDesc_t)resource_mg_get_or_null(&rm_cublaslt, (void*)computeDesc),
+@@ -280,8 +287,8 @@
+         (cublasLtMatrixLayout_t)resource_mg_get_or_null(&rm_cublaslt, (void*)Cdesc),
+         mem_ptr_D,
+         (cublasLtMatrixLayout_t)resource_mg_get_or_null(&rm_cublaslt, (void*)Ddesc),
+-        // (const cublasLtMatmulAlgo_t *)algo,
+-	    NULL,
++        algo.mem_data_len == 0 ? NULL :
++            (const cublasLtMatmulAlgo_t *)algo.mem_data_val,
+         mem_ptr_workspace,
+         workspaceSizeInBytes,
+        (cudaStream_t)stream_ptr

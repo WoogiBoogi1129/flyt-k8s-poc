@@ -1,0 +1,261 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -586,6 +586,13 @@
+         sz_result rpc_cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(ptr handle, int mode, int bnOps, ptr xDesc, ptr zDesc, ptr yDesc, ptr bnDesc, ptr activationDesc) = 5403;
+         sz_result rpc_cudnnGetBatchNormalizationBackwardExWorkspaceSize(ptr handle, int mode, int bnOps, ptr xDesc, ptr yDesc, ptr dyDesc, ptr dzDesc, ptr dxDesc, ptr bnDesc, ptr activationDesc) = 5404;
+         sz_result rpc_cudnnGetBatchNormalizationTrainingExReserveSpaceSize(ptr handle, int mode, int bnOps, ptr activationDesc, ptr xDesc) = 5405;
++        mem_result rpc_cudnnGetConvolutionBackwardDataAlgorithm_v7(ptr handle, ptr filterDesc, ptr diffDesc, ptr convDesc, ptr gradDesc, int requestedAlgoCount) = 5410;
++        sz_result rpc_cudnnGetConvolutionBackwardDataWorkspaceSize(ptr handle, ptr wDesc, ptr dyDesc, ptr convDesc, ptr dxDesc, int algo) = 5411;
++        int rpc_cudnnConvolutionBackwardData(ptr handle, cudnn_scaling_t alpha, ptr wDesc, ptr w, ptr dyDesc, ptr dy, ptr convDesc, int algo, ptr workspace, size_t workspaceSize, cudnn_scaling_t beta, ptr dxDesc, ptr dx) = 5412;
++        mem_result rpc_cudnnGetConvolutionBackwardFilterAlgorithm_v7(ptr handle, ptr srcDesc, ptr diffDesc, ptr convDesc, ptr gradDesc, int requestedAlgoCount) = 5413;
++        sz_result rpc_cudnnGetConvolutionBackwardFilterWorkspaceSize(ptr handle, ptr xDesc, ptr dyDesc, ptr convDesc, ptr gradDesc, int algo) = 5414;
++        int rpc_cudnnConvolutionBackwardFilter(ptr handle, cudnn_scaling_t alpha, ptr xDesc, ptr x, ptr dyDesc, ptr dy, ptr convDesc, int algo, ptr workspace, size_t workspaceSize, cudnn_scaling_t beta, ptr dwDesc, ptr dw) = 5415;
++        int rpc_cudnnConvolutionBackwardBias(ptr handle, cudnn_scaling_t alpha, ptr dyDesc, ptr dy, cudnn_scaling_t beta, ptr dbDesc, ptr db) = 5416;
+         ptr_result rpc_cudnnBackendCreateDescriptor(int descriptorType) = 5309;
+         int rpc_cudnnBackendDestroyDescriptor(ptr descriptor) = 5310;
+         int rpc_cudnnBackendInitialize(ptr descriptor) = 5311;
+--- a/cpu/cpu-client-cudnn.c
++++ b/cpu/cpu-client-cudnn.c
+@@ -1924,9 +1924,130 @@
+ DEF_FN(cudnnStatus_t, cudnnGetConvolutionBackwardDataAlgorithmMaxCount,  cudnnHandle_t, handle,  int*, count)
+ DEF_FN(cudnnStatus_t, cudnnFindConvolutionBackwardDataAlgorithm,  cudnnHandle_t, handle,  const cudnnFilterDescriptor_t, wDesc,  const cudnnTensorDescriptor_t, dyDesc,  const cudnnConvolutionDescriptor_t, convDesc,  const cudnnTensorDescriptor_t, dxDesc,  const int, requestedAlgoCount,  int*, returnedAlgoCount,  cudnnConvolutionBwdDataAlgoPerf_t*, perfResults)
+ DEF_FN(cudnnStatus_t, cudnnFindConvolutionBackwardDataAlgorithmEx,  cudnnHandle_t, handle,  const cudnnFilterDescriptor_t, wDesc,  const void*, w,  const cudnnTensorDescriptor_t, dyDesc,  const void*, dy,  const cudnnConvolutionDescriptor_t, convDesc,  const cudnnTensorDescriptor_t, dxDesc,  void*, dx,  const int, requestedAlgoCount,  int*, returnedAlgoCount,  cudnnConvolutionBwdDataAlgoPerf_t*, perfResults,  void*, workSpace,  size_t, workSpaceSizeInBytes)
+-DEF_FN(cudnnStatus_t, cudnnGetConvolutionBackwardDataAlgorithm_v7,  cudnnHandle_t, handle,  const cudnnFilterDescriptor_t, filterDesc,  const cudnnTensorDescriptor_t, diffDesc,  const cudnnConvolutionDescriptor_t, convDesc,  const cudnnTensorDescriptor_t, gradDesc,  const int, requestedAlgoCount,  int*, returnedAlgoCount,  cudnnConvolutionBwdDataAlgoPerf_t*, perfResults)
+-DEF_FN(cudnnStatus_t, cudnnGetConvolutionBackwardDataWorkspaceSize,  cudnnHandle_t, handle,  const cudnnFilterDescriptor_t, wDesc,  const cudnnTensorDescriptor_t, dyDesc,  const cudnnConvolutionDescriptor_t, convDesc,  const cudnnTensorDescriptor_t, dxDesc,  cudnnConvolutionBwdDataAlgo_t, algo,  size_t*, sizeInBytes)
+-DEF_FN(cudnnStatus_t, cudnnConvolutionBackwardData,  cudnnHandle_t, handle,  const void*, alpha,  const cudnnFilterDescriptor_t, wDesc,  const void*, w,  const cudnnTensorDescriptor_t, dyDesc,  const void*, dy,  const cudnnConvolutionDescriptor_t, convDesc,  cudnnConvolutionBwdDataAlgo_t, algo,  void*, workSpace,  size_t, workSpaceSizeInBytes,  const void*, beta,  const cudnnTensorDescriptor_t, dxDesc,  void*, dx)
++
++#define COPY_BWD_ALGOS(result, requested, returned, output, type) do { \
++    size_t expected = sizeof(int) + (requested) * sizeof(type); \
++    if ((result).err == CUDNN_STATUS_SUCCESS && \
++        (result).mem_result_u.data.mem_data_len == expected) { \
++        *(returned) = *(int*)(result).mem_result_u.data.mem_data_val; \
++        if (*(returned) <= (requested)) memcpy((output), \
++            (result).mem_result_u.data.mem_data_val + sizeof(int), \
++            *(returned) * sizeof(type)); \
++        else (result).err = CUDNN_STATUS_INTERNAL_ERROR; \
++    } \
++    free((result).mem_result_u.data.mem_data_val); \
++} while (0)
++
++cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithm_v7(cudnnHandle_t handle,
++    const cudnnFilterDescriptor_t filterDesc, const cudnnTensorDescriptor_t diffDesc,
++    const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t gradDesc,
++    const int requestedAlgoCount, int *returnedAlgoCount,
++    cudnnConvolutionBwdDataAlgoPerf_t *perfResults)
++{
++    mem_result result = {0};
++    if (!returnedAlgoCount || !perfResults) return CUDNN_STATUS_BAD_PARAM;
++    enum clnt_stat s = rpc_cudnngetconvolutionbackwarddataalgorithm_v7_1(
++        (ptr)handle, (ptr)filterDesc, (ptr)diffDesc, (ptr)convDesc,
++        (ptr)gradDesc, requestedAlgoCount, &result, clnt);
++    if (s != RPC_SUCCESS) return CUDNN_STATUS_INTERNAL_ERROR;
++    COPY_BWD_ALGOS(result, requestedAlgoCount, returnedAlgoCount, perfResults,
++                   cudnnConvolutionBwdDataAlgoPerf_t);
++    return result.err;
++}
++
++cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t handle,
++    const cudnnFilterDescriptor_t wDesc, const cudnnTensorDescriptor_t dyDesc,
++    const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t dxDesc,
++    cudnnConvolutionBwdDataAlgo_t algo, size_t *sizeInBytes)
++{
++    sz_result result = {0};
++    if (!sizeInBytes) return CUDNN_STATUS_BAD_PARAM;
++    if (rpc_cudnngetconvolutionbackwarddataworkspacesize_1((ptr)handle,
++        (ptr)wDesc, (ptr)dyDesc, (ptr)convDesc, (ptr)dxDesc, algo,
++        &result, clnt) != RPC_SUCCESS) return CUDNN_STATUS_INTERNAL_ERROR;
++    if (result.err == CUDNN_STATUS_SUCCESS) *sizeInBytes = result.sz_result_u.data;
++    return result.err;
++}
++
++cudnnStatus_t cudnnConvolutionBackwardData(cudnnHandle_t handle, const void *alpha,
++    const cudnnFilterDescriptor_t wDesc, const void *w,
++    const cudnnTensorDescriptor_t dyDesc, const void *dy,
++    const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo,
++    void *workSpace, size_t workSpaceSizeInBytes, const void *beta,
++    const cudnnTensorDescriptor_t dxDesc, void *dx)
++{
++    int result = CUDNN_STATUS_INTERNAL_ERROR;
++    cudnn_scaling_t a = {.dataType=CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f=*(const float*)alpha};
++    cudnn_scaling_t b = {.dataType=CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f=*(const float*)beta};
++    if (rpc_cudnnconvolutionbackwarddata_1((ptr)handle, a, (ptr)wDesc, (ptr)w,
++        (ptr)dyDesc, (ptr)dy, (ptr)convDesc, algo, (ptr)workSpace,
++        workSpaceSizeInBytes, b, (ptr)dxDesc, (ptr)dx, &result, clnt) != RPC_SUCCESS)
++        return CUDNN_STATUS_INTERNAL_ERROR;
++    return result;
++}
++
++cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm_v7(cudnnHandle_t handle,
++    const cudnnTensorDescriptor_t srcDesc, const cudnnTensorDescriptor_t diffDesc,
++    const cudnnConvolutionDescriptor_t convDesc, const cudnnFilterDescriptor_t gradDesc,
++    const int requestedAlgoCount, int *returnedAlgoCount,
++    cudnnConvolutionBwdFilterAlgoPerf_t *perfResults)
++{
++    mem_result result = {0};
++    if (!returnedAlgoCount || !perfResults) return CUDNN_STATUS_BAD_PARAM;
++    enum clnt_stat s = rpc_cudnngetconvolutionbackwardfilteralgorithm_v7_1(
++        (ptr)handle, (ptr)srcDesc, (ptr)diffDesc, (ptr)convDesc,
++        (ptr)gradDesc, requestedAlgoCount, &result, clnt);
++    if (s != RPC_SUCCESS) return CUDNN_STATUS_INTERNAL_ERROR;
++    COPY_BWD_ALGOS(result, requestedAlgoCount, returnedAlgoCount, perfResults,
++                   cudnnConvolutionBwdFilterAlgoPerf_t);
++    return result.err;
++}
++
++cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(cudnnHandle_t handle,
++    const cudnnTensorDescriptor_t xDesc, const cudnnTensorDescriptor_t dyDesc,
++    const cudnnConvolutionDescriptor_t convDesc, const cudnnFilterDescriptor_t gradDesc,
++    cudnnConvolutionBwdFilterAlgo_t algo, size_t *sizeInBytes)
++{
++    sz_result result = {0};
++    if (!sizeInBytes) return CUDNN_STATUS_BAD_PARAM;
++    if (rpc_cudnngetconvolutionbackwardfilterworkspacesize_1((ptr)handle,
++        (ptr)xDesc, (ptr)dyDesc, (ptr)convDesc, (ptr)gradDesc, algo,
++        &result, clnt) != RPC_SUCCESS) return CUDNN_STATUS_INTERNAL_ERROR;
++    if (result.err == CUDNN_STATUS_SUCCESS) *sizeInBytes = result.sz_result_u.data;
++    return result.err;
++}
++
++cudnnStatus_t cudnnConvolutionBackwardFilter(cudnnHandle_t handle, const void *alpha,
++    const cudnnTensorDescriptor_t xDesc, const void *x,
++    const cudnnTensorDescriptor_t dyDesc, const void *dy,
++    const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdFilterAlgo_t algo,
++    void *workSpace, size_t workSpaceSizeInBytes, const void *beta,
++    const cudnnFilterDescriptor_t dwDesc, void *dw)
++{
++    int result = CUDNN_STATUS_INTERNAL_ERROR;
++    cudnn_scaling_t a = {.dataType=CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f=*(const float*)alpha};
++    cudnn_scaling_t b = {.dataType=CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f=*(const float*)beta};
++    if (rpc_cudnnconvolutionbackwardfilter_1((ptr)handle, a, (ptr)xDesc, (ptr)x,
++        (ptr)dyDesc, (ptr)dy, (ptr)convDesc, algo, (ptr)workSpace,
++        workSpaceSizeInBytes, b, (ptr)dwDesc, (ptr)dw, &result, clnt) != RPC_SUCCESS)
++        return CUDNN_STATUS_INTERNAL_ERROR;
++    return result;
++}
++
++cudnnStatus_t cudnnConvolutionBackwardBias(cudnnHandle_t handle, const void *alpha,
++    const cudnnTensorDescriptor_t dyDesc, const void *dy, const void *beta,
++    const cudnnTensorDescriptor_t dbDesc, void *db)
++{
++    int result = CUDNN_STATUS_INTERNAL_ERROR;
++    cudnn_scaling_t a = {.dataType=CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f=*(const float*)alpha};
++    cudnn_scaling_t b = {.dataType=CUDNN_DATA_FLOAT, .cudnn_scaling_t_u.f=*(const float*)beta};
++    if (rpc_cudnnconvolutionbackwardbias_1((ptr)handle, a, (ptr)dyDesc, (ptr)dy,
++        b, (ptr)dbDesc, (ptr)db, &result, clnt) != RPC_SUCCESS)
++        return CUDNN_STATUS_INTERNAL_ERROR;
++    return result;
++}
++
++#undef COPY_BWD_ALGOS
+ DEF_FN(cudnnStatus_t, cudnnGetFoldedConvBackwardDataDescriptors,  const cudnnHandle_t, handle,  const cudnnFilterDescriptor_t, filterDesc,  const cudnnTensorDescriptor_t, diffDesc,  const cudnnConvolutionDescriptor_t, convDesc,  const cudnnTensorDescriptor_t, gradDesc,  const cudnnTensorFormat_t, transformFormat,  cudnnFilterDescriptor_t, foldedFilterDesc,  cudnnTensorDescriptor_t, paddedDiffDesc,  cudnnConvolutionDescriptor_t, foldedConvDesc,  cudnnTensorDescriptor_t, foldedGradDesc,  cudnnTensorTransformDescriptor_t, filterFoldTransDesc,  cudnnTensorTransformDescriptor_t, diffPadTransDesc,  cudnnTensorTransformDescriptor_t, gradFoldTransDesc,  cudnnTensorTransformDescriptor_t, gradUnfoldTransDesc)
+ DEF_FN(cudnnStatus_t, cudnnCnnInferVersionCheck)
+ 
+--- a/cpu/cpu-server-cudnn.c
++++ b/cpu/cpu-server-cudnn.c
+@@ -1355,6 +1355,86 @@
+     return 1;
+ }
+ 
++#define SERVER_SCALE(v) ((v).dataType == CUDNN_DATA_DOUBLE ? (const void*)&(v).cudnn_scaling_t_u.d : (const void*)&(v).cudnn_scaling_t_u.f)
++#define MAP_TENSOR(v) resource_mg_get_or_null(&rm_cudnn_tensors, (void*)(v))
++#define MAP_FILTER(v) resource_mg_get_or_null(&rm_cudnn_filters, (void*)(v))
++#define MAP_CONV(v) resource_mg_get_or_null(&rm_cudnn_convs, (void*)(v))
++
++bool_t rpc_cudnngetconvolutionbackwarddataalgorithm_v7_1_svc(ptr handle, ptr filterDesc,
++    ptr diffDesc, ptr convDesc, ptr gradDesc, int count, mem_result *r, struct svc_req *q)
++{
++    r->mem_result_u.data.mem_data_len = sizeof(int) + count * sizeof(cudnnConvolutionBwdDataAlgoPerf_t);
++    r->mem_result_u.data.mem_data_val = malloc(r->mem_result_u.data.mem_data_len);
++    if (!r->mem_result_u.data.mem_data_val) return 0;
++    r->err = cudnnGetConvolutionBackwardDataAlgorithm_v7(resource_mg_get_or_null(&rm_cudnn,(void*)handle),
++        MAP_FILTER(filterDesc), MAP_TENSOR(diffDesc), MAP_CONV(convDesc), MAP_TENSOR(gradDesc),
++        count, (int*)r->mem_result_u.data.mem_data_val,
++        (cudnnConvolutionBwdDataAlgoPerf_t*)(r->mem_result_u.data.mem_data_val + sizeof(int)));
++    return 1;
++}
++
++bool_t rpc_cudnngetconvolutionbackwarddataworkspacesize_1_svc(ptr handle, ptr wDesc,
++    ptr dyDesc, ptr convDesc, ptr dxDesc, int algo, sz_result *r, struct svc_req *q)
++{
++    r->err = cudnnGetConvolutionBackwardDataWorkspaceSize(resource_mg_get_or_null(&rm_cudnn,(void*)handle),
++        MAP_FILTER(wDesc), MAP_TENSOR(dyDesc), MAP_CONV(convDesc), MAP_TENSOR(dxDesc),
++        algo, &r->sz_result_u.data); return 1;
++}
++
++bool_t rpc_cudnnconvolutionbackwarddata_1_svc(ptr handle, cudnn_scaling_t alpha,
++    ptr wDesc, ptr w, ptr dyDesc, ptr dy, ptr convDesc, int algo, ptr workspace,
++    size_t workspaceSize, cudnn_scaling_t beta, ptr dxDesc, ptr dx, int *r, struct svc_req *q)
++{
++    *r = cudnnConvolutionBackwardData(resource_mg_get_or_null(&rm_cudnn,(void*)handle),
++        SERVER_SCALE(alpha), MAP_FILTER(wDesc), (void*)w, MAP_TENSOR(dyDesc), (void*)dy,
++        MAP_CONV(convDesc), algo, (void*)workspace, workspaceSize, SERVER_SCALE(beta),
++        MAP_TENSOR(dxDesc), (void*)dx); return 1;
++}
++
++bool_t rpc_cudnngetconvolutionbackwardfilteralgorithm_v7_1_svc(ptr handle, ptr srcDesc,
++    ptr diffDesc, ptr convDesc, ptr gradDesc, int count, mem_result *r, struct svc_req *q)
++{
++    r->mem_result_u.data.mem_data_len = sizeof(int) + count * sizeof(cudnnConvolutionBwdFilterAlgoPerf_t);
++    r->mem_result_u.data.mem_data_val = malloc(r->mem_result_u.data.mem_data_len);
++    if (!r->mem_result_u.data.mem_data_val) return 0;
++    r->err = cudnnGetConvolutionBackwardFilterAlgorithm_v7(resource_mg_get_or_null(&rm_cudnn,(void*)handle),
++        MAP_TENSOR(srcDesc), MAP_TENSOR(diffDesc), MAP_CONV(convDesc), MAP_FILTER(gradDesc),
++        count, (int*)r->mem_result_u.data.mem_data_val,
++        (cudnnConvolutionBwdFilterAlgoPerf_t*)(r->mem_result_u.data.mem_data_val + sizeof(int)));
++    return 1;
++}
++
++bool_t rpc_cudnngetconvolutionbackwardfilterworkspacesize_1_svc(ptr handle, ptr xDesc,
++    ptr dyDesc, ptr convDesc, ptr gradDesc, int algo, sz_result *r, struct svc_req *q)
++{
++    r->err = cudnnGetConvolutionBackwardFilterWorkspaceSize(resource_mg_get_or_null(&rm_cudnn,(void*)handle),
++        MAP_TENSOR(xDesc), MAP_TENSOR(dyDesc), MAP_CONV(convDesc), MAP_FILTER(gradDesc),
++        algo, &r->sz_result_u.data); return 1;
++}
++
++bool_t rpc_cudnnconvolutionbackwardfilter_1_svc(ptr handle, cudnn_scaling_t alpha,
++    ptr xDesc, ptr x, ptr dyDesc, ptr dy, ptr convDesc, int algo, ptr workspace,
++    size_t workspaceSize, cudnn_scaling_t beta, ptr dwDesc, ptr dw, int *r, struct svc_req *q)
++{
++    *r = cudnnConvolutionBackwardFilter(resource_mg_get_or_null(&rm_cudnn,(void*)handle),
++        SERVER_SCALE(alpha), MAP_TENSOR(xDesc), (void*)x, MAP_TENSOR(dyDesc), (void*)dy,
++        MAP_CONV(convDesc), algo, (void*)workspace, workspaceSize, SERVER_SCALE(beta),
++        MAP_FILTER(dwDesc), (void*)dw); return 1;
++}
++
++bool_t rpc_cudnnconvolutionbackwardbias_1_svc(ptr handle, cudnn_scaling_t alpha,
++    ptr dyDesc, ptr dy, cudnn_scaling_t beta, ptr dbDesc, ptr db, int *r, struct svc_req *q)
++{
++    *r = cudnnConvolutionBackwardBias(resource_mg_get_or_null(&rm_cudnn,(void*)handle),
++        SERVER_SCALE(alpha), MAP_TENSOR(dyDesc), (void*)dy, SERVER_SCALE(beta),
++        MAP_TENSOR(dbDesc), (void*)db); return 1;
++}
++
++#undef SERVER_SCALE
++#undef MAP_TENSOR
++#undef MAP_FILTER
++#undef MAP_CONV
++
+ bool_t rpc_cudnnaddtensor_1_svc(ptr handle, cudnn_scaling_t alpha, ptr aDesc, ptr A, cudnn_scaling_t beta, ptr cDesc, ptr C, int *result, struct svc_req *rqstp)
+ {
+     RECORD_API(rpc_cudnnaddtensor_1_argument);
+--- a/cpu/cpu-client-vendor-stubs.c
++++ b/cpu/cpu-client-vendor-stubs.c
+@@ -48,7 +48,6 @@
+ 
+ CUDNN_STUB(cudnnCTCLoss)
+ CUDNN_STUB(cudnnCTCLoss_v8)
+-CUDNN_STUB(cudnnConvolutionBackwardFilter)
+ CUDNN_STUB(cudnnCreateCTCLossDescriptor)
+ CUDNN_STUB(cudnnCreateRNNDataDescriptor)
+ CUDNN_STUB(cudnnCreateRNNDescriptor)
+@@ -58,8 +57,6 @@
+ CUDNN_STUB(cudnnFindConvolutionBackwardFilterAlgorithmEx)
+ CUDNN_STUB(cudnnGetCTCLossWorkspaceSize)
+ CUDNN_STUB(cudnnGetCTCLossWorkspaceSize_v8)
+-CUDNN_STUB(cudnnGetConvolutionBackwardFilterAlgorithm_v7)
+-CUDNN_STUB(cudnnGetConvolutionBackwardFilterWorkspaceSize)
+ CUDNN_STUB(cudnnGetRNNTempSpaceSizes)
+ CUDNN_STUB(cudnnGetRNNWeightParams)
+ CUDNN_STUB(cudnnGetRNNWeightSpaceSize)
+

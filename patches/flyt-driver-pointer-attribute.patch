@@ -1,0 +1,73 @@
+diff --git a/cpu/cpu-client-driver.c b/cpu/cpu-client-driver.c
+index ba33b4e..c31e685 100644
+--- a/cpu/cpu-client-driver.c
++++ b/cpu/cpu-client-driver.c
+@@ -592,1 +592,25 @@
+-DEF_FN(CUresult, cuPointerGetAttribute, void*, data, CUpointer_attribute, attribute, CUdeviceptr, ptr)
++CUresult cuPointerGetAttribute(void *data, CUpointer_attribute attribute,
++                               CUdeviceptr ptr)
++{
++    if (data == NULL || ptr == 0) {
++        return CUDA_ERROR_INVALID_VALUE;
++    }
++    if (attribute != CU_POINTER_ATTRIBUTE_DEVICE_POINTER) {
++        return CUDA_ERROR_NOT_SUPPORTED;
++    }
++
++    ptr_result result = { .err = CUDA_ERROR_UNKNOWN };
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = rpc_cupointergetattribute_1(attribute, (uint64_t)ptr,
++                                         &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) {
++        LOGE(LOG_ERROR, "%s RPC failed (%d)", __FUNCTION__, retval);
++        return CUDA_ERROR_UNKNOWN;
++    }
++    if (result.err == CUDA_SUCCESS) {
++        *(CUdeviceptr *)data = (CUdeviceptr)result.ptr_result_u.ptr;
++    }
++    return result.err;
++}
+diff --git a/cpu/cpu-server-driver.c b/cpu/cpu-server-driver.c
+index b4781d7..52e590e 100644
+--- a/cpu/cpu-server-driver.c
++++ b/cpu/cpu-server-driver.c
+@@ -817,6 +817,26 @@ bool_t rpc_cufuncgetattribute_1_svc(int attrib, ptr function,
+     return 1;
+ }
+ 
++bool_t rpc_cupointergetattribute_1_svc(int attrib, ptr pointer,
++                                       ptr_result *result,
++                                       struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    GET_CLIENT_DRV(result->err);
++    if (attrib != CU_POINTER_ATTRIBUTE_DEVICE_POINTER) {
++        result->err = CUDA_ERROR_NOT_SUPPORTED;
++        GSCHED_RELEASE;
++        return 1;
++    }
++    CUdeviceptr device_pointer = 0;
++    result->err = cuPointerGetAttribute(&device_pointer,
++                                        (CUpointer_attribute)attrib,
++                                        (CUdeviceptr)pointer);
++    result->ptr_result_u.ptr = (ptr)device_pointer;
++    GSCHED_RELEASE;
++    return 1;
++}
++
+ bool_t rpc_cumoduleloaddata_1_svc(mem_data mem, ptr_result *result,
+                                      struct svc_req *rqstp)
+ {
+diff --git a/cpu/cpu_rpc_prot.x b/cpu/cpu_rpc_prot.x
+index fc690ee..909d6f4 100644
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -445,6 +445,7 @@ program rpc_cd_prog {
+         ptr_result   rpc_cuModuleLoadData(mem_data mem)                        = 1026;
+         int_result   rpc_cuFuncGetAttribute(int, ptr)                          = 1027;
++        ptr_result   rpc_cuPointerGetAttribute(int, ptr)                       = 1028;
+ 
+         /* HIDDEN DRIVER API */
+ /*        ptr_result   rpc_hidden_get_device_ctx(int)                            = 1101;

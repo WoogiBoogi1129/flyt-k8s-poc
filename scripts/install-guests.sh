@@ -53,7 +53,12 @@ for vm_name in "${install_vms[@]}"; do
   vm_address="$(vmi_ip "$vm_name")"
   scp -i "$SSH_KEY" -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
-    "$bundle" "$wheel" \
+    "$bundle" "experiment@$vm_address:/tmp/flyt-guest-bundle.tar.gz"
+  scp -i "$SSH_KEY" -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    "$wheel" "experiment@$vm_address:/tmp/"
+  scp -i "$SSH_KEY" -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
     "$ROOT_DIR/pytorch/tests/compat_matrix.py" \
     "$ROOT_DIR/pytorch/tests/dynamic_training.py" \
     "$ROOT_DIR/pytorch/tests/quota_allocation.py" \
@@ -67,12 +72,51 @@ for vm_name in "${install_vms[@]}"; do
       sudo apt-get clean
       sudo rm -rf -- /var/lib/apt/lists/*
     }
-    trap cleanup_apt EXIT
+    cleanup_all() {
+      cleanup_apt
+      rm -f -- /tmp/flyt-guest-bundle.tar.gz /tmp/torch-*.whl
+    }
+    trap cleanup_all EXIT
     cleanup_apt
-    sudo apt-get -o Acquire::Languages=none update
-    sudo apt-get install -y --no-install-recommends \
+    # The containerDisk root is only 2 GiB. Keep reproducible APT indexes and
+    # package archives on the 20-GiB experiment disk mounted at /tmp.
+    sudo install -d /tmp/apt-lists/partial /tmp/apt-cache/archives/partial
+    apt_options=(
+      -o Dir::State::lists=/tmp/apt-lists
+      -o Dir::Cache=/tmp/apt-cache
+      -o Acquire::Languages=none
+    )
+    sudo apt-get "${apt_options[@]}" update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get "${apt_options[@]}" \
+      install -y --no-install-recommends \
       libelf1 libgomp1 libssl3 python3-venv
-    sudo tar -C / -xzf /opt/flyt-pytorch/flyt-guest-bundle.tar.gz
+    # Keep the compiler and development headers off the constrained root disk.
+    # dpkg-deb extraction yields a reproducible relocatable toolchain used by
+    # run-with-flyt for Triton/Inductor compilation.
+    toolchain=/tmp/flyt-toolchain
+    sudo rm -rf -- "$toolchain/root" "$toolchain/packages"
+    sudo install -d "$toolchain/root" "$toolchain/packages"
+    (
+      cd "$toolchain/packages"
+      sudo apt-get "${apt_options[@]}" download \
+        gcc-11 cpp-11 libgcc-11-dev libc6-dev linux-libc-dev \
+        libcrypt-dev rpcsvc-proto libc6 libgcc-s1 libisl23 libmpc3 \
+        libmpfr6 libgmp10 zlib1g libzstd1 python3.10-dev libpython3.10-dev \
+        libexpat1-dev
+      for package in ./*.deb; do
+        sudo dpkg-deb -x "$package" "$toolchain/root"
+      done
+    )
+    sudo ln -sfn x86_64-linux-gnu-gcc-11 "$toolchain/root/usr/bin/gcc"
+    sudo ln -sfn gcc "$toolchain/root/usr/bin/cc"
+    sudo install -d "$toolchain/bin"
+    printf "%s\n" \
+      "#!/usr/bin/env bash" \
+      "exec /tmp/flyt-toolchain/root/usr/bin/gcc --sysroot=/tmp/flyt-toolchain/root \"\$@\"" \
+      | sudo tee "$toolchain/bin/gcc" >/dev/null
+    sudo chmod 0755 "$toolchain/bin/gcc"
+    sudo ln -sfn gcc "$toolchain/bin/cc"
+    sudo tar -C / -xzf /tmp/flyt-guest-bundle.tar.gz
     sudo install -d /usr/local
     sudo ln -sfn /opt/flyt-pytorch/cuda /usr/local/cuda
     test -e /usr/local/cuda/lib64/libcudarto.so
@@ -85,8 +129,14 @@ for vm_name in "${install_vms[@]}"; do
     python3 -m venv /opt/flyt-pytorch/venv
     /opt/flyt-pytorch/venv/bin/pip install --no-cache-dir --upgrade pip
     /opt/flyt-pytorch/venv/bin/pip install --no-cache-dir numpy
+    # Triton is large and the VM root filesystem is only 2 GiB. Install it on
+    # the persistent 20-GiB experiment disk; run-with-flyt adds this target to
+    # PYTHONPATH for normal VM development commands.
+    sudo install -d -o experiment -g experiment /tmp/flyt-python-packages
     /opt/flyt-pytorch/venv/bin/pip install --no-cache-dir \
-      /opt/flyt-pytorch/torch-*.whl
+      --target /tmp/flyt-python-packages triton==3.7.1
+    /opt/flyt-pytorch/venv/bin/pip install --no-cache-dir \
+      /tmp/torch-*.whl
     sudo systemctl daemon-reload
     sudo systemctl enable flyt-client-manager
     sudo systemctl restart flyt-client-manager

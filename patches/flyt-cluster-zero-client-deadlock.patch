@@ -1,0 +1,15 @@
+diff --git a/control-managers/src/cluster-manager/client_handler.rs b/control-managers/src/cluster-manager/client_handler.rs
+index 6a00356..e63f318 100644
+--- a/control-managers/src/cluster-manager/client_handler.rs
++++ b/control-managers/src/cluster-manager/client_handler.rs
+@@ -578,7 +578,9 @@ impl FlytClientManager {
+                 for (key, client) in clients.iter() {
+                     let ip = key.0.clone();
+                     let cid = key.1.clone();
+-                    if ip == client_ip && self.get_client_status(&client_ip, cid) {
++                    // self.get_client_status() locks self.clients again and
++                    // deadlocks while `clients` is held above.
++                    if ip == client_ip && *client.is_active.read().unwrap() {
+                         to_deallocate.push((ip, cid, client.clone()));
+                     }
+                 }

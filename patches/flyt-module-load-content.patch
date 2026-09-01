@@ -1,0 +1,65 @@
+diff --git a/cpu/cpu-client-driver.c b/cpu/cpu-client-driver.c
+index 473482b..6a89d90 100644
+--- a/cpu/cpu-client-driver.c
++++ b/cpu/cpu-client-driver.c
+@@ -443,25 +443,54 @@ DEF_FN(CUresult, cuCtxSynchronize, void)
+ CUresult cuModuleLoad(CUmodule* module, const char* fname)
+ {
+-	enum clnt_stat retval;
++    enum clnt_stat retval;
+     ptr_result result;
++    mem_data mem = {0};
++    FILE *file = NULL;
++    long file_size;
+ 
+     if (fname == NULL) {
+         LOGE(LOG_ERROR, "fname is NULL!");
+         return CUDA_ERROR_FILE_NOT_FOUND;
+     }
++
+     if (cpu_utils_parameter_info(&kernel_infos, (char*)fname) != 0) {
+         LOGE(LOG_ERROR, "could not get kernel infos from %s", fname);
+         return CUDA_ERROR_FILE_NOT_FOUND;
+     }
+ 
+-    retval = rpc_cumoduleload_1((char*)fname, &result, clnt);
+-    printf("[rpc] %s(%s) = %d, result %p\n", __FUNCTION__, fname, result.err, (void*)result.ptr_result_u.ptr);
+-	if (retval != RPC_SUCCESS) {
+-		fprintf(stderr, "[rpc] %s failed.", __FUNCTION__);
++    /* The guest and GPU Cell do not share a filesystem.  Send the module
++     * bytes over the existing data RPC instead of asking the server to open
++     * a guest-only path. */
++    file = fopen(fname, "rb");
++    if (file == NULL || fseek(file, 0, SEEK_END) != 0 ||
++        (file_size = ftell(file)) <= 0 || file_size > 0xffffffffL ||
++        fseek(file, 0, SEEK_SET) != 0) {
++        if (file != NULL) fclose(file);
++        LOGE(LOG_ERROR, "could not size module file %s", fname);
++        return CUDA_ERROR_FILE_NOT_FOUND;
++    }
++    mem.mem_data_len = (u_int)file_size;
++    mem.mem_data_val = malloc(mem.mem_data_len);
++    if (mem.mem_data_val == NULL ||
++        fread(mem.mem_data_val, 1, mem.mem_data_len, file) != mem.mem_data_len) {
++        free(mem.mem_data_val);
++        fclose(file);
++        LOGE(LOG_ERROR, "could not read module file %s", fname);
++        return CUDA_ERROR_OUT_OF_MEMORY;
++    }
++    fclose(file);
++
++    retval = rpc_cumoduleloaddata_1(mem, &result, clnt);
++    free(mem.mem_data_val);
++    if (retval != RPC_SUCCESS) {
++        fprintf(stderr, "[rpc] %s failed: %s", __FUNCTION__,
++                clnt_sperrno(retval));
+         return CUDA_ERROR_UNKNOWN;
+-	}
++    }
++    printf("[rpc] %s(%s) = %d, result %p\n", __FUNCTION__, fname,
++           result.err, (void*)result.ptr_result_u.ptr);
+     if (module != NULL) {
+        *module = (CUmodule)result.ptr_result_u.ptr;
+     }
+     return result.err;
+ }

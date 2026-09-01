@@ -151,17 +151,28 @@ def cuda_graph():
     torch.manual_seed(18)
     static_a = torch.randn(64, 64, device="cuda")
     static_b = torch.randn(64, 64, device="cuda")
+    static_matmul = torch.empty_like(static_a)
+    static_output = torch.empty_like(static_a)
+    zero = torch.zeros((), device="cuda")
+    capture_stream = torch.cuda.Stream()
+    # Warm up the exact cuBLAS handle/workspace on the stream that will be
+    # captured.  A warmup on the default stream does not initialize the
+    # per-stream cuBLAS workspace and would force cudaMalloc during capture.
+    with torch.cuda.stream(capture_stream):
+        torch.mm(static_a, static_b, out=static_matmul)
+        torch.maximum(static_matmul, zero, out=static_output)
+    capture_stream.synchronize()
     graph = torch.cuda.CUDAGraph()
-    torch.cuda.synchronize()
-    with torch.cuda.graph(graph):
-        static_output = torch.relu(static_a @ static_b)
+    with torch.cuda.graph(graph, stream=capture_stream):
+        torch.mm(static_a, static_b, out=static_matmul)
+        torch.maximum(static_matmul, zero, out=static_output)
     graph.replay()
     first = static_output.clone()
-    close(first, torch.relu(static_a @ static_b))
+    close(first, torch.maximum(static_a @ static_b, zero))
     static_a.copy_(torch.eye(64, device="cuda"))
     graph.replay()
     second = static_output.clone()
-    close(second, torch.relu(static_b))
+    close(second, torch.maximum(static_b, zero))
     return {
         "first_checksum": float(first.sum().cpu()),
         "second_checksum": float(second.sum().cpu()),
@@ -205,26 +216,34 @@ def allocator_cuda_malloc_async():
     environment["PYTORCH_CUDA_ALLOC_CONF"] = "backend:cudaMallocAsync"
     code = """
 import json
+import os
 import torch
 x = torch.empty(64 * 1024 * 1024, dtype=torch.uint8, device='cuda')
 x.fill_(3)
 torch.cuda.synchronize()
-print(json.dumps({'checksum': int(x[:1024].sum().cpu())}))
+with open(os.environ['FLYT_ALLOCATOR_RESULT'], 'w', encoding='utf-8') as result_file:
+    json.dump({'checksum': int(x[:1024].sum().cpu())}, result_file)
 """
-    completed = subprocess.run(
-        [sys.executable, "-c", code],
-        env=environment,
-        capture_output=True,
-        text=True,
-        timeout=60,
-        check=False,
-    )
+    with tempfile.TemporaryDirectory(prefix="flyt-allocator-") as temp_dir:
+        result_path = os.path.join(temp_dir, "result.json")
+        environment["FLYT_ALLOCATOR_RESULT"] = result_path
+        completed = subprocess.run(
+            [sys.executable, "-c", code],
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        if completed.returncode == 0:
+            with open(result_path, encoding="utf-8") as result_file:
+                return json.load(result_file)
     if completed.returncode != 0:
         raise RuntimeError(
             "cudaMallocAsync allocator subprocess failed: "
             f"stdout={completed.stdout[-2000:]!r} stderr={completed.stderr[-4000:]!r}"
         )
-    return json.loads(completed.stdout.strip().splitlines()[-1])
+    raise RuntimeError("cudaMallocAsync allocator produced no result")
 
 
 def models():

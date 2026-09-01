@@ -1,0 +1,72 @@
+diff --git a/cpu/cpu-client-driver.c b/cpu/cpu-client-driver.c
+index a353b83..ba33b4e 100644
+--- a/cpu/cpu-client-driver.c
++++ b/cpu/cpu-client-driver.c
+@@ -673,1 +673,21 @@
+-DEF_FN(CUresult, cuFuncGetAttribute, int*, pi, CUfunction_attribute, attrib, CUfunction, hfunc)
++CUresult cuFuncGetAttribute(int *pi, CUfunction_attribute attrib,
++                            CUfunction hfunc)
++{
++    if (pi == NULL || hfunc == NULL) {
++        return CUDA_ERROR_INVALID_VALUE;
++    }
++    int_result result = { .err = CUDA_ERROR_UNKNOWN };
++    enum clnt_stat retval;
++    FUNC_BEGIN
++    retval = rpc_cufuncgetattribute_1(attrib, (uint64_t)hfunc,
++                                      &result, clnt);
++    FUNC_END
++    if (retval != RPC_SUCCESS) {
++        LOGE(LOG_ERROR, "%s RPC failed (%d)", __FUNCTION__, retval);
++        return CUDA_ERROR_UNKNOWN;
++    }
++    if (result.err == CUDA_SUCCESS) {
++        *pi = result.int_result_u.data;
++    }
++    return result.err;
++}
+diff --git a/cpu/cpu-server-driver.c b/cpu/cpu-server-driver.c
+index cd72b61..b4781d7 100644
+--- a/cpu/cpu-server-driver.c
++++ b/cpu/cpu-server-driver.c
+@@ -794,6 +794,29 @@ bool_t rpc_cumodulegetfunction_1_svc(uint64_t module, char *name, ptr_result *re
+     return 1;
+ }
+ 
++bool_t rpc_cufuncgetattribute_1_svc(int attrib, ptr function,
++                                    int_result *result,
++                                    struct svc_req *rqstp)
++{
++    GSCHED_RETAIN;
++    GET_CLIENT_DRV(result->err);
++
++    addr_data_pair_t *func_info = NULL;
++    if (resource_mg_get(&client->functions, (void *)function,
++                        (void **)&func_info) != 0 || func_info == NULL) {
++        LOGE(LOG_ERROR, "function not found in resource manager");
++        result->err = CUDA_ERROR_INVALID_HANDLE;
++        GSCHED_RELEASE;
++        return 1;
++    }
++
++    result->err = cuFuncGetAttribute(&result->int_result_u.data,
++                                     (CUfunction_attribute)attrib,
++                                     (CUfunction)func_info->addr);
++    GSCHED_RELEASE;
++    return 1;
++}
++
+ bool_t rpc_cumoduleloaddata_1_svc(mem_data mem, ptr_result *result,
+                                      struct svc_req *rqstp)
+ {
+diff --git a/cpu/cpu_rpc_prot.x b/cpu/cpu_rpc_prot.x
+index 7795b4b..fc690ee 100644
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -444,6 +444,7 @@ program rpc_cd_prog {
+         int_result   rpc_cuDeviceGetP2PAttribute(int, ptr, ptr)                = 1025; 
+         ptr_result   rpc_cuModuleLoadData(mem_data mem)                        = 1026;
++        int_result   rpc_cuFuncGetAttribute(int, ptr)                          = 1027;
+ 
+         /* HIDDEN DRIVER API */
+ /*        ptr_result   rpc_hidden_get_device_ctx(int)                            = 1101;

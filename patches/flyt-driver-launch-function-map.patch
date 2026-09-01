@@ -1,0 +1,32 @@
+diff --git a/cpu/cpu-server-driver.c b/cpu/cpu-server-driver.c
+--- a/cpu/cpu-server-driver.c
++++ b/cpu/cpu-server-driver.c
+@@ -1154,24 +1154,24 @@ bool_t rpc_culaunchkernel_1_svc(uint64_t f, unsigned int gridDimX, unsigned int
+         LOGE(LOG_DEBUG, "arg: %p (%d)", *(void**)cuda_args[i], *(int*)cuda_args[i]);
+     }
+ 
+-    void *f_ptr = NULL;
+-    if (resource_mg_get(&client->functions, (void*)f, &f_ptr) != 0) {
++    addr_data_pair_t *f_ptr = NULL;
++    if (resource_mg_get(&client->functions, (void*)f, (void **)&f_ptr) != 0) {
+         LOGE(LOG_ERROR, "function not found in resource manager");
+         *result = CUDA_ERROR_INVALID_HANDLE;
+         free(cuda_args);
+         GSCHED_RELEASE;
+         return 1;
+     }
+ 
+-    LOGE(LOG_DEBUG, "cuLaunchKernel(func=%p->%p, gridDim=[%d,%d,%d], blockDim=[%d,%d,%d], args=%p, sharedMem=%d, stream=%p)", f, f_ptr, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, cuda_args, sharedMemBytes, (void*)hStream);
++    LOGE(LOG_DEBUG, "cuLaunchKernel(func=%p->%p, gridDim=[%d,%d,%d], blockDim=[%d,%d,%d], args=%p, sharedMem=%d, stream=%p)", f, f_ptr->addr, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, cuda_args, sharedMemBytes, (void*)hStream);
+     
+     cudaStream_t target_stream = hStream ? resource_map_get_addr(client->custom_streams, (void *)hStream) : client->default_stream;
+ 
+     LOGE(LOG_DEBUG, "target_stream: %p", target_stream);
+ 
+ 
+ 
+-    *result = cuLaunchKernel((CUfunction)f_ptr,
++    *result = cuLaunchKernel((CUfunction)f_ptr->addr,
+                               gridDimX, gridDimY, gridDimZ,
+                               blockDimX, blockDimY, blockDimZ,
+                               sharedMemBytes,

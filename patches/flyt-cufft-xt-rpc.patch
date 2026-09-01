@@ -1,0 +1,170 @@
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -586,6 +586,13 @@
+         sz_result rpc_cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(ptr handle, int mode, int bnOps, ptr xDesc, ptr zDesc, ptr yDesc, ptr bnDesc, ptr activationDesc) = 5403;
+         sz_result rpc_cudnnGetBatchNormalizationBackwardExWorkspaceSize(ptr handle, int mode, int bnOps, ptr xDesc, ptr yDesc, ptr dyDesc, ptr dzDesc, ptr dxDesc, ptr bnDesc, ptr activationDesc) = 5404;
+         sz_result rpc_cudnnGetBatchNormalizationTrainingExReserveSpaceSize(ptr handle, int mode, int bnOps, ptr activationDesc, ptr xDesc) = 5405;
++        int_result rpc_cufftCreate(void) = 5501;
++        int rpc_cufftDestroy(int plan) = 5502;
++        int rpc_cufftSetAutoAllocation(int plan, int enabled) = 5503;
++        int rpc_cufftSetStream(int plan, ptr stream) = 5504;
++        int rpc_cufftSetWorkArea(int plan, ptr area) = 5505;
++        sz_result rpc_cufftXtMakePlanMany(int plan, int rank, mem_data n, mem_data inembed, ll istride, ll idist, int inputtype, mem_data onembed, ll ostride, ll odist, int outputtype, ll batch, int executiontype) = 5506;
++        int rpc_cufftXtExec(int plan, ptr input, ptr output, int direction) = 5507;
+         mem_result rpc_cudnnGetConvolutionBackwardDataAlgorithm_v7(ptr handle, ptr filterDesc, ptr diffDesc, ptr convDesc, ptr gradDesc, int requestedAlgoCount) = 5410;
+         sz_result rpc_cudnnGetConvolutionBackwardDataWorkspaceSize(ptr handle, ptr wDesc, ptr dyDesc, ptr convDesc, ptr dxDesc, int algo) = 5411;
+         int rpc_cudnnConvolutionBackwardData(ptr handle, cudnn_scaling_t alpha, ptr wDesc, ptr w, ptr dyDesc, ptr dy, ptr convDesc, int algo, ptr workspace, size_t workspaceSize, cudnn_scaling_t beta, ptr dxDesc, ptr dx) = 5412;
+--- a/cpu/Makefile
++++ b/cpu/Makefile
+@@ -50,6 +50,7 @@
+ 			 cpu-elf2.c					\
+ 			 cpu-server-nvml.c			\
+ 			 cpu-server-cudnn.c         \
++			 cpu-server-cufft.c         \
+ 			 cpu-server-cublaslt.c      \
+ 			 cpu-server-mgr-listener.c  \
+ 			 cpu-server-resource-controller.c \
+@@ -82,6 +83,7 @@
+ 			 cpu-elf2.c					\
+ 			 cpu-client-nvml.c          \
+ 			 cpu-client-cudnn.c			\
++			 cpu-client-cufft.c			\
+ 			 cpu-client-cublas.c        \
+ 			 cpu-client-cublaslt.c      \
+ 			 cpu-client-mgr-handler.c   \
+@@ -133,7 +135,7 @@
+ CC_FLAGS += -DWITH_IB=$(WITH_IB)
+ endif
+ 
+-SERVER_LD_FLAGS = $(LD_FLAGS) -lcudart -lcupti -lcusolver -lcuda -lcublas -lrt -lpthread -lnvidia-ml -lcudnn -lcublasLt
++SERVER_LD_FLAGS = $(LD_FLAGS) -lcudart -lcupti -lcusolver -lcuda -lcublas -lrt -lpthread -lnvidia-ml -lcudnn -lcublasLt -lcufft
+ SERVER_METRICS_FLAGS =  -lnvperf_host -lnvperf_target -L $(METRICS_SRC)/ -lprofiler -lstdc++ -lm
+ SERVER_BIN_LD_FLAGS = $(SERVER_LD_FLAGS) -Wl,--unresolved-symbols=ignore-in-object-files
+ CLIENT_LD_FLAGS = -Wl,-soname,$(CLIENT_TARGET_LIB) $(LD_FLAGS) -lrt
+@@ -179,4 +181,3 @@
+ 
+ clean:
+ 	 rm -f $(RPC_H) $(RPC_CLIENT) $(RPC_SERVER) $(RPC_SERVER_MOD) $(RPC_XDR) $(OBJ_CLIENT) $(OBJ_SERVER) $(SERVER) $(SERVER_LIB) $(CLIENT) $(SRC_SERVER_EXE:%.c=%.o) $(CLIENT_STATIC) $(METRICS)
+-
+--- a/cpu/flyt-public-cuda.map
++++ b/cpu/flyt-public-cuda.map
+@@ -18,6 +18,11 @@
+         cudnn*;
+ };
+ 
++libcufft.so.11 {
++    global:
++        cufft*;
++};
++
+ libcudart.so.12 {
+     global:
+         cuda*;
+--- /dev/null
++++ b/cpu/cpu-client-cufft.c
+@@ -0,0 +1,50 @@
++#include <stdlib.h>
++#include <string.h>
++#include <cufft.h>
++#include <cufftXt.h>
++#include "cpu_rpc_prot.h"
++#include "cpu-common.h"
++#include "cpu-utils.h"
++
++cufftResult cufftCreate(cufftHandle *handle) {
++    int_result r = {.err = CUFFT_INTERNAL_ERROR};
++    if (!handle) return CUFFT_INVALID_VALUE;
++    if (rpc_cufftcreate_1(&r, clnt) != RPC_SUCCESS) return CUFFT_INTERNAL_ERROR;
++    if (r.err == CUFFT_SUCCESS) *handle = r.int_result_u.data;
++    return r.err;
++}
++cufftResult cufftDestroy(cufftHandle plan) {
++    int r = CUFFT_INTERNAL_ERROR;
++    return rpc_cufftdestroy_1(plan, &r, clnt) == RPC_SUCCESS ? r : CUFFT_INTERNAL_ERROR;
++}
++cufftResult cufftSetAutoAllocation(cufftHandle plan, int enabled) {
++    int r = CUFFT_INTERNAL_ERROR;
++    return rpc_cufftsetautoallocation_1(plan, enabled, &r, clnt) == RPC_SUCCESS ? r : CUFFT_INTERNAL_ERROR;
++}
++cufftResult cufftSetStream(cufftHandle plan, cudaStream_t stream) {
++    int r = CUFFT_INTERNAL_ERROR;
++    return rpc_cufftsetstream_1(plan, (ptr)stream, &r, clnt) == RPC_SUCCESS ? r : CUFFT_INTERNAL_ERROR;
++}
++cufftResult cufftSetWorkArea(cufftHandle plan, void *area) {
++    int r = CUFFT_INTERNAL_ERROR;
++    return rpc_cufftsetworkarea_1(plan, (ptr)area, &r, clnt) == RPC_SUCCESS ? r : CUFFT_INTERNAL_ERROR;
++}
++cufftResult cufftXtMakePlanMany(cufftHandle plan, int rank, long long *n,
++    long long *inembed, long long istride, long long idist, cudaDataType inputtype,
++    long long *onembed, long long ostride, long long odist, cudaDataType outputtype,
++    long long batch, size_t *workSize, cudaDataType executiontype) {
++    if (rank <= 0 || !n || !workSize) return CUFFT_INVALID_VALUE;
++    mem_data nd = {(u_int)(rank*sizeof(long long)), (char*)n};
++    mem_data in = {inembed ? (u_int)(rank*sizeof(long long)) : 0, (char*)inembed};
++    mem_data out = {onembed ? (u_int)(rank*sizeof(long long)) : 0, (char*)onembed};
++    sz_result r = {.err = CUFFT_INTERNAL_ERROR};
++    if (rpc_cufftxtmakeplanmany_1(plan, rank, nd, in, istride, idist, inputtype,
++        out, ostride, odist, outputtype, batch, executiontype, &r, clnt) != RPC_SUCCESS)
++        return CUFFT_INTERNAL_ERROR;
++    if (r.err == CUFFT_SUCCESS) *workSize = r.sz_result_u.data;
++    return r.err;
++}
++cufftResult cufftXtExec(cufftHandle plan, void *input, void *output, int direction) {
++    int r = CUFFT_INTERNAL_ERROR;
++    return rpc_cufftxtexec_1(plan, (ptr)input, (ptr)output, direction, &r, clnt) == RPC_SUCCESS ? r : CUFFT_INTERNAL_ERROR;
++}
+--- /dev/null
++++ b/cpu/cpu-server-cufft.c
+@@ -0,0 +1,52 @@
++#include <stdlib.h>
++#include <cufft.h>
++#include <cufftXt.h>
++#include "cpu_rpc_prot.h"
++#include "cpu-server-client-mgr.h"
++#include "gsched.h"
++#include "log.h"
++
++bool_t rpc_cufftcreate_1_svc(int_result *r, struct svc_req *q) {
++    cufftHandle plan = 0; r->err = cufftCreate(&plan);
++    if (r->err == CUFFT_SUCCESS) r->int_result_u.data = plan; return 1;
++}
++bool_t rpc_cufftdestroy_1_svc(int plan, int *r, struct svc_req *q) { *r=cufftDestroy(plan); return 1; }
++bool_t rpc_cufftsetautoallocation_1_svc(int plan,int enabled,int *r,struct svc_req *q) { *r=cufftSetAutoAllocation(plan,enabled); return 1; }
++bool_t rpc_cufftsetstream_1_svc(int plan,ptr stream,int *r,struct svc_req *rqstp) {
++    GSCHED_RETAIN;
++    cricket_client *client = get_client(rqstp->rq_xprt->xp_fd);
++    if (client == NULL) {
++        *r = CUFFT_INVALID_VALUE;
++        GSCHED_RELEASE;
++        return 1;
++    }
++    cudaStream_t target = client->default_stream;
++    if (stream != 0) {
++        if (!resource_map_contains(client->custom_streams, (void*)stream)) {
++            *r = CUFFT_INVALID_VALUE;
++            GSCHED_RELEASE;
++            return 1;
++        }
++        target = resource_map_get_addr(client->custom_streams, (void*)stream);
++    }
++    *r=cufftSetStream(plan,target);
++    GSCHED_RELEASE;
++    return 1;
++}
++bool_t rpc_cufftsetworkarea_1_svc(int plan,ptr area,int *r,struct svc_req *q) { *r=cufftSetWorkArea(plan,(void*)area); return 1; }
++bool_t rpc_cufftxtmakeplanmany_1_svc(int plan,int rank,mem_data n,mem_data inembed,
++    ll istride,ll idist,int inputtype,mem_data onembed,ll ostride,ll odist,
++    int outputtype,ll batch,int executiontype,sz_result *r,struct svc_req *q) {
++    if (n.mem_data_len != rank*sizeof(long long) ||
++        (inembed.mem_data_len && inembed.mem_data_len != rank*sizeof(long long)) ||
++        (onembed.mem_data_len && onembed.mem_data_len != rank*sizeof(long long))) {
++        r->err=CUFFT_INVALID_VALUE; return 1;
++    }
++    r->err=cufftXtMakePlanMany(plan,rank,(long long*)n.mem_data_val,
++        inembed.mem_data_len?(long long*)inembed.mem_data_val:NULL,istride,idist,inputtype,
++        onembed.mem_data_len?(long long*)onembed.mem_data_val:NULL,ostride,odist,outputtype,
++        batch,&r->sz_result_u.data,executiontype); return 1;
++}
++bool_t rpc_cufftxtexec_1_svc(int plan,ptr input,ptr output,int direction,int *r,struct svc_req *q) {
++    *r=cufftXtExec(plan,(void*)input,(void*)output,direction); return 1;
++}

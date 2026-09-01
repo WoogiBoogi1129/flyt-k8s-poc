@@ -1,0 +1,213 @@
+diff --git a/cpu/cpu-client-cublas.c b/cpu/cpu-client-cublas.c
+index ed91a8c..ac73bcc 100644
+--- a/cpu/cpu-client-cublas.c
++++ b/cpu/cpu-client-cublas.c
+@@ -202,8 +202,22 @@ DEF_FN(cublasStatus_t, cublasSdot_v2_64, , cublasHandle_t, handle, int64_t, n,
+ DEF_FN(cublasStatus_t, cublasDdot_v2, cublasHandle_t, handle, int, n, const double*, x, int, incx, const double*, y, int, incy, double*, result);
+ DEF_FN(cublasStatus_t, cublasDdot_v2_64, , cublasHandle_t, handle, int64_t, n, const double*, x, int64_t, incx, const double*, y, int64_t, incy, double*, result);
+-DEF_FN(cublasStatus_t, cublasCdotu_v2, , cublasHandle_t, handle, int, n, const cuComplex*, x, int, incx, const cuComplex*, y, int, incy, cuComplex*, result);
++cublasStatus_t cublasCdotu_v2(cublasHandle_t handle, int n,
++    const cuComplex *x, int incx, const cuComplex *y, int incy,
++    cuComplex *result)
++{
++    (void)handle; (void)n; (void)x; (void)incx;
++    (void)y; (void)incy; (void)result;
++    return CUBLAS_STATUS_NOT_SUPPORTED;
++}
+ DEF_FN(cublasStatus_t, cublasCdotu_v2_64, cublasHandle_t, handle, int64_t, n, const cuComplex*, x, int64_t, incx, const cuComplex*, y, int64_t, incy, cuComplex*, result);
+-DEF_FN(cublasStatus_t, cublasCdotc_v2, , cublasHandle_t, handle, int, n, const cuComplex*, x, int, incx, const cuComplex*, y, int, incy, cuComplex*, result);
++cublasStatus_t cublasCdotc_v2(cublasHandle_t handle, int n,
++    const cuComplex *x, int incx, const cuComplex *y, int incy,
++    cuComplex *result)
++{
++    (void)handle; (void)n; (void)x; (void)incx;
++    (void)y; (void)incy; (void)result;
++    return CUBLAS_STATUS_NOT_SUPPORTED;
++}
+ DEF_FN(cublasStatus_t, cublasCdotc_v2_64, cublasHandle_t, handle, int64_t, n, const cuComplex*, x, int64_t, incx, const cuComplex*, y, int64_t, incy, cuComplex*, result);
+ DEF_FN(cublasStatus_t, cublasZdotu_v2, cublasHandle_t, handle, int, n, const cuDoubleComplex*, x, int, incx, const cuDoubleComplex*, y, int, incy, cuDoubleComplex*, result);
+ DEF_FN(cublasStatus_t, cublasZdotu_v2_64, cublasHandle_t, handle, int64_t, n, const cuDoubleComplex*, x, int64_t, incx, const cuDoubleComplex*, y, int64_t, incy, cuDoubleComplex*, result);
+@@ -232,3 +246,10 @@
+ DEF_FN(cublasStatus_t, cublasDaxpy_v2_64, , cublasHandle_t, handle, int64_t, n, const double*, alpha, const double*, x, int64_t, incx, double*, y, int64_t, incy);
+-DEF_FN(cublasStatus_t, cublasCaxpy_v2, , cublasHandle_t, handle, int, n, const cuComplex*, alpha, const cuComplex*, x, int, incx, cuComplex*, y, int, incy);
++cublasStatus_t cublasCaxpy_v2(cublasHandle_t handle, int n,
++    const cuComplex *alpha, const cuComplex *x, int incx,
++    cuComplex *y, int incy)
++{
++    (void)handle; (void)n; (void)alpha; (void)x;
++    (void)incx; (void)y; (void)incy;
++    return CUBLAS_STATUS_NOT_SUPPORTED;
++}
+ DEF_FN(cublasStatus_t, cublasCaxpy_v2_64, cublasHandle_t, handle, int64_t, n, const cuComplex*, alpha, const cuComplex*, x, int64_t, incx, cuComplex*, y, int64_t, incy);
+@@ -245,3 +266,10 @@
+ DEF_FN(cublasStatus_t, cublasZcopy_v2, cublasHandle_t, handle, int, n, const cuDoubleComplex*, x, int, incx, cuDoubleComplex*, y, int, incy);
+-DEF_FN(cublasStatus_t, cublasZcopy_v2_64, , cublasHandle_t, handle, int64_t, n, const cuDoubleComplex*, x, int64_t, incx, cuDoubleComplex*, y, int64_t, incy);
++cublasStatus_t cublasZcopy_v2_64(cublasHandle_t handle, int64_t n,
++    const cuDoubleComplex *x, int64_t incx,
++    cuDoubleComplex *y, int64_t incy)
++{
++    (void)handle; (void)n; (void)x; (void)incx;
++    (void)y; (void)incy;
++    return CUBLAS_STATUS_NOT_SUPPORTED;
++}
+ DEF_FN(cublasStatus_t, cublasSswap_v2, cublasHandle_t, handle, int, n, float*, x, int, incx, float*, y, int, incy);
+@@ -288,1 +302,8 @@
+-DEF_FN(cublasStatus_t, cublasSrot_v2_64, , cublasHandle_t, handle, int64_t, n, float*, x, int64_t, incx, float*, y, int64_t, incy, const float*, c, const float*, s);
++cublasStatus_t cublasSrot_v2_64(cublasHandle_t handle, int64_t n,
++    float *x, int64_t incx, float *y, int64_t incy,
++    const float *c, const float *s)
++{
++    (void)handle; (void)n; (void)x; (void)incx;
++    (void)y; (void)incy; (void)c; (void)s;
++    return CUBLAS_STATUS_NOT_SUPPORTED;
++}
+@@ -794,6 +808,12 @@ DEF_FN(cublasStatus_t, cublasSgetrfBatched, cublasHandle_t, handle, int, n, floa
+ DEF_FN(cublasStatus_t, cublasDgetrfBatched, cublasHandle_t, handle, int, n, double* const*,  A, int, lda, int*, P, int*, info, int, batchSize);
+ DEF_FN(cublasStatus_t, cublasCgetrfBatched, cublasHandle_t, handle, int, n, cuComplex* const*,  A, int, lda, int*, P, int*, info, int, batchSize);
+-DEF_FN(cublasStatus_t, cublasZgetrfBatched, , cublasHandle_t, handle, int, n, cuDoubleComplex* const*,  A, int, lda, int*, P, int*, info, int, batchSize);
++cublasStatus_t cublasZgetrfBatched(cublasHandle_t handle, int n,
++    cuDoubleComplex *const A[], int lda, int *P, int *info, int batchSize)
++{
++    (void)handle; (void)n; (void)A; (void)lda;
++    (void)P; (void)info; (void)batchSize;
++    return CUBLAS_STATUS_NOT_SUPPORTED;
++}
+ DEF_FN(cublasStatus_t, cublasSgetriBatched, cublasHandle_t, handle, int, n, const float* const*,  A, int, lda, const int*, P, float* const*,  C, int, ldc, int*, info, int, batchSize);
+ DEF_FN(cublasStatus_t, cublasDgetriBatched, cublasHandle_t, handle, int, n, const double* const*,  A, int, lda, const int*, P, double* const*,  C, int, ldc, int*, info, int, batchSize);
+ DEF_FN(cublasStatus_t, cublasCgetriBatched, cublasHandle_t, handle, int, n, const cuComplex* const*,  A, int, lda, const int*, P, cuComplex* const*,  C, int, ldc, int*, info, int, batchSize);
+diff --git a/cpu/cpu-client-cublaslt.c b/cpu/cpu-client-cublaslt.c
+index 808e731..e2cf3aa 100644
+--- a/cpu/cpu-client-cublaslt.c
++++ b/cpu/cpu-client-cublaslt.c
+@@ -37,6 +37,23 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t *lighthandle)
+     }
+     return result.err;
+ }
++
++cublasStatus_t cublasLtDestroy(cublasLtHandle_t lightHandle)
++{
++#ifdef WITH_API_CNT
++    api_call_cnt++;
++#endif
++    int result = CUBLAS_STATUS_INTERNAL_ERROR;
++    enum clnt_stat retval_1;
++    FUNC_BEGIN
++    retval_1 = rpc_cublasltdestroy_1((ptr)lightHandle, &result, clnt);
++    FUNC_END
++    if (retval_1 != RPC_SUCCESS) {
++        LOGE(LOG_ERROR, "%s failed (%d)", __FUNCTION__, retval_1);
++        return CUBLAS_STATUS_INTERNAL_ERROR;
++    }
++    return result;
++}
+ 
+ cublasStatus_t cublasLtMatrixLayoutCreate( cublasLtMatrixLayout_t *matLayout,
+                                            cudaDataType type,
+@@ -215,6 +215,35 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t pref)
+     return result;
+ }
+ 
++cublasStatus_t cublasLtMatrixLayoutSetAttribute(
++      cublasLtMatrixLayout_t matLayout,
++      cublasLtMatrixLayoutAttribute_t attr,
++      const void *buf,
++      size_t sizeInBytes)
++{
++#ifdef WITH_API_CNT
++    api_call_cnt++;
++#endif
++    if (buf == NULL || sizeInBytes == 0) {
++        return CUBLAS_STATUS_INVALID_VALUE;
++    }
++    mem_data data = {
++        .mem_data_len = sizeInBytes,
++        .mem_data_val = (char *)buf
++    };
++    int result = CUBLAS_STATUS_INTERNAL_ERROR;
++    enum clnt_stat retval_1;
++    FUNC_BEGIN
++    retval_1 = rpc_cublasltmatrixlayoutsetattribute_1(
++        (ptr)matLayout, attr, data, &result, clnt);
++    FUNC_END
++    if (retval_1 != RPC_SUCCESS) {
++        LOGE(LOG_ERROR, "%s failed (%d)", __FUNCTION__, retval_1);
++        return CUBLAS_STATUS_INTERNAL_ERROR;
++    }
++    return result;
++}
++
+ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t matLayout)
+ {
+ #ifdef WITH_API_CNT
+diff --git a/cpu/cpu-server-cublaslt.c b/cpu/cpu-server-cublaslt.c
+index 6105835..367e321 100644
+--- a/cpu/cpu-server-cublaslt.c
++++ b/cpu/cpu-server-cublaslt.c
+@@ -45,6 +45,27 @@ bool_t rpc_cublasltcreate_1_svc(ptr_result *result, struct svc_req *rqstp)
+     GSCHED_RELEASE;
+     return 1;
+ }
++
++bool_t rpc_cublasltdestroy_1_svc(
++    ptr lightHandle, int *result, struct svc_req *rqstp)
++{
++    (void)rqstp;
++    LOGE(LOG_DEBUG, "cublasLtDestroy");
++    GSCHED_RETAIN;
++    cublasLtHandle_t handle =
++        (cublasLtHandle_t)resource_mg_get_or_null(
++            &rm_cublaslt, (void *)lightHandle);
++    if (handle == NULL) {
++        *result = CUBLAS_STATUS_INVALID_VALUE;
++    } else {
++        *result = cublasLtDestroy(handle);
++        if (*result == CUBLAS_STATUS_SUCCESS) {
++            resource_mg_remove(&rm_cublaslt, (void *)lightHandle);
++        }
++    }
++    GSCHED_RELEASE;
++    return 1;
++}
+ 
+ bool_t rpc_cublasltmatrixlayoutcreate_1_svc(int type, uint64_t row, uint64_t cols, int64_t ld, ptr_result *result, struct svc_req *rqstp)
+ {
+@@ -122,6 +122,28 @@ bool_t rpc_cublasltmatmulpreferencedestroy_1_svc(ptr pref, int *result, struct s
+     return 1;
+ }
+ 
++bool_t rpc_cublasltmatrixlayoutsetattribute_1_svc(
++    ptr matLayout, int attr, mem_data data, int *result,
++    struct svc_req *rqstp)
++{
++    (void)rqstp;
++    LOGE(LOG_DEBUG, "cublasLtMatrixLayoutSetAttribute");
++    GSCHED_RETAIN;
++    GET_CLIENT(*result);
++    cublasLtMatrixLayout_t layout =
++        (cublasLtMatrixLayout_t)resource_mg_get_or_null(
++            &rm_cublaslt, (void *)matLayout);
++    if (layout == NULL || data.mem_data_val == NULL || data.mem_data_len == 0) {
++        *result = CUBLAS_STATUS_INVALID_VALUE;
++    } else {
++        *result = cublasLtMatrixLayoutSetAttribute(
++            layout, (cublasLtMatrixLayoutAttribute_t)attr,
++            data.mem_data_val, data.mem_data_len);
++    }
++    GSCHED_RELEASE;
++    return 1;
++}
++
+ bool_t rpc_cublasltmatrixlayoutdestroy_1_svc(ptr matLayout, int *result, struct svc_req *rqstp)
+ {
+     LOGE(LOG_DEBUG, "cublasLtMatrixLayoutDestroy");
+diff --git a/cpu/cpu_rpc_prot.x b/cpu/cpu_rpc_prot.x
+index e70c529..72ff871 100644
+--- a/cpu/cpu_rpc_prot.x
++++ b/cpu/cpu_rpc_prot.x
+@@ -605,4 +605,6 @@ program RPC_PROG {
+         int rpc_cublasgemmex(ptr, int, int, int, int, int, float,ptr, int, int, ptr, int, int, float, ptr, int, int, int, int) = 5330;
+         int rpc_cublasgemmstridedbatched(ptr handle, int transa, int transb, int m,int n,int k,float alpha,ptr A, int lda, ll strideA,ptr B,int ldb, ll strideB,float beta,   ptr C,int ldc, ll strideC,int batchCount) = 5331;
++        int rpc_cublasltmatrixlayoutsetattribute(ptr matLayout, int attr, mem_data data) = 5332;
++        int rpc_cublasltdestroy(ptr lightHandle) = 5333;
+     } = 1;
+ } = 99;

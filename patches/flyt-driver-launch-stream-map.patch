@@ -1,0 +1,11 @@
+diff --git a/cpu/cpu-server-driver.c b/cpu/cpu-server-driver.c
+--- a/cpu/cpu-server-driver.c
++++ b/cpu/cpu-server-driver.c
+@@ -1173,7 +1173,7 @@ bool_t rpc_culaunchkernel_1_svc(uint64_t f, unsigned int gridDimX, unsigned int
+                               blockDimX, blockDimY, blockDimZ,
+                               sharedMemBytes,
+-                              (CUstream)hStream,
++                              (CUstream)target_stream,
+                               cuda_args, NULL);
+     GSCHED_RELEASE;
+ 
