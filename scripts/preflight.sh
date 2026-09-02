@@ -22,11 +22,9 @@ gpu_line="$(nvidia-smi -i "$GPU_UUID" \
   --format=csv,noheader,nounits)"
 printf 'gpu=%s\n' "$gpu_line"
 mig_mode="$(awk -F', *' '{print $4}' <<<"$gpu_line")"
-expected_mig_mode=Disabled
-[[ "$GPU_MODE" == "mig" ]] && expected_mig_mode=Enabled
-if [[ "$mig_mode" != "$expected_mig_mode" ]]; then
-  printf 'BLOCKED: target GPU MIG mode is %s; profile %s expects %s.\n' \
-    "$mig_mode" "$GPU_MODE" "$expected_mig_mode" >&2
+if [[ "$mig_mode" != "Disabled" ]]; then
+  printf 'BLOCKED: target GPU MIG mode is %s; whole-GPU deployment requires Disabled.\n' \
+    "$mig_mode" >&2
   blocked=1
 fi
 
@@ -42,7 +40,7 @@ kubectl get resourceclaims -A -o json | jq -r '
   | [$namespace, $claim, .pool, .device,
      ($owners | map(.resource + "/" + .name) | join(","))]
   | @tsv'
-printf '%s\n' '--- target GPU/MIG ResourceSlices ---'
+printf '%s\n' '--- target GPU ResourceSlices ---'
 kubectl get resourceslices -o json | jq -r --arg uuid "$GPU_UUID" '
   .items[]
   | .metadata.name as $slice
@@ -55,8 +53,8 @@ kubectl get resourceslices -o json | jq -r --arg uuid "$GPU_UUID" '
      (.attributes.parentUUID.string // "")]
   | @tsv' || true
 
-# Treat the requested whole/MIG profile and observed mode as a hard deployment
-# gate. Inventory above identifies conflicting owners without mutating them.
+# Treat whole-GPU mode as a hard deployment gate. Inventory above identifies
+# conflicting owners without mutating them.
 if (( blocked )); then
   printf '%s\n' \
     'GPU_GATE=BLOCKED (non-GPU build/control-plane validation may continue)' >&2

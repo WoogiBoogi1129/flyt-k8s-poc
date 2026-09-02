@@ -2,7 +2,7 @@
 
 ## 1. 환경 구성
 
-`config.example.env`를 `config.env`로 복사하고 node, parent GPU UUID/minor,
+`config.example.env`를 `config.env`로 복사하고 node, GPU UUID,
 storage class, SSH 공개키와 개인키 경로를 설정한다. `config.env`는 Git에서
 제외된다.
 
@@ -23,9 +23,9 @@ GPU 노드에서 다음 명령을 실행한다.
 make preflight
 ```
 
-PASS 조건은 대상 노드·GPU가 존재하고, 요청 profile에 맞는 MIG mode이며, 다른
-workload가 GPU를 점유하지 않는 것이다. 스크립트는 타 claim을 삭제하거나 MIG
-mode를 바꾸지 않는다.
+PASS 조건은 대상 노드·GPU가 존재하고, MIG mode가 Disabled이며, 다른 workload가
+GPU를 점유하지 않는 것이다. 스크립트는 타 claim을 삭제하거나 GPU mode를
+바꾸지 않는다.
 
 ## 3. 빌드와 제어 평면
 
@@ -78,7 +78,7 @@ make cleanup
 
 ## 판정 경계
 
-- CUDA smoke: device 1개, 기대 MIG SM, kernel checksum
+- CUDA smoke: whole GPU device 1개, 기대 SM, kernel checksum
 - 정적 memory quota: 지정 경계 다음 allocation이 OOM
 - live SM: workload 연속성과 변경 전후 표본 수 충족
 - PyTorch: subsystem별 PASS/FAIL을 분리

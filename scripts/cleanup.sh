@@ -7,7 +7,7 @@ need kubectl
 
 # The default rollback is deliberately non-destructive: stop only these two
 # VM definitions and remove the Flyt GPU consumer. Shared Cricket templates,
-# other namespaces, MIG configuration, build artifacts, and PVCs are retained.
+# other namespaces, GPU configuration, build artifacts, and PVCs are retained.
 for vm_name in "$VM_A" "$VM_B"; do
   if kubectl -n "$NAMESPACE" get vm "$vm_name" >/dev/null 2>&1; then
     kubectl -n "$NAMESPACE" patch vm "$vm_name" --type=merge \
@@ -32,10 +32,9 @@ if [[ "${1:-}" == "--purge" ]]; then
     flyt-control-plane-ingress flyt-gpu-cell-ingress \
     flyt-whole-gpu-cell-ingress --ignore-not-found
   kubectl -n "$NAMESPACE" delete resourceclaimtemplate \
-    flyt-mig-1g24gb flyt-whole-gpu --ignore-not-found
+    flyt-whole-gpu --ignore-not-found
   kubectl -n "$NAMESPACE" delete configmap \
     flyt-config flyt-source-patches flyt-guest-input \
-    flyt-gpu-cell-input \
     flyt-whole-gpu-cell-input \
     flyt-pytorch-build-input \
     --ignore-not-found

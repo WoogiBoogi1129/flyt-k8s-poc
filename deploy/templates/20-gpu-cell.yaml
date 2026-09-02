@@ -1,7 +1,7 @@
 apiVersion: resource.k8s.io/v1
 kind: ResourceClaimTemplate
 metadata:
-  name: flyt-mig-1g24gb
+  name: flyt-whole-gpu
   namespace: __FLYT_NAMESPACE__
   labels:
     app.kubernetes.io/part-of: flyt-poc
@@ -9,25 +9,23 @@ spec:
   metadata:
     labels:
       app.kubernetes.io/part-of: flyt-poc
-      flyt.gpu/profile: __MIG_PROFILE__
   spec:
     devices:
       requests:
-        - name: mig
+        - name: gpu
           exactly:
             allocationMode: ExactCount
             count: 1
-            deviceClassName: mig.nvidia.com
+            deviceClassName: gpu.nvidia.com
             selectors:
               - cel:
                   expression: >-
-                    device.attributes['gpu.nvidia.com'].profile == '__MIG_PROFILE__' &&
-                    device.attributes['gpu.nvidia.com'].parentMinor == __GPU_PARENT_MINOR__
+                    device.attributes['gpu.nvidia.com'].uuid == '__GPU_UUID__'
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: flyt-gpu-cell-input
+  name: flyt-whole-gpu-cell-input
   namespace: __FLYT_NAMESPACE__
   labels:
     app.kubernetes.io/part-of: flyt-poc
@@ -35,64 +33,55 @@ data:
   entrypoint.sh: |-
     #!/usr/bin/env bash
     set -Eeuo pipefail
-
     mps_pipe=/run/flyt-mps/pipe
     mps_log=/var/log/flyt-mps
-
     cleanup() {
       set +e
-      if [[ -n "${NODE_MANAGER_PID:-}" ]]; then
-        kill -TERM "$NODE_MANAGER_PID" 2>/dev/null
-        wait "$NODE_MANAGER_PID" 2>/dev/null
-      fi
+      [[ -n "${NODE_MANAGER_PID:-}" ]] && kill -TERM "$NODE_MANAGER_PID" 2>/dev/null
+      [[ -n "${NODE_MANAGER_PID:-}" ]] && wait "$NODE_MANAGER_PID" 2>/dev/null
       pkill -TERM -P 1 cricket-rpc-server 2>/dev/null
-      printf 'quit\n' | env CUDA_MPS_PIPE_DIRECTORY="$mps_pipe" \
+      printf 'quit\n' | CUDA_MPS_PIPE_DIRECTORY="$mps_pipe" \
         nvidia-cuda-mps-control 2>/dev/null
       [[ -n "${RPCBIND_PID:-}" ]] && kill -TERM "$RPCBIND_PID" 2>/dev/null
     }
     trap cleanup EXIT
     trap 'exit 0' INT TERM
 
-    nvidia_smi_l="$(nvidia-smi -L)"
-    printf '%s\n' "$nvidia_smi_l"
-    grep -Fq "$EXPECTED_PARENT_GPU_UUID" <<<"$nvidia_smi_l" || {
-      echo "expected parent GPU $EXPECTED_PARENT_GPU_UUID" >&2
+    mapfile -t visible_uuids < <(
+      nvidia-smi --query-gpu=uuid --format=csv,noheader | sed '/^[[:space:]]*$/d'
+    )
+    [[ ${#visible_uuids[@]} -eq 1 ]] || {
+      echo "expected one DRA-injected whole GPU, observed ${#visible_uuids[@]}" >&2
       exit 1
     }
-    mapfile -t mig_uuids < <(
-      sed -n 's/.*UUID: \(MIG-[^)]*\)).*/\1/p' <<<"$nvidia_smi_l"
-    )
-    if [[ ${#mig_uuids[@]} -ne 1 ]]; then
-      echo "expected exactly one DRA-injected MIG device, observed ${#mig_uuids[@]}" >&2
+    [[ "${visible_uuids[0]}" == "$EXPECTED_GPU_UUID" ]] || {
+      echo "expected $EXPECTED_GPU_UUID, observed ${visible_uuids[0]}" >&2
       exit 1
-    fi
-    mig_uuid=${mig_uuids[0]}
-    printf '%s\n' "$mig_uuid" > /run/flyt-mps/gpu.uuid
+    }
+    printf '%s\n' "${visible_uuids[0]}" > /run/flyt-mps/gpu.uuid
 
     install -d "$mps_pipe" "$mps_log" /run/rpcbind
     rpcbind -f -w &
     RPCBIND_PID=$!
-    sleep 1
-    kill -0 "$RPCBIND_PID"
-
-    env \
-      CUDA_VISIBLE_DEVICES="$mig_uuid" \
-      CUDA_MPS_PIPE_DIRECTORY="$mps_pipe" \
-      CUDA_MPS_LOG_DIRECTORY="$mps_log" \
-      CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=1 \
-      nvidia-cuda-mps-control -d
+    for _ in $(seq 1 20); do
+      rpcinfo -p 127.0.0.1 >/dev/null 2>&1 && break
+      kill -0 "$RPCBIND_PID"
+      sleep 0.25
+    done
+    rpcinfo -p 127.0.0.1 >/dev/null
 
     export CUDA_VISIBLE_DEVICES=0
     export CUDA_MPS_PIPE_DIRECTORY="$mps_pipe"
     export CUDA_MPS_LOG_DIRECTORY="$mps_log"
     export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=1
     export LD_LIBRARY_PATH="/opt/flyt/bin:/usr/local/cuda/lib64"
+    nvidia-cuda-mps-control -d
 
     probe_output="$(/workspace/out/experiment/cap_probe)"
     printf '%s\n' "$probe_output"
-    grep -qx 'device_count=1' <<<"$probe_output"
-    grep -qx "reported_sm=$EXPECTED_MIG_SM" <<<"$probe_output"
-    grep -q 'checksum_ok=true' <<<"$probe_output"
+    grep -qx 'device_count=1' <<< "$probe_output"
+    grep -qx "reported_sm=$EXPECTED_GPU_SM" <<< "$probe_output"
+    grep -q 'checksum_ok=true' <<< "$probe_output"
 
     /opt/flyt/bin/flyt-node-manager &
     NODE_MANAGER_PID=$!
@@ -112,8 +101,8 @@ spec:
   nodeSelector:
     kubernetes.io/hostname: __NODE_NAME__
   resourceClaims:
-    - name: mig
-      resourceClaimTemplateName: flyt-mig-1g24gb
+    - name: gpu
+      resourceClaimTemplateName: flyt-whole-gpu
   containers:
     - name: gpu-cell
       image: docker.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04@sha256:ad6d59a3bbf3e82c1c849c9ac09cfc2a3e0bbb8655042fd899be6681b3fe2a85
@@ -131,10 +120,10 @@ spec:
           cp -a /workspace/out/gpu-cell/. /opt/flyt/bin/
           exec /usr/bin/tini -- /input/entrypoint.sh
       env:
-        - name: EXPECTED_PARENT_GPU_UUID
+        - name: EXPECTED_GPU_UUID
           value: __GPU_UUID__
-        - name: EXPECTED_MIG_SM
-          value: "__EXPECTED_MIG_SM__"
+        - name: EXPECTED_GPU_SM
+          value: "__EXPECTED_GPU_SM__"
         - name: RUST_LOG
           value: info
       resources:
@@ -145,25 +134,15 @@ spec:
           cpu: "4"
           memory: 24Gi
         claims:
-          - name: mig
+          - name: gpu
       startupProbe:
         exec:
-          command:
-            - /bin/bash
-            - -lc
-            - >-
-              test -s /run/flyt-mps/gpu.uuid &&
-              pgrep -f '^/opt/flyt/bin/flyt-node-manager$' >/dev/null
+          command: ["/bin/bash", "-lc", "test -s /run/flyt-mps/gpu.uuid && pgrep -f '^/opt/flyt/bin/flyt-node-manager$' >/dev/null"]
         periodSeconds: 5
         failureThreshold: 120
       readinessProbe:
         exec:
-          command:
-            - /bin/bash
-            - -lc
-            - >-
-              pgrep -f '^/opt/flyt/bin/flyt-node-manager$' >/dev/null &&
-              pgrep -x rpcbind >/dev/null
+          command: ["/bin/bash", "-lc", "pgrep -f '^/opt/flyt/bin/flyt-node-manager$' >/dev/null && rpcinfo -p 127.0.0.1 >/dev/null"]
         periodSeconds: 5
       securityContext:
         allowPrivilegeEscalation: false
@@ -197,7 +176,7 @@ spec:
         name: flyt-config
     - name: input
       configMap:
-        name: flyt-gpu-cell-input
+        name: flyt-whole-gpu-cell-input
         defaultMode: 0755
     - name: mps-run
       emptyDir:
@@ -214,7 +193,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: flyt-gpu-cell-ingress
+  name: flyt-whole-gpu-cell-ingress
   namespace: __FLYT_NAMESPACE__
 spec:
   podSelector:

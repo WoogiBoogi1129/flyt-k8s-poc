@@ -13,9 +13,8 @@
 - GitHub-hosted runner에는 GPU/DRA 환경이 없으므로 GPU 시험은 self-hosted
   runner 또는 수동 재현이 필요하다.
 - preflight의 `nvidia-smi`는 명령을 실행하는 호스트가 대상 GPU 노드라고 가정한다.
-- 공개 기본 manifest는 MIG profile이지만 Track A2 최종 실험은
-  `21-gpu-cell-whole-pvc.yaml`의 whole-GPU 경로다. 46→92 SM 동적 재할당은
-  기본 설정에서 `RUN_DYNAMIC=false`로 막는다.
+- 공개 manifest는 `20-gpu-cell.yaml`의 whole-GPU 경로만 제공한다.
+  46→92 SM 동적 재할당은 기본 설정에서 `RUN_DYNAMIC=false`로 막는다.
 - 두 VM의 표준 bounded CUDA smoke는 통과하지만, `compute_probe`의 iteration을
   `200000000`으로 비정상적으로 확대한 동시 스트레스 시 두 guest process가
   SIGSEGV로 종료된 과거 결과가 있다. client reaper와 zero-client deadlock은

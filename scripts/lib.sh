@@ -13,7 +13,6 @@ fi
 NAMESPACE="${FLYT_NAMESPACE:-flyt-system}"
 NODE_NAME="${NODE_NAME:-}"
 GPU_UUID="${GPU_UUID:-}"
-GPU_MODE="${GPU_MODE:-mig}"
 VM_A="${VM_A:-flyt-vm-a}"
 VM_B="${VM_B:-flyt-vm-b}"
 SSH_KEY="${SSH_KEY:-}"

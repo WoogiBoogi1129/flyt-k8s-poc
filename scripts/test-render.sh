@@ -9,7 +9,6 @@ cp "$root_dir/config.example.env" "$test_config"
 sed -i \
   -e 's/REPLACE_WITH_GPU_NODE/gpu-worker-1/' \
   -e 's/REPLACE_WITH_PARENT_GPU_UUID/GPU-00000000-0000-0000-0000-000000000000/' \
-  -e 's/REPLACE_WITH_PARENT_GPU_MINOR/0/' \
   -e 's#REPLACE_WITH_PRIVATE_KEY_PATH#/tmp/flyt-test-key#' \
   -e 's#REPLACE_WITH_SSH_PUBLIC_KEY#ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITestOnlyKeyDoNotUse flyt-test#' \
   "$test_config"
