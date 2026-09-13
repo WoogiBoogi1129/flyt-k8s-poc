@@ -49,7 +49,7 @@ has_server_allocations() {
 runtime_healthy() {
   [[ "$(kubectl -n "$NAMESPACE" get pod flyt-gpu-cell \
     -o jsonpath='{.status.containerStatuses[0].ready}' 2>/dev/null)" == "true" ]] && \
-    flytctl list-servernodes | awk -F '[|]' -v expected="$EXPECTED_MIG_SM" '
+    flytctl list-servernodes | awk -F '[|]' -v expected="$EXPECTED_GPU_SM" '
       {
         gpu=$2; compute=$6
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", gpu)
@@ -61,11 +61,7 @@ runtime_healthy() {
 }
 
 gpu_cell_manifest() {
-  if [[ "$GPU_MODE" == "whole" ]]; then
-    printf '%s\n' "$RENDERED_DIR/21-gpu-cell-whole-pvc.yaml"
-  else
-    printf '%s\n' "$RENDERED_DIR/20-gpu-cell.yaml"
-  fi
+  printf '%s\n' "$RENDERED_DIR/20-gpu-cell.yaml"
 }
 
 reset_flyt_runtime() {
@@ -194,18 +190,13 @@ else
   printf 'compatibility_matrix=skipped\n' > "$result_dir/compat-exit-codes.txt"
 fi
 
-# The checked-in deployment profile consumes a 1g.24gb MIG. The historical
-# 46/92-SM live-reallocation experiment used a whole GPU and is preserved in
-# the archived report, but must not be run against this MIG profile.
+# Dynamic reallocation is opt-in because it changes live Flyt quotas.
 if [[ "${RUN_DYNAMIC:-false}" != "true" ]]; then
-  printf 'dynamic_reallocation=skipped gpu_mode=%s\n' "$GPU_MODE" | \
+  printf '%s\n' 'dynamic_reallocation=skipped' | \
     tee "$result_dir/dynamic-status.txt"
   (( compat_failures == 0 )) || exit 1
   exit 0
 fi
-[[ "$GPU_MODE" == "whole" ]] || \
-  die 'RUN_DYNAMIC=true requires a separately validated whole-GPU deployment profile'
-
 # Dynamic tests require a pristine client/virt-server mapping even if every
 # compatibility process exited normally.
 if ! runtime_healthy || has_active_clients; then

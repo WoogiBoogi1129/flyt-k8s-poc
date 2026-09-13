@@ -8,8 +8,8 @@ config_file="$CONFIG_FILE"
 [[ -f "$config_file" ]] || die "missing config.env; copy config.example.env"
 
 required=(
-  FLYT_NAMESPACE NODE_NAME GPU_UUID GPU_PARENT_MINOR MIG_PROFILE
-  EXPECTED_MIG_SM STORAGE_CLASS SSH_PUBLIC_KEY VM_CONTAINERDISK_IMAGE
+  FLYT_NAMESPACE NODE_NAME GPU_UUID EXPECTED_GPU_SM STORAGE_CLASS
+  SSH_PUBLIC_KEY VM_CONTAINERDISK_IMAGE
   FLYT_REPOSITORY FLYT_COMMIT PYTORCH_REPOSITORY PYTORCH_COMMIT RUST_TOOLCHAIN
 )
 for name in "${required[@]}"; do
@@ -20,8 +20,7 @@ done
   die "FLYT_NAMESPACE is not a valid DNS label"
 [[ "$NODE_NAME" =~ ^[A-Za-z0-9._-]+$ ]] || die "invalid NODE_NAME"
 [[ "$GPU_UUID" =~ ^GPU-[A-Fa-f0-9-]+$ ]] || die "invalid GPU_UUID"
-[[ "$GPU_PARENT_MINOR" =~ ^[0-9]+$ ]] || die "invalid GPU_PARENT_MINOR"
-[[ "$EXPECTED_MIG_SM" =~ ^[1-9][0-9]*$ ]] || die "invalid EXPECTED_MIG_SM"
+[[ "$EXPECTED_GPU_SM" =~ ^[1-9][0-9]*$ ]] || die "invalid EXPECTED_GPU_SM"
 [[ "$FLYT_COMMIT" =~ ^[0-9a-f]{40}$ ]] || die "FLYT_COMMIT must be a full SHA"
 [[ "$PYTORCH_COMMIT" =~ ^[0-9a-f]{40}$ ]] || die "PYTORCH_COMMIT must be a full SHA"
 [[ "$SSH_PUBLIC_KEY" =~ ^(ssh-ed25519|ssh-rsa|ecdsa-sha2-) ]] || \

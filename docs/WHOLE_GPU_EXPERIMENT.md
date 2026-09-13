@@ -8,8 +8,7 @@ injects exactly one approved physical GPU into one GPU Cell.
 ## Safety boundary
 
 - Set `GPU_UUID` to an explicitly approved, idle physical GPU.
-- Set `GPU_MODE=whole`; the preflight rejects MIG-enabled or active GPUs.
-- `deploy/templates/21-gpu-cell-whole-pvc.yaml` selects the exact UUID through
+- `deploy/templates/20-gpu-cell.yaml` selects the exact UUID through
   `gpu.nvidia.com`; it never changes MIG mode.
 - Start VM A first. VM B may remain halted until the single-VM smoke passes.
 - All mutable resources stay in the labeled `flyt-system` namespace.
@@ -25,7 +24,7 @@ make preflight
 make build-flyt
 kubectl -n flyt-system wait --for=condition=Ready pod/flyt-builder --timeout=30m
 make control-plane
-make gpu-cell-whole
+make gpu-cell
 make vms
 virtctl start -n flyt-system flyt-vm-a
 ./scripts/seed-vm-resources.sh

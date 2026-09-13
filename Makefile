@@ -1,7 +1,7 @@
 SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 
-.PHONY: help render render-managed validate validate-managed preflight namespace inputs build build-flyt control-plane gpu-cell gpu-cell-whole vms start-vms deploy install-basic-guest test evidence cleanup purge fetch-source
+.PHONY: help render render-managed validate validate-managed preflight namespace inputs build build-flyt control-plane gpu-cell vms start-vms deploy install-basic-guest test evidence cleanup purge fetch-source
 
 help:
 	@printf '%s\n' \
@@ -13,8 +13,7 @@ help:
 	  'make build          Deploy Flyt and PyTorch builders' \
 	  'make build-flyt     Deploy only the Flyt builder for CUDA smoke tests' \
 	  'make control-plane  Deploy MongoDB and Cluster Manager' \
-	  'make gpu-cell       Deploy the DRA-backed MIG GPU Cell' \
-	  'make gpu-cell-whole Deploy the approved whole-GPU PVC-backed Cell' \
+	  'make gpu-cell       Deploy the approved whole-GPU DRA Cell' \
 	  'make vms            Create halted KubeVirt VM definitions' \
 	  'make start-vms      Start both VMs' \
 	  'make install-basic-guest Install Flyt/CUDA probes in VM A' \
@@ -65,9 +64,6 @@ control-plane: namespace render
 
 gpu-cell: preflight namespace render
 	kubectl apply -f deploy/rendered/20-gpu-cell.yaml
-
-gpu-cell-whole: preflight namespace render
-	kubectl apply -f deploy/rendered/21-gpu-cell-whole-pvc.yaml
 
 vms: namespace render
 	kubectl apply -f deploy/rendered/30-vms.yaml

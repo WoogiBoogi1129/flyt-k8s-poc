@@ -1,15 +1,15 @@
 # Flyt on Kubernetes/KubeVirt reproducible PoC
 
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가
-할당한 MIG 장치를 GPU Cell이 소비하도록 만든 실험의 공개·재현 가능한 버전이다.
+할당한 whole GPU를 GPU Cell이 소비하도록 만든 실험의 공개·재현 가능한 버전이다.
 Flyt 원본을 그대로 배포하는 저장소가 아니며, 고정된 Flyt 기준 커밋에
 `patches/series`의 패치를 적용한다.
 
 ## 무엇이 포함되는가
 
 - Flyt 기준 소스와 PyTorch 소스를 full commit SHA로 고정
-- K8s 설정 경로, MIG discovery/accounting, CUDA/PyTorch 호환 패치
-- Builder, MongoDB, Cluster Manager, MIG GPU Cell, KubeVirt VM 매니페스트
+- K8s 설정 경로, GPU discovery/accounting, CUDA/PyTorch 호환 패치
+- Builder, MongoDB, Cluster Manager, whole-GPU Cell, KubeVirt VM 매니페스트
 - CUDA 및 PyTorch 호환성 시험, 그리고 과거 whole-GPU 동적 quota 시험 코드
 - 비파괴 preflight와 범위가 제한된 cleanup
 - 환경값을 분리하는 manifest renderer
@@ -21,12 +21,12 @@ Flyt 원본을 그대로 배포하는 저장소가 아니며, 고정된 Flyt 기
 
 - Kubernetes 1.34 계열과 `resource.k8s.io/v1` DRA API
 - KubeVirt와 `virtctl`
-- NVIDIA GPU DRA driver 및 `mig.nvidia.com` DeviceClass
-- MIG를 지원하는 NVIDIA GPU와 CUDA 12.8 호환 드라이버
+- NVIDIA GPU DRA driver 및 `gpu.nvidia.com` DeviceClass
+- CUDA 12.8 호환 NVIDIA GPU와 드라이버
 - `kubectl`, `jq`, `rg`, `git`, `openssl`, `nvidia-smi`
 - GPU 노드에서 실행할 수 있는 셸; preflight가 로컬 `nvidia-smi`를 사용한다
 
-검증된 하드웨어는 Blackwell CC 12.0과 `1g.24gb` MIG다. 다른 GPU 아키텍처는
+검증된 하드웨어는 Blackwell CC 12.0 whole GPU다. 다른 GPU 아키텍처는
 CUDA arch와 기대 SM 값을 함께 수정하고 별도로 검증해야 한다.
 
 ## 빠른 시작
@@ -56,9 +56,8 @@ make test
 make evidence
 ```
 
-기본 MIG profile에서는 `RUN_DYNAMIC=false`다. 46→92 SM 동적 재할당은
-whole-GPU 실험에서 검증한 별도 profile이므로 현재 MIG manifest에서 실행하지
-않는다.
+실행 중 quota 변경 시험은 기본적으로 `RUN_DYNAMIC=false`다. 명시적으로 활성화한
+whole-GPU 실험에서만 수행한다.
 
 상세 절차와 판정 기준은 [REPRODUCING.md](docs/REPRODUCING.md)에 있다.
 공유 클러스터에서 whole GPU 한 개와 VM 한 대부터 검증하는 실행 경로는
@@ -69,7 +68,7 @@ whole-GPU 실험에서 검증한 별도 profile이므로 현재 MIG manifest에�
 ## 안전성
 
 `make preflight`는 다른 namespace의 GPU claim과 프로세스를 읽기만 하며,
-MIG mode를 변경하거나 타 workload를 삭제하지 않는다. GPU gate가 실패하면
+GPU mode를 변경하거나 타 workload를 삭제하지 않는다. GPU gate가 실패하면
 GPU Cell을 배포하지 않는다. `make cleanup`은 VM을 중지하고 GPU Cell만 제거한다.
 
 ## Artifact 정책

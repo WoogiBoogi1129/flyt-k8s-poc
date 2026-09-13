@@ -21,7 +21,7 @@ kubectl get resourceclaims -A -o wide > "$evidence_dir/dra-claims-all.txt"
 nvidia-smi -i "$GPU_UUID" -q > "$evidence_dir/target-gpu.txt"
 nvidia-smi -i "$GPU_UUID" \
   --query-gpu=index,uuid,mig.mode.current,mig.mode.pending \
-  --format=csv,noheader > "$evidence_dir/target-gpu-mig-mode.csv"
+  --format=csv,noheader > "$evidence_dir/target-gpu-mode.csv"
 nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory \
   --format=csv > "$evidence_dir/gpu-processes.csv" || true
 
