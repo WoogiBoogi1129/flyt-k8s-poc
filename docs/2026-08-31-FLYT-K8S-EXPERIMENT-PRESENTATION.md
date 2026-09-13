@@ -220,6 +220,169 @@ flowchart TB
 
 ---
 
+# 6-A. Kubernetes-native 책임 분리
+
+```mermaid
+flowchart TB
+    subgraph K8S["Kubernetes 책임"]
+        KV["KubeVirt\n사용자 VM 수명주기"]
+        DRA["DRA ResourceClaim\n물리 GPU 소유권"]
+        WORKLOAD["Pod / Deployment\nFlyt component 배포"]
+        POLICY["Namespace · Quota · NetworkPolicy\n변경·통신·자원 경계"]
+        STORAGE["PVC · ConfigMap · Secret\n산출물과 설정"]
+    end
+
+    subgraph FLYT["Flyt 책임"]
+        CM["Cluster Manager\nVM client와 논리 quota"]
+        NM["Node Manager\nGPU Cell 자원 등록"]
+        RPC["VM별 RPC Server\nCUDA handle·pointer mapping"]
+    end
+
+    subgraph CUDA["CUDA 책임"]
+        MPS["CUDA MPS\n동시 실행·SM partition"]
+        GPU["Whole GPU\n실제 연산과 메모리"]
+    end
+
+    KV --> CM
+    DRA --> NM
+    WORKLOAD --> CM
+    WORKLOAD --> NM
+    POLICY --> WORKLOAD
+    STORAGE --> WORKLOAD
+    CM --> RPC
+    NM --> RPC
+    RPC --> MPS
+    MPS --> GPU
+```
+
+| 계층 | 관리하는 것 | 관리하지 않는 것 |
+|---|---|---|
+| Kubernetes | GPU의 물리적 귀속, VM/Pod lifecycle, 배포 경계 | VM 내부 CUDA API 의미 |
+| Flyt | VM별 논리 SM/VRAM, CUDA RPC와 원격 자원 mapping | GPU의 Kubernetes scheduling |
+| CUDA MPS | 여러 RPC server process의 동시 GPU 실행 | VM 및 사용자 lifecycle |
+
+**핵심:** Kubernetes가 whole GPU의 소유권을 관리하고, 그 경계 안에서 Flyt와 MPS가 VM별 세부 자원을 분배한다.
+
+<aside class="notes">
+현재 구조에서 Kubernetes와 Flyt는 같은 자원을 중복 관리하지 않는다. Kubernetes는 GPU 하나를 GPU Cell Pod에 안전하게 귀속시키고, Flyt는 이미 할당된 GPU 안에서 VM별 logical resource와 CUDA session을 관리한다. CUDA MPS는 실제 kernel scheduling의 실행 계층이다.
+</aside>
+
+---
+
+# 6-B. VM·GPU Cell·RPC Server의 관계
+
+```mermaid
+flowchart LR
+    subgraph VMS["KubeVirt 사용자 영역"]
+        A["VM A\n독립 OS · Python · Jupyter"]
+        B["VM B\n독립 OS · Python · Jupyter"]
+    end
+
+    subgraph CELL["GPU Cell Pod 1개"]
+        RA["RPC Server A\nCUDA context A"]
+        RB["RPC Server B\nCUDA context B"]
+        MPS["MPS Server 1개"]
+    end
+
+    GPU["Whole GPU 1개"]
+
+    A -->|"client proxy"| RA
+    B -->|"client proxy"| RB
+    RA --> MPS
+    RB --> MPS
+    MPS --> GPU
+```
+
+## 실제 대응 관계
+
+```text
+VM : GPU Cell       = N : 1
+활성 VM process : RPC Server = 1 : 1
+RPC Server : MPS Server      = N : 1
+MPS Server : Whole GPU       = 1 : 1
+```
+
+- VM마다 OS·프로세스·파일시스템은 독립적이다.
+- VM마다 별도 virtual-server RPC ID와 server process를 사용한다.
+- GPU device와 NVIDIA driver는 GPU Cell에만 노출된다.
+- VM은 `/dev/nvidia0` 없이 표준 CUDA ABI를 Flyt proxy로 호출한다.
+
+<aside class="notes">
+GPU Cell Pod 하나가 VM 하나에 대응한다고 오해하기 쉽다. 실제로는 여러 VM의 활성 CUDA process가 각각 RPC server를 만들고, 이 server들이 하나의 MPS와 whole GPU를 공유한다. 따라서 사용자 환경 격리는 VM이, CUDA context 분리는 RPC server가, 동시 GPU 실행은 MPS가 담당한다.
+</aside>
+
+---
+
+# 6-C. 선언형 배포와 실행 수명주기
+
+```mermaid
+sequenceDiagram
+    participant Git as Git baseline + patch series
+    participant Builder as Flyt Builder Pod
+    participant PVC as Build PVC
+    participant K8s as Kubernetes
+    participant Cell as GPU Cell Pod
+    participant VM as KubeVirt VM
+    participant CM as Cluster Manager
+
+    Git->>Builder: 고정 commit과 patch ConfigMap
+    Builder->>PVC: server/client/bundle + SHA-256
+    K8s->>Cell: DRA whole-GPU claim으로 Pod 생성
+    PVC->>Cell: 검증된 server artifact
+    K8s->>VM: VM A/B 생성·시작
+    PVC->>VM: 검증된 client bundle 설치
+    VM->>CM: CUDA process 자원 요청
+    CM->>Cell: VM 전용 RPC server 할당
+    VM->>Cell: CUDA typed RPC 실행
+    VM->>CM: process 종료·연결 해제
+    CM->>Cell: logical allocation 회수
+```
+
+## Kubernetes object 매핑
+
+| 기능 | 사용 object |
+|---|---|
+| 사용자 개발환경 | `VirtualMachine`, `VMI` |
+| GPU 선택·귀속 | `ResourceClaimTemplate`, `ResourceClaim` |
+| Flyt 실행 | `Pod`, `Deployment` |
+| 설정·자격정보 | `ConfigMap`, `Secret` |
+| 빌드 산출물 | `PersistentVolumeClaim` |
+| 자원·통신 경계 | `ResourceQuota`, `NetworkPolicy` |
+| 상태 판정 | startup/readiness probe, rollout status |
+
+<aside class="notes">
+빌드에서 실행까지 동일한 hash 검증 산출물을 사용한다. GPU Cell은 DRA claim이 만족돼야 시작하고, VM의 CUDA process가 접속할 때 논리 server가 생성된다. 종료 후에는 client reaper와 Cluster Manager가 allocation을 회수한다.
+</aside>
+
+---
+
+# 6-D. 현재 Kubernetes-native 수준과 남은 부분
+
+## 이미 Kubernetes-native하게 구성된 부분
+
+- GPU 소유권을 DRA object로 선언
+- VM을 KubeVirt object로 관리
+- Flyt server/manager를 Pod·Deployment로 관리
+- 설정, quota, network policy와 readiness를 선언형 manifest로 관리
+- Flyt namespace 안에서만 재시작·복구하도록 범위 제한
+- builder PVC와 checksum으로 동일 artifact 배포
+
+## 아직 script 또는 Flyt 내부 로직에 의존하는 부분
+
+- 사용자 요청으로 VM·PVC·Flyt allocation을 함께 만드는 전용 Operator 없음
+- VMI UID와 Flyt client ID를 연결하는 Kubernetes CR/status 없음
+- VMI 삭제 finalizer 기반의 명시적 GPU allocation release 없음
+- 사용자별 영속 root/data PVC 자동 생성 없음
+- node/network 장애를 지속적으로 조정하는 controller reconciliation 없음
+
+> **현재 판정:** Kubernetes가 Flyt를 관리하는 구조는 성립했지만, 사용자 GPU VM 서비스 전체를 조정하는 전용 Kubernetes Operator는 후속 단계다.
+
+<aside class="notes">
+현재 구조를 완성된 Kubernetes Operator라고 표현하면 과장이다. 배포와 물리 GPU 소유권은 Kubernetes-native하지만, 사용자·VM·스토리지·Flyt allocation을 하나의 desired state로 조정하는 control loop는 아직 없다. 다음 진화 단계는 사용자 GPU VM CRD와 controller다.
+</aside>
+
+---
+
 # 7. 실험 환경
 
 | 항목 | 최종 구성 |

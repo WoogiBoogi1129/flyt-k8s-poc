@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Flyt Track A2 Kubernetes GPU VM 아키텍처</title>
+  <desc id="desc">KubeVirt VM 두 대가 각각 Flyt RPC Server를 통해 하나의 CUDA MPS 기반 GPU Cell과 whole GPU를 공유하며, Kubernetes DRA와 Flyt Cluster Manager가 물리 및 논리 자원을 관리하는 구조</desc>
+
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#17253a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#e36b2c"/>
+    </marker>
+    <marker id="arrow-control" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#326ce5"/>
+    </marker>
+    <marker id="arrow-resource" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#00897b"/>
+    </marker>
+    <style>
+      .bg { fill: #f4f7fb; }
+      .cluster { fill: #ffffff; stroke: #aebbd0; stroke-width: 2; }
+      .zone { fill: #f9fbff; stroke: #d5deec; stroke-width: 1.5; }
+      .card { fill: #ffffff; stroke-width: 1.6; filter: url(#shadow); }
+      .control-card { stroke: #76a7e8; }
+      .vm-card { stroke: #9d86d8; }
+      .cell-card { stroke: #3ba697; }
+      .node { fill: #f7faff; stroke: #8fa8ca; stroke-width: 1.2; }
+      .vm-node { fill: #faf8ff; stroke: #a998d8; stroke-width: 1.2; }
+      .rpc-node { fill: #fff7ee; stroke: #e7a263; stroke-width: 1.3; }
+      .mps-node { fill: #edf8e6; stroke: #76b900; stroke-width: 1.5; }
+      .gpu-node { fill: #182635; stroke: #76b900; stroke-width: 2.5; }
+      .badge-blue { fill: #eaf3ff; stroke: #86b4e8; }
+      .badge-purple { fill: #f1edff; stroke: #a995e0; }
+      .badge-green { fill: #e8f8f2; stroke: #74bca8; }
+      .badge-orange { fill: #fff0df; stroke: #e8ad71; }
+      text { font-family: "Noto Sans KR", "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; fill: #17253a; }
+      .title { font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+      .subtitle { font-size: 16px; fill: #5a6b82; }
+      .cluster-label { font-size: 17px; font-weight: 700; fill: #50617a; }
+      .zone-title { font-size: 20px; font-weight: 800; }
+      .card-title { font-size: 18px; font-weight: 800; }
+      .node-title { font-size: 15px; font-weight: 750; }
+      .body { font-size: 13px; fill: #50617a; }
+      .small { font-size: 11px; fill: #63738a; }
+      .mono { font-family: "JetBrains Mono", "Noto Sans Mono", monospace; }
+      .white { fill: #ffffff; }
+      .green-text { fill: #76b900; }
+      .data-flow { fill: none; stroke: #e36b2c; stroke-width: 3; marker-end: url(#arrow-data); }
+      .control-flow { fill: none; stroke: #326ce5; stroke-width: 2.2; stroke-dasharray: 8 6; marker-end: url(#arrow-control); }
+      .resource-flow { fill: none; stroke: #00897b; stroke-width: 2.5; marker-end: url(#arrow-resource); }
+      .internal-flow { fill: none; stroke: #71839b; stroke-width: 1.8; marker-end: url(#arrow-control); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1000"/>
+  <text class="title" x="58" y="54">Flyt Track A2 — Kubernetes 관리형 GPU VM 아키텍처</text>
+  <text class="subtitle" x="60" y="82">Kubernetes가 whole GPU 소유권을 관리하고, Flyt RPC와 CUDA MPS가 VM별 46 SM · 8 GiB 논리 자원을 제공한다.</text>
+  <rect class="badge-green" x="1335" y="30" width="205" height="32" rx="16"/>
+  <text class="small" x="1362" y="51">Final validation · 2026-08-31</text>
+
+  <rect class="cluster" x="38" y="108" width="1524" height="825" rx="24"/>
+  <rect class="badge-blue" x="62" y="128" width="206" height="34" rx="17"/>
+  <text class="cluster-label" x="83" y="151">Kubernetes · node gpu-4</text>
+  <text class="small mono" x="1370" y="149">namespace: flyt-system</text>
+
+  <!-- Control plane -->
+  <rect class="zone" x="70" y="180" width="1460" height="190" rx="18"/>
+  <text class="zone-title" x="96" y="213">Control Plane</text>
+  <text class="body" x="238" y="213">선언형 배포 · 물리 GPU claim · VM별 논리 quota · lifecycle</text>
+
+  <rect class="card control-card" x="105" y="240" width="275" height="100" rx="14"/>
+  <text class="card-title" x="130" y="270">Kubernetes DRA</text>
+  <text class="body" x="130" y="296">ResourceClaimTemplate</text>
+  <text class="small mono" x="130" y="320">GPU UUID → GPU Cell Pod</text>
+
+  <rect class="card control-card" x="455" y="228" width="355" height="124" rx="14"/>
+  <text class="card-title" x="480" y="259">Flyt Cluster Manager</text>
+  <text class="body" x="480" y="286">VM client ↔ Virtual Server 매핑</text>
+  <text class="body" x="480" y="310">46 SM · 8192 MiB 논리 자원 관리</text>
+  <text class="small mono" x="480" y="334">client reaper · allocation cleanup</text>
+
+  <rect class="card control-card" x="880" y="240" width="235" height="100" rx="14"/>
+  <text class="card-title" x="905" y="270">MongoDB</text>
+  <text class="body" x="905" y="296">요청 자원과 매핑 상태</text>
+  <text class="small mono" x="905" y="320">VM · client · quota</text>
+
+  <rect class="card control-card" x="1195" y="240" width="275" height="100" rx="14"/>
+  <text class="card-title" x="1220" y="270">Flyt Builder + PVC</text>
+  <text class="body" x="1220" y="296">고정 patch series와 artifact</text>
+  <text class="small mono" x="1220" y="320">server · client · SHA-256</text>
+
+  <!-- Runtime zones -->
+  <rect class="zone" x="70" y="395" width="500" height="450" rx="18"/>
+  <text class="zone-title" x="96" y="430">KubeVirt 사용자 VM</text>
+  <text class="body" x="96" y="454">GPU device 없이 독립 OS와 개발환경 제공</text>
+
+  <rect class="card vm-card" x="102" y="482" width="436" height="145" rx="15"/>
+  <rect class="badge-purple" x="126" y="503" width="74" height="24" rx="12"/>
+  <text class="small" x="145" y="520">VM A</text>
+  <text class="card-title" x="126" y="554">Ubuntu · PyTorch · Jupyter</text>
+  <text class="body" x="126" y="580">독립 filesystem · Python venv · 사용자 코드</text>
+  <text class="small mono" x="126" y="605">/dev/nvidia0 없음 · quota 46 SM / 8 GiB</text>
+  <rect class="vm-node" x="385" y="515" width="125" height="80" rx="10"/>
+  <text class="node-title" x="402" y="544">Flyt Client</text>
+  <text class="small mono" x="402" y="566">CUDA ABI</text>
+  <text class="small mono" x="402" y="583">typed RPC</text>
+
+  <rect class="card vm-card" x="102" y="664" width="436" height="145" rx="15"/>
+  <rect class="badge-purple" x="126" y="685" width="74" height="24" rx="12"/>
+  <text class="small" x="145" y="702">VM B</text>
+  <text class="card-title" x="126" y="736">Ubuntu · PyTorch · Jupyter</text>
+  <text class="body" x="126" y="762">독립 filesystem · Python venv · 사용자 코드</text>
+  <text class="small mono" x="126" y="787">/dev/nvidia0 없음 · quota 46 SM / 8 GiB</text>
+  <rect class="vm-node" x="385" y="697" width="125" height="80" rx="10"/>
+  <text class="node-title" x="402" y="726">Flyt Client</text>
+  <text class="small mono" x="402" y="748">CUDA ABI</text>
+  <text class="small mono" x="402" y="765">typed RPC</text>
+
+  <rect class="zone" x="610" y="395" width="590" height="450" rx="18"/>
+  <text class="zone-title" x="636" y="430">GPU Cell Pod</text>
+  <text class="body" x="768" y="430">DRA whole-GPU claim · CUDA device가 노출되는 유일한 영역</text>
+
+  <rect class="card cell-card" x="640" y="474" width="530" height="335" rx="16"/>
+  <rect class="badge-green" x="668" y="498" width="156" height="25" rx="12"/>
+  <text class="small" x="688" y="515">Flyt Node Manager</text>
+  <text class="body" x="840" y="515">GPU Cell 자원 등록 · Virtual Server 생성</text>
+
+  <rect class="rpc-node" x="680" y="552" width="210" height="92" rx="12"/>
+  <text class="node-title" x="704" y="580">RPC Server A</text>
+  <text class="small mono" x="704" y="603">Virtual Server ID 3</text>
+  <text class="small" x="704" y="625">CUDA context A</text>
+
+  <rect class="rpc-node" x="920" y="552" width="210" height="92" rx="12"/>
+  <text class="node-title" x="944" y="580">RPC Server B</text>
+  <text class="small mono" x="944" y="603">Virtual Server ID 4</text>
+  <text class="small" x="944" y="625">CUDA context B</text>
+
+  <rect class="mps-node" x="750" y="692" width="310" height="82" rx="14"/>
+  <text class="card-title" x="826" y="722">CUDA MPS Server</text>
+  <text class="body" x="790" y="748">RPC process 동시 실행 · SM partition</text>
+
+  <rect class="zone" x="1240" y="395" width="260" height="450" rx="18"/>
+  <text class="zone-title" x="1266" y="430">Physical GPU</text>
+  <rect class="gpu-node" x="1270" y="492" width="200" height="245" rx="18"/>
+  <text class="card-title white" x="1308" y="535">Whole GPU 1</text>
+  <text class="body white" x="1296" y="568">RTX PRO 6000</text>
+  <text class="body white" x="1316" y="592">Blackwell</text>
+  <line x1="1295" y1="617" x2="1445" y2="617" stroke="#506174"/>
+  <text class="body white" x="1313" y="650">188 physical SM</text>
+  <text class="body white" x="1303" y="676">MIG disabled</text>
+  <text class="node-title green-text" x="1314" y="708">CUDA MPS enabled</text>
+  <rect class="badge-green" x="1280" y="765" width="180" height="34" rx="17"/>
+  <text class="small mono" x="1298" y="787">DRA exclusive claim</text>
+
+  <!-- Runtime data paths -->
+  <path class="data-flow" d="M510 555 C575 555 610 578 680 592"/>
+  <path class="data-flow" d="M510 737 C585 737 620 628 920 604"/>
+  <path class="internal-flow" d="M785 644 C795 672 828 682 857 692"/>
+  <path class="internal-flow" d="M1025 644 C1015 672 982 682 953 692"/>
+  <path class="data-flow" d="M1060 733 C1140 733 1190 620 1270 620"/>
+
+  <!-- Control and resource paths -->
+  <path class="control-flow" d="M625 352 C625 402 770 420 785 552"/>
+  <path class="control-flow" d="M655 352 C705 420 980 430 1025 552"/>
+  <path class="resource-flow" d="M242 340 C242 380 1115 370 1340 492"/>
+  <path class="control-flow" d="M880 290 L810 290"/>
+  <path class="control-flow" d="M1195 290 C1140 290 1100 338 1070 474"/>
+
+  <!-- Labels -->
+  <rect class="badge-orange" x="550" y="532" width="112" height="23" rx="11"/>
+  <text class="small" x="568" y="548">CUDA data path</text>
+  <rect class="badge-blue" x="770" y="382" width="120" height="23" rx="11"/>
+  <text class="small" x="790" y="398">control path</text>
+  <rect class="badge-green" x="1115" y="382" width="136" height="23" rx="11"/>
+  <text class="small" x="1136" y="398">GPU ownership</text>
+
+  <!-- Relationship summary and legend -->
+  <rect class="zone" x="70" y="866" width="1040" height="44" rx="12"/>
+  <text class="body mono" x="94" y="893">VM : GPU Cell = N:1   ·   active VM process : RPC Server = 1:1   ·   RPC Server : MPS = N:1   ·   MPS : GPU = 1:1</text>
+
+  <line x1="1160" y1="881" x2="1208" y2="881" class="data-flow"/>
+  <text class="small" x="1220" y="885">CUDA / RPC data</text>
+  <line x1="1330" y1="881" x2="1378" y2="881" class="control-flow"/>
+  <text class="small" x="1390" y="885">control</text>
+  <line x1="1160" y1="907" x2="1208" y2="907" class="resource-flow"/>
+  <text class="small" x="1220" y="911">DRA resource ownership</text>
+
+  <text class="small" x="60" y="968">Scope: version-pinned PyTorch 2.11 · CUDA 12.8 · Triton 3.7.1 · final validation VM A/B 19/19 PASS</text>
+  <text class="small" x="1375" y="968">flyt-system</text>
+</svg>
