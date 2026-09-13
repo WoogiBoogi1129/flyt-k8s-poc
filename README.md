@@ -2,6 +2,8 @@
 
 개발 중인 [1단계 HAMi 단독 PoC](experiments/hami-standalone/README.md)는
 기존 MPS 구현과 분리되어 있으며 현재 **구현 완료·검증 미실행** 상태다.
+이 브랜치의 [2단계 VM별 HAMi Worker](experiments/per-vm-worker/README.md)도
+**구현 완료·검증 미실행** 상태이며, 별도 이미지와 정적 VM/Worker 배포 도구를 제공한다.
 브랜치와 기준 버전 보존 방식은 [단계별 개발 문서](docs/DEVELOPMENT_STAGES.md)를 참고한다.
 
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가

@@ -20,7 +20,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 |---|---|---|---|
 | 0: MPS 기준 동결 | `baseline/flyt-mps` | 소스 보존 | 과거 결과만 존재; 재검증 안 함 |
 | 1: HAMi 단독 PoC | `stage/01-hami-standalone` | 구현 완료 | NOT_RUN |
-| 2: VM별 Worker | `stage/02-per-vm-worker` (예정) | 미착수 | NOT_RUN |
+| 2: VM별 정적 HAMi Worker | `stage/02-per-vm-worker` | 구현 완료 | NOT_RUN |
 | 3: VM/Worker controller | `stage/03-controller` (예정) | 미착수 | NOT_RUN |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
@@ -43,3 +43,18 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 [HAMi standalone 안내](../experiments/hami-standalone/README.md)에 설치 설정,
 CUDA probe, 실행/수집/정리 절차 및 미검증 항목을 정리했다.
 기존 MPS 관리, CUDA RPC, KubeVirt VM, patch series는 변경하지 않는다.
+
+## 2단계 구현
+
+`stage/01-hami-standalone`의 `260e3cd1bb2f1683926e892bdbb41485e2dec38e`에서 분기했다.
+[VM별 Worker 안내](../experiments/per-vm-worker/README.md)에 구현, 배포 전제,
+guest 연결, 개별 삭제와 검증 대기 항목을 정리했다.
+
+VM별 Worker Deployment와 정적 CM 매핑을 추가하고 Worker 안의 프로세스별 RPC 구조는
+유지한다. 별도 image/patch series에서 HAMi 경로를 추가하며, 실행에 필요한 최소한의
+MPS 제어 우회를 5단계에서 앞당긴다. VMI watcher/controller와 SHM은 포함하지 않는다.
+기존 1단계 구현, 기본 이미지와 patch series는 그대로 보존한다.
+
+2단계도 검증 없이 개발하는 조건을 유지하여 패치 적용·빌드·정적/렌더 검사·GPU 실행·
+클러스터 배포를 수행하지 않는다. 커밋에 `[skip ci]`를 사용한다. 1단계 quota 검증이
+완료됐다는 전제는 충족하지 않았으며 2단계 구현 완료와 별개의 검증 대기 의존성이다.

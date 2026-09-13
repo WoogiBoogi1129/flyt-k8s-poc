@@ -1,0 +1,444 @@
+diff --git a/cpu/cpu-server-resource-controller.h b/cpu/cpu-server-resource-controller.h
+--- a/cpu/cpu-server-resource-controller.h
++++ b/cpu/cpu-server-resource-controller.h
+@@ -4,6 +4,8 @@
+ #define _CPU_SERVER_RESOURCE_CONTROLLER_H_
+ 
+ #include <stdint.h>
++
++int flyt_hami_backend(void);
+ 
+ int change_sm_cores(uint32_t new_num_sm_cores);
+ 
+diff --git a/cpu/cpu-server-resource-controller.c b/cpu/cpu-server-resource-controller.c
+--- a/cpu/cpu-server-resource-controller.c
++++ b/cpu/cpu-server-resource-controller.c
+@@ -16,6 +16,11 @@
+ #include "device-management.h"
+ #include "cpu-server-client-mgr.h"
+ 
++int flyt_hami_backend(void) {
++    const char *mode = getenv("FLYT_RESOURCE_BACKEND");
++    return mode != NULL && strcmp(mode, "hami") == 0;
++}
++
+ static int active_device = -1;
+ static uint64_t mem_limit = 0;
+ static uint64_t current_mm_usage = 0;
+@@ -55,6 +60,7 @@
+ 
+ 
+ int change_sm_cores(uint32_t nm_sm_cores) {
++    if (flyt_hami_backend()) return -1; /* Pod quota is immutable in stage 2. */
+ 
+     cudaDeviceSynchronize();
+ 
+@@ -125,10 +131,15 @@
+ }
+ 
+ uint64_t get_mem_limit() {
++    if (flyt_hami_backend()) {
++        size_t available = 0, total = 0;
++        if (cudaMemGetInfo(&available, &total) == cudaSuccess) return total;
++    }
+     return mem_limit;
+ }
+ 
+ int allow_mem_alloc(uint64_t size) {
++    if (flyt_hami_backend()) return 1; /* HAMi enforces aggregate Pod usage. */
+     LOGE(LOG_DEBUG, "Current tracked memory usage: %llu, mem_limit: %llu",
+          current_mm_usage, mem_limit);
+     if (size > mem_limit || current_mm_usage > mem_limit - size) {
+@@ -138,14 +149,20 @@
+ } 
+ 
+ uint64_t get_mem_free() {
++    if (flyt_hami_backend()) {
++        size_t available = 0, total = 0;
++        return cudaMemGetInfo(&available, &total) == cudaSuccess ? available : 0;
++    }
+     return current_mm_usage < mem_limit ? mem_limit - current_mm_usage : 0;
+ }
+ 
+ void inc_mem_usage(uint64_t size) {
++    if (flyt_hami_backend()) return;
+     current_mm_usage += size;
+ }
+ 
+ void dec_mem_usage(uint64_t size) {
++    if (flyt_hami_backend()) return;
+     if (current_mm_usage >= size) {
+         current_mm_usage -= size;
+     }
+@@ -155,6 +172,7 @@
+ }
+ 
+ void check_and_change_resource(void) {
++    if (flyt_hami_backend()) return;
+ 
+     // LOGE(LOG_DEBUG, "Checking and changing resources: %d", change_resource_flag);
+ 
+@@ -178,6 +196,7 @@
+ }
+ 
+ int set_new_config(uint32_t __newsm, uint64_t __newmem) {
++    if (flyt_hami_backend()) return -1;
+     struct cudaDeviceProp dev_prop;
+     
+     cudaError_t res = cudaGetDeviceProperties(&dev_prop, active_device);
+@@ -225,6 +244,28 @@
+     }
+     */
+ 
++    if (flyt_hami_backend()) {
++        /* Keep the Runtime primary context; never replace it with an MPS context. */
++        FILE *maps = fopen("/proc/self/maps", "r");
++        char line[4096];
++        int loaded = 0;
++        if (maps != NULL) {
++            while (fgets(line, sizeof(line), maps))
++                if (strstr(line, "libvgpu.so")) loaded = 1;
++            fclose(maps);
++        }
++        if (!loaded || primaryCtx == NULL || mem == 0) {
++            LOGE(LOG_ERROR, "HAMi Worker requires libvgpu, a primary context and a quota");
++            return -1;
++        }
++        struct cudaDeviceProp prop;
++        if (cudaGetDeviceProperties(&prop, active_device) != cudaSuccess) return -1;
++        cur_num_sm_cores = prop.multiProcessorCount; /* capability, NOT quota percent */
++        execCtx = primaryCtx;
++        mem_limit = mem; /* diagnostic fallback only, not per-process enforcement */
++        return init_device_management(active_device);
++    }
++
+     if (change_sm_cores(num_sm_cores) != 0) {
+         LOGE(LOG_ERROR, "Failed to set sm cores configuration");
+         return -1;
+diff --git a/cpu/cpu-server-runtime.c b/cpu/cpu-server-runtime.c
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -2061,7 +2061,7 @@
+     PRIMARY_CTX_RETAIN;
+     result->err = cudaMalloc3DArray((void*)&result->ptr_result_u.ptr, &cuda_desc, extent, flags);
+     PRIMARY_CTX_RELEASE;
+-    if (result->err == cudaSuccess && get_gpu_memory_usage() > get_mem_limit()) {
++    if (result->err == cudaSuccess && !flyt_hami_backend() && get_gpu_memory_usage() > get_mem_limit()) {
+         LOGE(LOG_ERROR, "Memory allocation not allowed, out of memory.");
+         cudaFree((void*)result->ptr_result_u.ptr);
+         result->err = cudaErrorMemoryAllocation;
+@@ -2092,7 +2092,7 @@
+     PRIMARY_CTX_RETAIN;
+     result->err = cudaMallocArray((void*)&result->ptr_result_u.ptr, &cuda_desc, width, height, flags);
+     PRIMARY_CTX_RELEASE;
+-    if (result->err == cudaSuccess && get_gpu_memory_usage() > get_mem_limit()) {
++    if (result->err == cudaSuccess && !flyt_hami_backend() && get_gpu_memory_usage() > get_mem_limit()) {
+         LOGE(LOG_ERROR, "Memory allocation not allowed, out of memory.");
+         cudaFree((void*)result->ptr_result_u.ptr);
+         result->err = cudaErrorMemoryAllocation;
+diff --git a/control-managers/src/cluster-manager/bookkeeping.rs b/control-managers/src/cluster-manager/bookkeeping.rs
+--- a/control-managers/src/cluster-manager/bookkeeping.rs
++++ b/control-managers/src/cluster-manager/bookkeeping.rs
+@@ -10,6 +10,10 @@
+ use crate::common::config::RMGR_CONFIG_PATH;
+ use crate::common::types::StreamEnds;
+ use crate::common::utils::Utils;
++
++pub fn hami_static_enabled() -> bool {
++    std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami")
++}
+ 
+ struct ConfigOptions;
+ 
+@@ -126,6 +130,9 @@
+ impl VMResourcesGetter {
+ 
+     pub fn new() -> Self {
++        if hami_static_enabled() {
++            return Self { mongo_collection: None };
++        }
+         let config: Table = Utils::load_config_file(RMGR_CONFIG_PATH);
+ 
+         let get_collection = || -> Option<Collection<VMResources>> {
+@@ -160,6 +167,22 @@
+     }
+ 
+     pub fn get_vm_required_resources(&self, vm_ip: &String) -> Option<VMResources> {
++        if hami_static_enabled() {
++            let config = Utils::load_config_file(RMGR_CONFIG_PATH);
++            let bindings = config.get("hami-static")?.get("bindings")?.as_array()?;
++            let matches: Vec<_> = bindings.iter().filter(|b|
++                b.get("vm_ip").and_then(|v| v.as_str()) == Some(vm_ip.as_str())
++            ).collect();
++            if matches.len() != 1 { return None; }
++            let binding = matches[0];
++            let uid = binding.get("vmi_uid")?.as_str()?;
++            let host = binding.get("worker_host")?.as_str()?;
++            if uid.is_empty() || host.is_empty() { return None; }
++            log::info!("static Worker binding vm={} vmi_uid={} worker={}", vm_ip, uid, host);
++            // HAMi owns quotas. Zero means this legacy ledger is inactive, not unlimited GPU.
++            return Some(VMResources { vm_ip: vm_ip.clone(), host_ip: host.to_string(),
++                                      compute_units: 0, memory: 0 });
++        }
+         // let mut lock = self.mongo_client.try_lock().ok()?;
+         let collection = self.mongo_collection.as_ref()?;
+         let filter = doc! { "vm_ip": vm_ip };
+@@ -170,6 +193,7 @@
+     }
+ 
+     pub fn set_vm_sm_resource( &self, vm_ip: &String, new_sm_core: i32,) -> Option<i32> {
++        if hami_static_enabled() { return None; }
+         // Access the MongoDB collection
+         if new_sm_core <= 0 {
+             return None;
+diff --git a/control-managers/src/cluster-manager/servernode_handler.rs b/control-managers/src/cluster-manager/servernode_handler.rs
+--- a/control-managers/src/cluster-manager/servernode_handler.rs
++++ b/control-managers/src/cluster-manager/servernode_handler.rs
+@@ -13,7 +13,7 @@
+ use std::collections::HashMap;
+ use std::{fs, thread};
+ use std::io::{ BufReader, Write };
+-use std::net::{TcpListener, TcpStream};
++use std::net::{TcpListener, TcpStream, ToSocketAddrs};
+ use std::path::Path;
+ use std::sync::{Arc, Mutex, RwLock};
+ 
+@@ -274,6 +274,16 @@
+     }
+ 
+     pub fn get_free_gpu(&self, required_resources: &VMResources, client_id: i32) -> Option<(String, u64)> {
++        if hami_static_enabled() {
++            // Headless Service resolves to the current Worker Pod, never a load-balanced pool.
++            let addresses = (required_resources.host_ip.as_str(), 12401).to_socket_addrs().ok()?;
++            let ips: std::collections::HashSet<String> = addresses.map(|a| a.ip().to_string()).collect();
++            if ips.len() != 1 { return None; }
++            let ip = ips.into_iter().next()?;
++            let node = self.get_server_node(&ip)?;
++            if node.gpus.len() != 1 || node.gpus[0].read().unwrap().gpu_id != 0 { return None; }
++            return Some((ip, 0)); // No cross-VM fallback and no second admission ledger.
++        }
+         /*
+         let host_server_node = self.get_server_node(&required_resources.host_ip);
+         
+@@ -522,6 +532,7 @@
+     }
+ 
+     pub fn migrate_virt_server(&self, client_mgr: &FlytClientManager, client_ip: &String, client_id: i32, target_snode_id: &String, target_gpu_id: u64, new_sm_cores: u32, new_mem: u64) -> Result<Arc<RwLock<VirtServer>>,String> {
++        if hami_static_enabled() { return Err("HAMi stage 2 uses static Pod quotas; migration/scaling is unsupported".into()); }
+         
+         log::info!("Migrating client vm: {},{} to server node: {}", client_ip, client_id, target_snode_id);
+ 
+@@ -685,6 +696,7 @@
+     }
+ 
+     pub fn migrate_virt_server_auto(&self, client_mgr: &FlytClientManager, client_ip: &String, client_id: i32, new_sm_cores: u32, new_mem: u64) -> Result<Arc<RwLock<VirtServer>>,String> {
++        if hami_static_enabled() { return Err("HAMi stage 2 uses static Pod quotas; migration/scaling is unsupported".into()); }
+         let vm_required_resources = self.vm_resource_getter.get_vm_required_resources(client_ip);
+         
+         if vm_required_resources.is_none() {
+@@ -781,6 +793,7 @@
+     }
+ 
+     pub fn change_resource_configurations(&self, server_ip: &String, rpc_id: u64, compute_units: u32, memory: u64, vm_ip: &String) -> Result<(),String> {
++        if hami_static_enabled() { return Err("HAMi stage 2 uses static Pod quotas; migration/scaling is unsupported".into()); }
+         // Get the server node for the given IP
+         let mut server_node = self.get_server_node(server_ip)
+             .ok_or_else(|| {
+diff --git a/control-managers/src/servernode-daemon/virt_server_manager.rs b/control-managers/src/servernode-daemon/virt_server_manager.rs
+--- a/control-managers/src/servernode-daemon/virt_server_manager.rs
++++ b/control-managers/src/servernode-daemon/virt_server_manager.rs
+@@ -1,7 +1,7 @@
+ // Copyright (c) 2024-2026 SynerG Lab, IITB
+ 
+ use std::{collections::HashMap, fs::File, path::Path, process::{Child, Command}, sync::{Arc, Mutex}, time::Duration};
+-use std::io;
++use std::io::{self, Read};
+ use std::ffi::CString;
+ use libc::{ftok, msgget, IPC_CREAT, IPC_EXCL, IPC_PRIVATE, key_t};
+ use ipc_rs::MessageQueue;
+@@ -80,7 +80,14 @@
+         
+ 
+         VirtServerManager {
+-            counter: Mutex::new(0),
++            counter: Mutex::new(if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") {
++                // Avoid reusing version 1 after a Worker generation ends. Sessions
++                // still need explicit client restart; this is not session recovery.
++                let mut bytes = [0u8; 4];
++                File::open("/dev/urandom").expect("RPC generation entropy unavailable")
++                    .read_exact(&mut bytes).expect("RPC generation entropy read failed");
++                (u32::from_ne_bytes(bytes) & 0x3fff_ffff) as u64
++            } else { 0 }),
+             virts_servers: Mutex::new(HashMap::new()),
+             message_queue: message_queue,
+             virt_server_program_path,
+@@ -102,9 +109,29 @@
+ 
+ 
+     pub fn create_virt_server(&self, gpu_id: u32, gpu_memory: u64, num_sm_cores: u32) -> Result<u64,String> {
++        let hami = std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami");
++        let (num_sm_cores, gpu_memory) = if hami {
++            if gpu_id != 0 { return Err("Worker exposes only CUDA device 0".into()); }
++            let limit: usize = std::env::var("FLYT_MAX_CLIENTS").map_err(|e| e.to_string())?
++                .parse::<usize>().map_err(|e| e.to_string())?;
++            let mut servers = self.virts_servers.lock().unwrap();
++            servers.retain(|_, server| match server.process.lock().unwrap().try_wait() {
++                Ok(Some(_)) => false,
++                _ => true,
++            });
++            if limit == 0 || servers.len() >= limit { return Err("Worker client limit reached".into()); }
++            let sm = std::env::var("FLYT_REPORTED_SM").map_err(|e| e.to_string())?
++                .parse::<u32>().map_err(|e| e.to_string())?;
++            let mem = std::env::var("FLYT_MEMORY_BYTES").map_err(|e| e.to_string())?
++                .parse::<u64>().map_err(|e| e.to_string())?;
++            (sm, mem)
++        } else { (num_sm_cores, gpu_memory) };
+         log::debug!("create_virt_server: gpu_id: {}, gpu_memory: {}, num_sm_cores: {}", gpu_id, gpu_memory, num_sm_cores);
+         let rpc_id = {
+             let mut counter = self.counter.lock().unwrap();
++            if hami && *counter >= 0x7fff_fffe {
++                return Err("RPC version space exhausted; recreate Worker".into());
++            }
+             *counter += 1;
+             *counter
+         };
+@@ -125,8 +152,15 @@
+     //let mut cmd = Command::new(mem_path);
+         //.arg(program_path)
+     let mut cmd = Command::new(program_path);
++    if hami {
++        // Preserve HAMi's injected preload, visibility and aggregate quota environment.
++        cmd.env_remove("CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING")
++           .env_remove("CUDA_MPS_ACTIVE_THREAD_PERCENTAGE")
++           .env_remove("CUDA_MPS_PIPE_DIRECTORY");
++    } else {
+         cmd.env("CUDA_VISIBLE_DEVICES", gpu_id.to_string())
+-        .env("CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING", "1");
++           .env("CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING", "1");
++    }
+ 
+          for (index, arg) in parts.iter().enumerate() {
+              if arg.is_empty() {
+@@ -161,9 +195,10 @@
+ 
+         let response = self.message_queue.recv_type_timed(recv_id, Duration::from_secs(50));
+         
+-        if response.is_err() {
+-            log::error!("Error receiving message from virt server: {}, Killing it.", response.err().unwrap());
+-            virt_server_process.kill().map_err(|e| format!("Error killing virt server: {}", e))?;
++        if response.as_ref().ok().and_then(|bytes| Utils::convert_bytes_to_u32(bytes.as_slice())) != Some(200) {
++            log::error!("RPC server did not acknowledge successful initialization");
++            let _ = virt_server_process.kill();
++            let _ = virt_server_process.wait();
+             return Err("Error starting virt server".to_string());
+         }
+ 
+@@ -188,6 +223,7 @@
+     }
+ 
+     pub fn checkpoint_virt_server(&self, rpc_id: u64, ckp_path: &str) -> Result<(),String> {
++        if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") { return Err("unsupported for static HAMi Worker".into()); }
+         log::debug!("checkpoint_virt_server: rpc_id: {}, ckp_path: {}", rpc_id, ckp_path);
+         
+         let virt_server = self.get_virt_server(rpc_id).ok_or("Virt server not found")?;
+@@ -208,6 +244,7 @@
+     }
+ 
+     pub fn restore_virt_server(&self, rpc_id: u64, ckp_path: &str) -> Result<(),String> {
++        if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") { return Err("unsupported for static HAMi Worker".into()); }
+         log::debug!("restore_virt_server: rpc_id: {}, ckp_path: {}", rpc_id, ckp_path);
+         
+         let virt_server = self.get_virt_server(rpc_id).ok_or("Virt server not found")?;
+@@ -263,13 +300,20 @@
+         let mut virt_servers = self.virts_servers.lock().unwrap();
+         let virt_server = virt_servers.get(&rpc_id).ok_or("Virt server not found")?;
+         
+-        virt_server.process.lock().unwrap().kill().map_err(|e| format!("Error killing virt server: {}", e))?;
++        {
++            let mut child = virt_server.process.lock().unwrap();
++            if child.try_wait().map_err(|e| e.to_string())?.is_none() {
++                child.kill().map_err(|e| e.to_string())?;
++            }
++            child.wait().map_err(|e| e.to_string())?;
++        }
+         virt_servers.remove(&rpc_id);
+         
+         Ok(())
+     }
+ 
+     pub fn change_resources(&self, rpc_id: u64, new_num_sm_cores: u32, new_gpu_memory: u64) -> Result<(),String> {
++        if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") { return Err("unsupported for static HAMi Worker".into()); }
+ 
+         let mut virt_server = self.get_virt_server(rpc_id).ok_or("Virt server not found")?;
+ 
+diff --git a/control-managers/src/servernode-daemon/main.rs b/control-managers/src/servernode-daemon/main.rs
+--- a/control-managers/src/servernode-daemon/main.rs
++++ b/control-managers/src/servernode-daemon/main.rs
+@@ -50,6 +50,11 @@
+                     Ok(_) => {
+                         log::info!("Connected to resource manager");
+                         resource_manager_handler.incomming_message_handler();
++                        if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") {
++                            // End the entire Worker session generation after manager disconnect.
++                            let _ = std::fs::remove_file("/run/flyt/registered");
++                            std::process::exit(1);
++                        }
+                     },
+                     Err(e) => {
+                         log::error!("Error connecting to resource manager: {}", e);
+diff --git a/control-managers/src/servernode-daemon/resource_manager_handler.rs b/control-managers/src/servernode-daemon/resource_manager_handler.rs
+--- a/control-managers/src/servernode-daemon/resource_manager_handler.rs
++++ b/control-managers/src/servernode-daemon/resource_manager_handler.rs
+@@ -104,6 +104,9 @@
+                             for gpu in gpus {
+                                 let message = format!("{},{},{},{},{},{}\n", gpu.gpu_id, gpu.name, gpu.memory, gpu.sm_cores, gpu.total_cores, gpu.max_clock);
+                                 stream_write!(writer, message);
++                            }
++                            if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") {
++                                let _ = std::fs::write("/run/flyt/registered", "gpu-info-reported\n");
+                             }
+                         }
+                         None => {
+diff --git a/control-managers/src/cluster-manager/client_handler.rs b/control-managers/src/cluster-manager/client_handler.rs
+--- a/control-managers/src/cluster-manager/client_handler.rs
++++ b/control-managers/src/cluster-manager/client_handler.rs
+@@ -83,6 +83,10 @@
+ 
+     /// Enable or disable grouping for a specific IP
+     pub fn set_grouping_for_ip(&self, ipaddr: String, enable_grouping: bool) {
++        if hami_static_enabled() {
++            log::warn!("HAMi Worker requires one RPC server per CUDA client process; grouping is disabled");
++            return;
++        }
+         let mut ip_grouping = self.ip_grouping_enabled.lock().unwrap();
+         ip_grouping.insert(ipaddr, enable_grouping);
+     }
+diff --git a/cpu/device-management.c b/cpu/device-management.c
+--- a/cpu/device-management.c
++++ b/cpu/device-management.c
+@@ -2,6 +2,8 @@
+ 
+ #include <nvml.h>
+ #include <unistd.h>
++#include <stdlib.h>
++#include <string.h>
+ 
+ #define MAX_PROCESS_COUNT 128
+ 
+@@ -25,7 +27,15 @@
+     pid = getpid();
+     active_device = device_id;
+ 
+-    result = nvmlDeviceGetHandleByIndex(active_device, &device);
++    const char *backend = getenv("FLYT_RESOURCE_BACKEND");
++    if (backend != NULL && strcmp(backend, "hami") == 0) {
++        const char *uuid = getenv("FLYT_GPU_UUID");
++        if (uuid == NULL) return -1;
++        // CUDA ordinal 0 is the allocated GPU, not necessarily NVML physical 0.
++        result = nvmlDeviceGetHandleByUUID(uuid, &device);
++    } else {
++        result = nvmlDeviceGetHandleByIndex(active_device, &device);
++    }
+     if (result != NVML_SUCCESS) {
+         LOGE(LOG_ERROR, "Failed to get device handle: %s", nvmlErrorString(result));
+         return -1;

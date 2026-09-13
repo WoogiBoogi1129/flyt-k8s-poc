@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "stage": "02-per-vm-worker",
+  "parent_branch": "stage/01-hami-standalone",
+  "parent_commit": "260e3cd1bb2f1683926e892bdbb41485e2dec38e",
+  "flyt_upstream_commit": "596a86939bae125d127a9ed6f70d92c332f47644",
+  "base_patch_series": "../../patches/series",
+  "extension_patch_series": "patches/series",
+  "hami_chart_version": "2.8.0",
+  "hami_image_tag": "v2.8.0",
+  "hami_release": "flyt-hami-stage1",
+  "cuda_toolkit": "12.8.1",
+  "cuda_arch": "sm_120",
+  "implementation": "implemented-unvalidated",
+  "validation": {
+    "patch_application": "NOT_RUN",
+    "build": "NOT_RUN",
+    "static_checks": "NOT_RUN",
+    "manifest_render": "NOT_RUN",
+    "cluster_apply": "NOT_RUN",
+    "gpu_execution": "NOT_RUN",
+    "multi_process_quota": "NOT_RUN",
+    "guest_rpc_compatibility": "NOT_RUN",
+    "lifecycle": "NOT_RUN"
+  }
+}

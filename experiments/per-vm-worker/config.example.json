@@ -1,0 +1,37 @@
+{
+  "kube_context": "REPLACE_WITH_CONTEXT",
+  "namespace": "flyt-hami-stage2",
+  "hami_namespace": "flyt-hami-stage1",
+  "node_name": "REPLACE_WITH_NODE",
+  "gpu_uuid": "REPLACE_WITH_TARGET_GPU_UUID",
+  "node_gpu_uuids": ["REPLACE_WITH_ALL_NODE_GPU_UUIDS"],
+  "gpu_capacity_mib": 98304,
+  "platform_release_confirmed": false,
+  "network_policy_enforced_confirmed": false,
+  "guest_pod_routing_confirmed": false,
+  "runtime_class": "REPLACE_WITH_EXISTING_NVIDIA_RUNTIMECLASS_OR_EMPTY_FOR_DEFAULT",
+  "cluster_domain": "cluster.local",
+  "worker_image": "registry.example.com/flyt/worker-stage2@sha256:REPLACE_WITH_DIGEST",
+  "manager_image": "registry.example.com/flyt/manager-stage2@sha256:REPLACE_WITH_DIGEST",
+  "image_pull_secrets": [],
+  "workers": [
+    {
+      "id": "vm-a",
+      "vmi_name": "vm-a",
+      "vmi_uid": "REPLACE_WITH_RUNNING_VMI_UID",
+      "vm_ip": "REPLACE_WITH_VMI_POD_NETWORK_IPV4",
+      "cores": 30,
+      "memory_mib": 8192,
+      "max_clients": 8
+    },
+    {
+      "id": "vm-b",
+      "vmi_name": "vm-b",
+      "vmi_uid": "REPLACE_WITH_RUNNING_VMI_UID",
+      "vm_ip": "REPLACE_WITH_VMI_POD_NETWORK_IPV4",
+      "cores": 70,
+      "memory_mib": 16384,
+      "max_clients": 8
+    }
+  ]
+}
