@@ -1,0 +1,21 @@
+{
+  "kube_context": "REPLACE_WITH_CONTEXT",
+  "namespace": "flyt-hami-stage1",
+  "node_name": "REPLACE_WITH_NODE",
+  "gpu_uuid": "REPLACE_WITH_TARGET_GPU_UUID",
+  "node_gpu_uuids": ["REPLACE_WITH_ALL_NODE_GPU_UUIDS"],
+  "platform_release_confirmed": false,
+  "runtime_class": "REPLACE_WITH_EXISTING_NVIDIA_RUNTIMECLASS_OR_EMPTY_FOR_DEFAULT",
+  "kube_scheduler_version": "v1.29.12",
+  "probe_image": "registry.example.com/flyt/hami-stage1@sha256:REPLACE_WITH_DIGEST",
+  "image_pull_secrets": [],
+  "memory_quota_mib": 8192,
+  "memory_chunk_mib": 64,
+  "memory_headroom_mib": 1024,
+  "compute_seconds": 30,
+  "warmup_seconds": 5,
+  "repeats": 3,
+  "compute_ratio_min": 0.1,
+  "compute_ratio_max": 0.65,
+  "job_timeout_seconds": 600
+}

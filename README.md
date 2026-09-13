@@ -1,5 +1,9 @@
 # Flyt on Kubernetes/KubeVirt reproducible PoC
 
+개발 중인 [1단계 HAMi 단독 PoC](experiments/hami-standalone/README.md)는
+기존 MPS 구현과 분리되어 있으며 현재 **구현 완료·검증 미실행** 상태다.
+브랜치와 기준 버전 보존 방식은 [단계별 개발 문서](docs/DEVELOPMENT_STAGES.md)를 참고한다.
+
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가
 할당한 whole GPU를 GPU Cell이 소비하도록 만든 실험의 공개·재현 가능한 버전이다.
 Flyt 원본을 그대로 배포하는 저장소가 아니며, 고정된 Flyt 기준 커밋에

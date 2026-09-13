@@ -1,0 +1,10 @@
+{
+  "baseline_commit": "f6552296f6e355c70ddcd8133857703b3ae622ee",
+  "hami_chart_version": "2.8.0",
+  "hami_image_tag": "v2.8.0",
+  "hami_chart_repository": "https://project-hami.github.io/HAMi/",
+  "cuda_version": "12.8.1",
+  "cuda_arch": "sm_120",
+  "implementation_status": "implemented-unvalidated",
+  "validation_status": "NOT_RUN"
+}
