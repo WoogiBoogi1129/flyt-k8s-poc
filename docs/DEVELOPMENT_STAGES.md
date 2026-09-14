@@ -21,7 +21,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 0: MPS 기준 동결 | `baseline/flyt-mps` | 소스 보존 | 과거 결과만 존재; 재검증 안 함 |
 | 1: HAMi 단독 PoC | `stage/01-hami-standalone` | 구현 완료 | NOT_RUN |
 | 2: VM별 정적 HAMi Worker | `stage/02-per-vm-worker` | 구현 완료 | NOT_RUN |
-| 3: VM/Worker controller | `stage/03-controller` (예정) | 미착수 | NOT_RUN |
+| 3: CRD 기반 VM/Worker Controller | `stage/03-controller` | 소스 구현 완료 | NOT_RUN |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -58,3 +58,24 @@ MPS 제어 우회를 5단계에서 앞당긴다. VMI watcher/controller와 SHM�
 2단계도 검증 없이 개발하는 조건을 유지하여 패치 적용·빌드·정적/렌더 검사·GPU 실행·
 클러스터 배포를 수행하지 않는다. 커밋에 `[skip ci]`를 사용한다. 1단계 quota 검증이
 완료됐다는 전제는 충족하지 않았으며 2단계 구현 완료와 별개의 검증 대기 의존성이다.
+
+## 3단계 구현
+
+`stage/02-per-vm-worker`의 `6423897213057bf3ec0411c213f880ad549dda5f`에서 분기했다.
+[Controller 안내](../experiments/controller/README.md)에 CRD 책임, 생성·삭제 순서,
+장애 복구 범위, 설치 준비와 검증 대기 항목을 정리했다.
+
+`FlytGPUProfile`은 승인된 GPU UUID와 정적 quota, `FlytControlPlane`은 공유 Manager,
+`FlytWorker`는 VMI UID별 Worker와 binding을 관리한다. 4개의 reconcile loop를
+Go/controller-runtime으로 작성했다. VM 추가·삭제 때 공유 Manager를 재시작하지 않도록
+별도 stage-3 패치에서 동적 등록 API를 추가했다. 실제 GPU 할당은 기존 HAMi가 담당한다.
+
+CRD 단위 관리를 위해 4단계에서 계획한 요구량 표현 중 최소 정적 Profile만 앞당겼다.
+사용자별 ResourceQuota 정책, live quota 변경, SHM, API descriptor는 포함하지 않는다.
+동일 VMI 이름 재사용과 Worker 재시작은 UID/실행 세대로 구분하며 CUDA 세션의 투명 복원은
+지원하지 않는다. 단계별 이미지가 달라 기존 Worker를 그대로 인수하지 않는다.
+
+3단계도 패치 적용 검사, 의존성 해결, 빌드, 정적 검사, CRD/CEL·매니페스트 검사,
+reconcile 시험, GPU 실행과 실제 배포를 수행하지 않았다. 검증 결과는 모두 NOT_RUN이며
+커밋에 `[skip ci]`를 사용한다. 1·2단계 소스, 기본 patch series와 main은 보존한다.
+GPU 소유권은 재확인하거나 변경하지 않았으며, 기존 외부 플랫폼의 사용 해제는 별도 전제다.

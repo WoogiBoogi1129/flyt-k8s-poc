@@ -1,0 +1,12 @@
+{
+  "kube_context": "REPLACE_WITH_CONTEXT",
+  "namespace": "flyt-hami-stage3",
+  "hami_namespace": "flyt-hami-stage1",
+  "node_name": "REPLACE_WITH_NODE",
+  "gpu_uuid": "REPLACE_WITH_APPROVED_GPU_UUID",
+  "node_gpu_uuids": ["REPLACE_WITH_ALL_PHYSICAL_GPU_UUIDS"],
+  "runtime_class": "REPLACE_WITH_EXISTING_RUNTIMECLASS_OR_EMPTY",
+  "platform_release_confirmed": false,
+  "network_policy_enforced_confirmed": false,
+  "guest_pod_routing_confirmed": false
+}

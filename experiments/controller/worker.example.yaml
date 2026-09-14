@@ -1,0 +1,18 @@
+# Optional direct CR creation. Normally the VMI reconciler creates this from
+# flyt.dev/profile and flyt.dev/control-plane annotations on a running VMI.
+apiVersion: flyt.dev/v1alpha1
+kind: FlytWorker
+metadata:
+  name: fw-REPLACE_WITH_VMI_UID_WITHOUT_HYPHENS
+  namespace: flyt-hami-stage3
+spec:
+  vmiRef:
+    name: vm-a
+    uid: REPLACE_WITH_VMI_UID
+  profileRef:
+    name: gpu2-small
+    uid: REPLACE_WITH_PROFILE_UID
+  controlPlaneRef:
+    name: main
+    uid: REPLACE_WITH_CONTROL_PLANE_UID
+  suspend: false

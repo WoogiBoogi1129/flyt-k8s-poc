@@ -1,0 +1,222 @@
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "flytcontrolplanes.flyt.dev"
+  },
+  "spec": {
+    "group": "flyt.dev",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "FlytControlPlane",
+      "listKind": "FlytControlPlaneList",
+      "plural": "flytcontrolplanes",
+      "singular": "flytcontrolplane",
+      "shortNames": [
+        "fcp"
+      ]
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "additionalPrinterColumns": [
+          {
+            "name": "Phase",
+            "type": "string",
+            "jsonPath": ".status.phase"
+          },
+          {
+            "name": "Ready",
+            "type": "string",
+            "jsonPath": ".status.conditions[?(@.type==\"Ready\")].status"
+          },
+          {
+            "name": "Consumers",
+            "type": "integer",
+            "jsonPath": ".status.consumers"
+          },
+          {
+            "name": "Age",
+            "type": "date",
+            "jsonPath": ".metadata.creationTimestamp"
+          }
+        ],
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "required": [
+              "spec"
+            ],
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "required": [
+                  "managerImage",
+                  "authSecretName"
+                ],
+                "properties": {
+                  "managerImage": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512,
+                    "pattern": "^[^\\s]+@sha256:[a-f0-9]{64}$"
+                  },
+                  "authSecretName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253,
+                    "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+                  },
+                  "clusterDomain": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253,
+                    "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$",
+                    "default": "cluster.local"
+                  },
+                  "imagePullSecrets": {
+                    "type": "array",
+                    "default": [],
+                    "maxItems": 8,
+                    "x-kubernetes-list-type": "set",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 253,
+                      "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+                    }
+                  }
+                },
+                "x-kubernetes-validations": [
+                  {
+                    "rule": "self.managerImage == oldSelf.managerImage",
+                    "message": "managerImage is immutable; create a new resource or clean up the old allocation first"
+                  },
+                  {
+                    "rule": "self.authSecretName == oldSelf.authSecretName",
+                    "message": "authSecretName is immutable; create a new resource or clean up the old allocation first"
+                  },
+                  {
+                    "rule": "self.clusterDomain == oldSelf.clusterDomain",
+                    "message": "clusterDomain is immutable; create a new resource or clean up the old allocation first"
+                  },
+                  {
+                    "rule": "self.imagePullSecrets == oldSelf.imagePullSecrets",
+                    "message": "imagePullSecrets is immutable; create a new resource or clean up the old allocation first"
+                  }
+                ]
+              },
+              "status": {
+                "type": "object",
+                "properties": {
+                  "observedGeneration": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0
+                  },
+                  "phase": {
+                    "type": "string",
+                    "enum": [
+                      "Pending",
+                      "Ready",
+                      "Blocked",
+                      "Suspended",
+                      "Terminating"
+                    ]
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "x-kubernetes-list-type": "map",
+                    "x-kubernetes-list-map-keys": [
+                      "type"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "type",
+                        "status",
+                        "lastTransitionTime",
+                        "reason",
+                        "message"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 316
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "True",
+                            "False",
+                            "Unknown"
+                          ]
+                        },
+                        "lastTransitionTime": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024
+                        },
+                        "message": {
+                          "type": "string",
+                          "maxLength": 8192
+                        },
+                        "observedGeneration": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  },
+                  "consumers": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "endpoint": {
+                    "type": "string"
+                  },
+                  "podUID": {
+                    "type": "string"
+                  },
+                  "podIP": {
+                    "type": "string"
+                  },
+                  "vmIP": {
+                    "type": "string"
+                  },
+                  "workerGeneration": {
+                    "type": "string"
+                  },
+                  "managerEpoch": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
