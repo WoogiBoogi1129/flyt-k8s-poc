@@ -1,0 +1,1297 @@
+diff --git a/cpu/cpu-server-resource-controller.c b/cpu/cpu-server-resource-controller.c
+--- a/cpu/cpu-server-resource-controller.c
++++ b/cpu/cpu-server-resource-controller.c
+@@ -1,294 +1,52 @@
+-/* Copyright (c) 2024-2026 SynerG Lab, IITB */
+-
+-
++/* Stage 5 dispatch. Legacy CUDA API names and RPC ABI remain unchanged. */
+ #include <pthread.h>
+-#include <inttypes.h>
+-#include <cuda.h>
+-#include <cuda_runtime.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <cuda_runtime.h>
++#include "resource-backend.h"
+ 
+-#include "gsched.h"
+-#include "log.h"
+-#include "cpu-server-driver.h"
+-#include "cpu-server-resource-controller.h"
+-#include "device-management.h"
+-#include "cpu-server-client-mgr.h"
+-
+-int flyt_hami_backend(void) {
+-    const char *mode = getenv("FLYT_RESOURCE_BACKEND");
+-    return mode != NULL && strcmp(mode, "hami") == 0;
+-}
+-
+-static int active_device = -1;
+-static uint64_t mem_limit = 0;
+-static uint64_t current_mm_usage = 0;
+-
+-static volatile uint32_t new_num_sm_cores = 0;
++extern char **environ;
+ volatile uint32_t cur_num_sm_cores = 0;
+-static volatile uint64_t new_mem = 0;
+-static volatile int change_resource_flag = 0;
+-
+-static CUcontext primaryCtx = NULL;
+-static CUcontext execCtx = NULL;
+-
+-static int delete_context_resources() {
+-    // iterate over all client
+-    cricket_client_iter iter = get_client_iter();
+-    cricket_client *client;
+-
+-    while ((client = get_next_client(&iter)) != NULL) {
+-        
+-        // delete all streams
+-        cudaStreamDestroy(client->default_stream);
+-
+-        resource_map_iter *stream_iter = resource_map_init_iter(client->custom_streams);
+-        uint64_t idx;
+-
+-        while ((idx = resource_map_iter_next(stream_iter)) != 0) {
+-            cudaStreamDestroy(client->custom_streams->list[idx].mapped_addr);
++static pthread_once_t once = PTHREAD_ONCE_INIT;
++static const FlytResourceBackend *backend;
++static void select_backend(void) {
++    const char *name = getenv("FLYT_RESOURCE_BACKEND");
++    if (name && strcmp(name, "hami") == 0) {
++        for (char **item = environ; *item; ++item) {
++            if (strncmp(*item, "CUDA_MPS_", 9) == 0) {
++                fprintf(stderr, "HAMi backend rejects CUDA_MPS_* settings\n");
++                exit(EXIT_FAILURE);
++            }
+         }
+-
+-        resource_map_free_iter(stream_iter);
+-        
+-    }
+-
+-    return 0;
+-
+-}
+-
+-
+-int change_sm_cores(uint32_t nm_sm_cores) {
+-    if (flyt_hami_backend()) return -1; /* Pod quota is immutable in stage 2. */
+-
+-    cudaDeviceSynchronize();
+-
+-    CUcontext currentContext;
+-    CUresult res1;
+-
+-    res1 = cuCtxGetCurrent(&currentContext);
+-
+-    if (res1 != CUDA_SUCCESS) {
+-        const char *errStr;
+-        cuGetErrorString(res1, &errStr);
+-        LOGE(LOG_ERROR, "Failed to get current context: %s", errStr);
+-        return -1;
+-    }
+-
+-    CUcontext newContext;
+-    CUresult res2;
+-
+-    CUexecAffinityParam affinity_param;
+-    affinity_param.type = CU_EXEC_AFFINITY_TYPE_SM_COUNT;
+-    affinity_param.param.smCount.val = nm_sm_cores;
+-
+-    int affinitySupported = 0;
+-    res2 = cuDeviceGetExecAffinitySupport(&affinitySupported, CU_EXEC_AFFINITY_TYPE_SM_COUNT, active_device);
+-    LOGE(LOG_INFO, "GPU affinitySupport: %d", affinitySupported);
+-
+-    if (affinitySupported != 0) 
+-    	res2 = cuCtxCreate_v3(&newContext, &affinity_param, 1,  0, active_device);
+-    else 
+-    	res2 = cuCtxCreate(&newContext, 0, active_device);
+-
+-    if (res2 != CUDA_SUCCESS) {
+-        const char *errStr;
+-        cuGetErrorString(res2, &errStr);
+-        LOGE(LOG_ERROR, "Failed to create new context: %s", errStr);
+-        return -1;
+-    }
+-    
+-    int ret = server_driver_ctx_state_restore(currentContext);
+-
+-    if (ret != 0) {
+-        LOGE(LOG_DEBUG, "Unable to restore ctx state");
+-        return -1;
+-    }
+-
+-    execCtx = newContext;
+-
+-    LOGE(LOG_INFO, "Changed SM cores to %u", nm_sm_cores);
+-
+-    
+-    cuCtxDestroy(currentContext);
+-    
+-    return 0;
+-    
+-}
+-
+-void set_active_device(int device) {
+-    active_device = device;
+-}
+-
+-int get_active_device() {
+-    return active_device;
+-}
+-
+-int set_mem_limit(uint64_t limit) {
+-    mem_limit = limit;
+-    return 0;
+-}
+-
+-uint64_t get_mem_limit() {
+-    if (flyt_hami_backend()) {
+-        size_t available = 0, total = 0;
+-        if (cudaMemGetInfo(&available, &total) == cudaSuccess) return total;
+-    }
+-    return mem_limit;
+-}
+-
+-int allow_mem_alloc(uint64_t size) {
+-    if (flyt_hami_backend()) return 1; /* HAMi enforces aggregate Pod usage. */
+-    LOGE(LOG_DEBUG, "Current tracked memory usage: %llu, mem_limit: %llu",
+-         current_mm_usage, mem_limit);
+-    if (size > mem_limit || current_mm_usage > mem_limit - size) {
+-        return 0;
+-    }
+-    return 1;
+-} 
+-
+-uint64_t get_mem_free() {
+-    if (flyt_hami_backend()) {
+-        size_t available = 0, total = 0;
+-        return cudaMemGetInfo(&available, &total) == cudaSuccess ? available : 0;
+-    }
+-    return current_mm_usage < mem_limit ? mem_limit - current_mm_usage : 0;
+-}
+-
+-void inc_mem_usage(uint64_t size) {
+-    if (flyt_hami_backend()) return;
+-    current_mm_usage += size;
+-}
+-
+-void dec_mem_usage(uint64_t size) {
+-    if (flyt_hami_backend()) return;
+-    if (current_mm_usage >= size) {
+-        current_mm_usage -= size;
+-    }
+-    else {
+-        current_mm_usage = 0;
+-    }
+-}
+-
+-void check_and_change_resource(void) {
+-    if (flyt_hami_backend()) return;
+-
+-    // LOGE(LOG_DEBUG, "Checking and changing resources: %d", change_resource_flag);
+-
+-    if (change_resource_flag == 0) {
++        backend = &flyt_hami_ops;
+         return;
+     }
+-
+-    if (new_num_sm_cores != 0) {
+-        change_sm_cores(new_num_sm_cores);
+-        cur_num_sm_cores = new_num_sm_cores;
+-        new_num_sm_cores = 0;
+-    }
+-
+-    if (new_mem != 0) {
+-        set_mem_limit(new_mem);
+-        new_mem = 0;
+-    }
+-
+-    change_resource_flag = 0;
+-
++#ifndef FLYT_HAMI_ONLY
++    if (!name || strcmp(name, "mps") == 0) { backend = &flyt_mps_ops; return; }
++#endif
++    fprintf(stderr, "Invalid FLYT_RESOURCE_BACKEND; this image requires an explicit supported backend\n");
++    exit(EXIT_FAILURE);
+ }
+-
+-int set_new_config(uint32_t __newsm, uint64_t __newmem) {
+-    if (flyt_hami_backend()) return -1;
+-    struct cudaDeviceProp dev_prop;
+-    
+-    cudaError_t res = cudaGetDeviceProperties(&dev_prop, active_device);
+-
+-
+-    if (res != cudaSuccess) {
+-        LOGE(LOG_ERROR, "Failed to get device properties: %s", cudaGetErrorString(res));
+-        return -1;
+-    }
+-
+-    if (__newsm == 0 ) {
+-        LOGE(LOG_ERROR, "Invalid number of SM cores: %u", __newsm);
+-        return -1;
+-    }
+-
+-    if (__newmem == 0) {
+-        LOGE(LOG_ERROR, "Invalid memory limit: %" PRIu64, __newmem);
+-        return -1;
+-    }
+-
+-    new_num_sm_cores = __newsm;
+-    new_mem = __newmem;
+-
+-    LOGE(LOG_INFO, "Setting new configuration: %u SM cores, %" PRIu64 " memory limit", new_num_sm_cores, new_mem);
+-
+-    change_resource_flag = 1;
+-    return 0;
++static const FlytResourceBackend *ops(void) { pthread_once(&once, select_backend); return backend; }
++int flyt_hami_backend(void) { return ops() == &flyt_hami_ops; }
++int change_sm_cores(uint32_t n) { return ops()->change_sm(n); }
++void set_active_device(int d) { ops()->set_device(d); }
++int get_active_device(void) { return ops()->get_device(); }
++int set_mem_limit(uint64_t n) { return ops()->set_limit(n); }
++uint64_t get_mem_limit(void) { return ops()->get_limit(); }
++int allow_mem_alloc(uint64_t n) { return ops()->allow_alloc(n); }
++uint64_t get_mem_free(void) { return ops()->get_free(); }
++void inc_mem_usage(uint64_t n) { ops()->inc_usage(n); }
++void dec_mem_usage(uint64_t n) { ops()->dec_usage(n); }
++void check_and_change_resource(void) { ops()->apply_change(); }
++int set_new_config(uint32_t n, uint64_t m) { return ops()->set_config(n,m); }
++int init_resource_controller(uint32_t n, uint64_t m) { return ops()->init(n,m); }
++void set_primary_context(void) { ops()->push_primary(); }
++void unset_primary_context(void) { ops()->pop_primary(); }
++void set_exec_context(void) { ops()->set_exec(); }
++int flyt_backend_get_memory(uint64_t *available, uint64_t *total) {
++    if (!available || !total) return cudaErrorInvalidValue;
++    if (flyt_hami_backend()) return flyt_hami_memory(available, total);
++    *available = get_mem_free(); *total = get_mem_limit(); return cudaSuccess;
+ }
+-
+-int init_resource_controller(uint32_t num_sm_cores, uint64_t mem) {
+-    current_mm_usage = 0;
+-    
+-    CUresult res = cuCtxGetCurrent(&primaryCtx);
+-    if (res != CUDA_SUCCESS) {
+-        const char *errStr;
+-        cuGetErrorString(res, &errStr);
+-        LOGE(LOG_ERROR, "Failed to get primary context: %s", errStr);
+-        return -1;
+-    }
+-
+-    /*
+-    if(set_new_config(num_sm_cores, mem) != 0) {
+-        LOGE(LOG_ERROR, "Failed to set new sm cores configuration");
+-        return -1;
+-    }
+-    */
+-
+-    if (flyt_hami_backend()) {
+-        /* Keep the Runtime primary context; never replace it with an MPS context. */
+-        FILE *maps = fopen("/proc/self/maps", "r");
+-        char line[4096];
+-        int loaded = 0;
+-        if (maps != NULL) {
+-            while (fgets(line, sizeof(line), maps))
+-                if (strstr(line, "libvgpu.so")) loaded = 1;
+-            fclose(maps);
+-        }
+-        if (!loaded || primaryCtx == NULL || mem == 0) {
+-            LOGE(LOG_ERROR, "HAMi Worker requires libvgpu, a primary context and a quota");
+-            return -1;
+-        }
+-        struct cudaDeviceProp prop;
+-        if (cudaGetDeviceProperties(&prop, active_device) != cudaSuccess) return -1;
+-        cur_num_sm_cores = prop.multiProcessorCount; /* capability, NOT quota percent */
+-        execCtx = primaryCtx;
+-        mem_limit = mem; /* diagnostic fallback only, not per-process enforcement */
+-        return init_device_management(active_device);
+-    }
+-
+-    if (change_sm_cores(num_sm_cores) != 0) {
+-        LOGE(LOG_ERROR, "Failed to set sm cores configuration");
+-        return -1;
+-    }
+-
+-    if (set_mem_limit(mem) != 0) {
+-        LOGE(LOG_ERROR, "Failed to set memory limit");
+-        return -1;
+-    }
+-
+-    return init_device_management(active_device);
+-}
+-
+-void set_primary_context() {
+-    cudaDeviceSynchronize();
+-    cuCtxPushCurrent(primaryCtx);
+-}
+-
+-void unset_primary_context() {
+-    cuCtxPopCurrent(&primaryCtx);
+-}
+-
+-void set_exec_context() {
+-    cudaDeviceSynchronize();
+-    cuCtxSetCurrent(execCtx);
+-}
+diff --git a/cpu/resource-backend.h b/cpu/resource-backend.h
+--- /dev/null
++++ b/cpu/resource-backend.h
+@@ -0,0 +1,29 @@
++#ifndef FLYT_RESOURCE_BACKEND_H
++#define FLYT_RESOURCE_BACKEND_H
++#include <stdint.h>
++#include "cpu-server-resource-controller.h"
++
++typedef struct {
++    int (*change_sm)(uint32_t);
++    void (*set_device)(int);
++    int (*get_device)(void);
++    int (*set_limit)(uint64_t);
++    uint64_t (*get_limit)(void);
++    int (*allow_alloc)(uint64_t);
++    uint64_t (*get_free)(void);
++    void (*inc_usage)(uint64_t);
++    void (*dec_usage)(uint64_t);
++    void (*apply_change)(void);
++    int (*set_config)(uint32_t, uint64_t);
++    int (*init)(uint32_t, uint64_t);
++    void (*push_primary)(void);
++    void (*pop_primary)(void);
++    void (*set_exec)(void);
++} FlytResourceBackend;
++extern const FlytResourceBackend flyt_hami_ops;
++#ifndef FLYT_HAMI_ONLY
++extern const FlytResourceBackend flyt_mps_ops;
++#endif
++extern volatile uint32_t cur_num_sm_cores;
++int flyt_hami_memory(uint64_t *available, uint64_t *total);
++#endif
+diff --git a/cpu/resource-backend-hami.c b/cpu/resource-backend-hami.c
+--- /dev/null
++++ b/cpu/resource-backend-hami.c
+@@ -0,0 +1,110 @@
++/* HAMi owns aggregate Pod enforcement. This module does not count allocations. */
++#include <cuda.h>
++#include <cuda_runtime.h>
++#include <errno.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include "resource-backend.h"
++#include "device-management.h"
++
++static int device = -1;
++static CUcontext primary;
++static uint64_t quota_bytes;
++static int initialized;
++static _Thread_local unsigned int primary_depth;
++
++static void context_check(CUresult result) {
++    if (result != CUDA_SUCCESS) {
++        fprintf(stderr, "HAMi context operation failed (%d); terminating this RPC server\n", (int)result);
++        exit(EXIT_FAILURE);
++    }
++}
++static int unsupported(void) {
++    fprintf(stderr, "HAMi does not support in-process quota/context replacement; use a new VMI allocation\n");
++    return -1;
++}
++static int change_sm(uint32_t n) { (void)n; return unsupported(); }
++static int set_limit(uint64_t n) { (void)n; return unsupported(); }
++static int set_config(uint32_t n, uint64_t m) { (void)n; (void)m; return unsupported(); }
++static void set_device(int d) { device = d; }
++static int get_device(void) { return device; }
++static void no_usage(uint64_t n) { (void)n; }
++static void no_change(void) {}
++static int allow_alloc(uint64_t n) { (void)n; return initialized; }
++
++int flyt_hami_memory(uint64_t *available, uint64_t *total) {
++    *available = 0; *total = 0;
++    if (!initialized) return cudaErrorInitializationError;
++    size_t free_bytes = 0, total_bytes = 0;
++    cudaError_t err = cudaMemGetInfo(&free_bytes, &total_bytes);
++    if (err != cudaSuccess) {
++        fprintf(stderr, "HAMi memory observation failed: %s\n", cudaGetErrorString(err));
++        return err;
++    }
++    if (!total_bytes || total_bytes > quota_bytes || free_bytes > total_bytes) {
++        fprintf(stderr, "HAMi memory observation exceeds the configured Pod limit or is inconsistent\n");
++        return cudaErrorUnknown;
++    }
++    *available = free_bytes; *total = total_bytes;
++    return cudaSuccess;
++}
++static uint64_t get_limit(void) {
++    uint64_t available, total; return flyt_hami_memory(&available, &total) == cudaSuccess ? total : 0;
++}
++static uint64_t get_free(void) {
++    uint64_t available, total; return flyt_hami_memory(&available, &total) == cudaSuccess ? available : 0;
++}
++static int init(uint32_t reported_sm, uint64_t memory) {
++    if (initialized) return -1;
++    const char *value = getenv("FLYT_MEMORY_BYTES");
++    if (!value || !*value || strspn(value,"0123456789") != strlen(value)) return -1;
++    char *end; errno = 0; unsigned long long expected = strtoull(value, &end, 10);
++    if (errno || *end || expected != memory || memory < 256ULL*1024*1024 || memory > 1048576ULL*1024*1024 || device != 0) return -1;
++    FILE *maps = fopen("/proc/self/maps", "r");
++    if (!maps) return -1;
++    char line[4096]; int loaded = 0, client = 0;
++    while (fgets(line, sizeof(line), maps)) {
++        if (strstr(line,"libvgpu.so")) loaded = 1;
++        if (strstr(line,"cricket-client")) client = 1;
++    }
++    fclose(maps);
++    if (!loaded || client) return -1;
++    int count = 0; struct cudaDeviceProp prop;
++    if (cudaGetDeviceCount(&count) != cudaSuccess || count != 1 || cudaGetDeviceProperties(&prop,device) != cudaSuccess) return -1;
++    char uuid[41]; const unsigned char *b = (const unsigned char *)prop.uuid.bytes;
++    snprintf(uuid,sizeof(uuid),"GPU-%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
++        b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15]);
++    const char *expected_uuid = getenv("FLYT_GPU_UUID");
++    if (!expected_uuid || strcmp(uuid,expected_uuid) || prop.multiProcessorCount <= 0 || reported_sm != (uint32_t)prop.multiProcessorCount) return -1;
++    if (cuCtxGetCurrent(&primary) != CUDA_SUCCESS || !primary) return -1;
++    quota_bytes = memory;
++    cur_num_sm_cores = prop.multiProcessorCount; /* CUDA capability, never quota percentage. */
++    if (init_device_management(device) != 0) return -1;
++    initialized = 1;
++    uint64_t available, total;
++    if (flyt_hami_memory(&available,&total) != cudaSuccess) { initialized = 0; return -1; }
++    fprintf(stderr,"HAMi backend initialized: UUID=%s capability_sm=%u configured_bytes=%llu observed_total=%llu; enforcement unvalidated\n",
++        uuid,reported_sm,(unsigned long long)memory,(unsigned long long)total);
++    return 0;
++}
++static void push_primary(void) {
++    if (!initialized) exit(EXIT_FAILURE);
++    /* Preserve existing API synchronization semantics; do not replace/destroy the context. */
++    (void)cudaDeviceSynchronize();
++    context_check(cuCtxPushCurrent(primary)); ++primary_depth;
++}
++static void pop_primary(void) {
++    CUcontext popped = NULL;
++    if (!primary_depth) exit(EXIT_FAILURE);
++    context_check(cuCtxPopCurrent(&popped)); --primary_depth;
++    if (popped != primary) exit(EXIT_FAILURE);
++}
++static void set_exec(void) {
++    if (!initialized) exit(EXIT_FAILURE);
++    (void)cudaDeviceSynchronize(); context_check(cuCtxSetCurrent(primary));
++}
++const FlytResourceBackend flyt_hami_ops = {
++    change_sm,set_device,get_device,set_limit,get_limit,allow_alloc,get_free,
++    no_usage,no_usage,no_change,set_config,init,push_primary,pop_primary,set_exec
++};
+diff --git a/cpu/resource-backend-mps.c b/cpu/resource-backend-mps.c
+--- /dev/null
++++ b/cpu/resource-backend-mps.c
+@@ -0,0 +1,274 @@
++#ifndef FLYT_HAMI_ONLY
++#include "resource-backend.h"
++/* Copyright (c) 2024-2026 SynerG Lab, IITB */
++
++
++#include <pthread.h>
++#include <inttypes.h>
++#include <cuda.h>
++#include <cuda_runtime.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "gsched.h"
++#include "log.h"
++#include "cpu-server-driver.h"
++#include "cpu-server-resource-controller.h"
++#include "device-management.h"
++#include "cpu-server-client-mgr.h"
++
++static int active_device = -1;
++static uint64_t mem_limit = 0;
++static uint64_t current_mm_usage = 0;
++
++static volatile uint32_t new_num_sm_cores = 0;
++extern volatile uint32_t cur_num_sm_cores;
++static volatile uint64_t new_mem = 0;
++static volatile int change_resource_flag = 0;
++
++static CUcontext primaryCtx = NULL;
++static CUcontext execCtx = NULL;
++
++static int delete_context_resources() {
++    // iterate over all client
++    cricket_client_iter iter = get_client_iter();
++    cricket_client *client;
++
++    while ((client = get_next_client(&iter)) != NULL) {
++        
++        // delete all streams
++        cudaStreamDestroy(client->default_stream);
++
++        resource_map_iter *stream_iter = resource_map_init_iter(client->custom_streams);
++        uint64_t idx;
++
++        while ((idx = resource_map_iter_next(stream_iter)) != 0) {
++            cudaStreamDestroy(client->custom_streams->list[idx].mapped_addr);
++        }
++
++        resource_map_free_iter(stream_iter);
++        
++    }
++
++    return 0;
++
++}
++
++
++int mps_change_sm_cores(uint32_t nm_sm_cores) {
++
++    cudaDeviceSynchronize();
++
++    CUcontext currentContext;
++    CUresult res1;
++
++    res1 = cuCtxGetCurrent(&currentContext);
++
++    if (res1 != CUDA_SUCCESS) {
++        const char *errStr;
++        cuGetErrorString(res1, &errStr);
++        LOGE(LOG_ERROR, "Failed to get current context: %s", errStr);
++        return -1;
++    }
++
++    CUcontext newContext;
++    CUresult res2;
++
++    CUexecAffinityParam affinity_param;
++    affinity_param.type = CU_EXEC_AFFINITY_TYPE_SM_COUNT;
++    affinity_param.param.smCount.val = nm_sm_cores;
++
++    int affinitySupported = 0;
++    res2 = cuDeviceGetExecAffinitySupport(&affinitySupported, CU_EXEC_AFFINITY_TYPE_SM_COUNT, active_device);
++    LOGE(LOG_INFO, "GPU affinitySupport: %d", affinitySupported);
++
++    if (affinitySupported != 0) 
++    	res2 = cuCtxCreate_v3(&newContext, &affinity_param, 1,  0, active_device);
++    else 
++    	res2 = cuCtxCreate(&newContext, 0, active_device);
++
++    if (res2 != CUDA_SUCCESS) {
++        const char *errStr;
++        cuGetErrorString(res2, &errStr);
++        LOGE(LOG_ERROR, "Failed to create new context: %s", errStr);
++        return -1;
++    }
++    
++    int ret = server_driver_ctx_state_restore(currentContext);
++
++    if (ret != 0) {
++        LOGE(LOG_DEBUG, "Unable to restore ctx state");
++        return -1;
++    }
++
++    execCtx = newContext;
++
++    LOGE(LOG_INFO, "Changed SM cores to %u", nm_sm_cores);
++
++    
++    cuCtxDestroy(currentContext);
++    
++    return 0;
++    
++}
++
++void mps_set_active_device(int device) {
++    active_device = device;
++}
++
++int mps_get_active_device() {
++    return active_device;
++}
++
++int mps_set_mem_limit(uint64_t limit) {
++    mem_limit = limit;
++    return 0;
++}
++
++uint64_t mps_get_mem_limit() {
++    return mem_limit;
++}
++
++int mps_allow_mem_alloc(uint64_t size) {
++    LOGE(LOG_DEBUG, "Current tracked memory usage: %llu, mem_limit: %llu",
++         current_mm_usage, mem_limit);
++    if (size > mem_limit || current_mm_usage > mem_limit - size) {
++        return 0;
++    }
++    return 1;
++} 
++
++uint64_t mps_get_mem_free() {
++    return current_mm_usage < mem_limit ? mem_limit - current_mm_usage : 0;
++}
++
++void mps_inc_mem_usage(uint64_t size) {
++    current_mm_usage += size;
++}
++
++void mps_dec_mem_usage(uint64_t size) {
++    if (current_mm_usage >= size) {
++        current_mm_usage -= size;
++    }
++    else {
++        current_mm_usage = 0;
++    }
++}
++
++void mps_check_and_change_resource(void) {
++
++    // LOGE(LOG_DEBUG, "Checking and changing resources: %d", change_resource_flag);
++
++    if (change_resource_flag == 0) {
++        return;
++    }
++
++    if (new_num_sm_cores != 0) {
++        mps_change_sm_cores(new_num_sm_cores);
++        cur_num_sm_cores = new_num_sm_cores;
++        new_num_sm_cores = 0;
++    }
++
++    if (new_mem != 0) {
++        mps_set_mem_limit(new_mem);
++        new_mem = 0;
++    }
++
++    change_resource_flag = 0;
++
++}
++
++int mps_set_new_config(uint32_t __newsm, uint64_t __newmem) {
++    struct cudaDeviceProp dev_prop;
++    
++    cudaError_t res = cudaGetDeviceProperties(&dev_prop, active_device);
++
++
++    if (res != cudaSuccess) {
++        LOGE(LOG_ERROR, "Failed to get device properties: %s", cudaGetErrorString(res));
++        return -1;
++    }
++
++    if (__newsm == 0 ) {
++        LOGE(LOG_ERROR, "Invalid number of SM cores: %u", __newsm);
++        return -1;
++    }
++
++    if (__newmem == 0) {
++        LOGE(LOG_ERROR, "Invalid memory limit: %" PRIu64, __newmem);
++        return -1;
++    }
++
++    new_num_sm_cores = __newsm;
++    new_mem = __newmem;
++
++    LOGE(LOG_INFO, "Setting new configuration: %u SM cores, %" PRIu64 " memory limit", new_num_sm_cores, new_mem);
++
++    change_resource_flag = 1;
++    return 0;
++}
++
++int mps_init_resource_controller(uint32_t num_sm_cores, uint64_t mem) {
++    current_mm_usage = 0;
++    
++    CUresult res = cuCtxGetCurrent(&primaryCtx);
++    if (res != CUDA_SUCCESS) {
++        const char *errStr;
++        cuGetErrorString(res, &errStr);
++        LOGE(LOG_ERROR, "Failed to get primary context: %s", errStr);
++        return -1;
++    }
++
++    /*
++    if(mps_set_new_config(num_sm_cores, mem) != 0) {
++        LOGE(LOG_ERROR, "Failed to set new sm cores configuration");
++        return -1;
++    }
++    */
++
++    if (mps_change_sm_cores(num_sm_cores) != 0) {
++        LOGE(LOG_ERROR, "Failed to set sm cores configuration");
++        return -1;
++    }
++
++    if (mps_set_mem_limit(mem) != 0) {
++        LOGE(LOG_ERROR, "Failed to set memory limit");
++        return -1;
++    }
++
++    return init_device_management(active_device);
++}
++
++void mps_set_primary_context() {
++    cudaDeviceSynchronize();
++    cuCtxPushCurrent(primaryCtx);
++}
++
++void mps_unset_primary_context() {
++    cuCtxPopCurrent(&primaryCtx);
++}
++
++void mps_set_exec_context() {
++    cudaDeviceSynchronize();
++    cuCtxSetCurrent(execCtx);
++}
++
++const FlytResourceBackend flyt_mps_ops = {
++    mps_change_sm_cores,
++    mps_set_active_device,
++    mps_get_active_device,
++    mps_set_mem_limit,
++    mps_get_mem_limit,
++    mps_allow_mem_alloc,
++    mps_get_mem_free,
++    mps_inc_mem_usage,
++    mps_dec_mem_usage,
++    mps_check_and_change_resource,
++    mps_set_new_config,
++    mps_init_resource_controller,
++    mps_set_primary_context,
++    mps_unset_primary_context,
++    mps_set_exec_context
++};
++#endif
+diff --git a/control-managers/src/common/resource_backend.rs b/control-managers/src/common/resource_backend.rs
+--- /dev/null
++++ b/control-managers/src/common/resource_backend.rs
+@@ -0,0 +1,49 @@
++//! Resource control policy, shared by Manager, Node Manager and local CLI.
++use std::{env, sync::OnceLock};
++
++#[derive(Clone, Copy, PartialEq)]
++pub enum Backend { LegacyMps, Hami }
++pub const UNSUPPORTED: &str = "HAMi Pod quotas are immutable; update FlytGPURequest and create a new VMI";
++pub fn selected() -> Backend {
++    static VALUE: OnceLock<Backend> = OnceLock::new();
++    *VALUE.get_or_init(|| {
++        let result = match env::var("FLYT_RESOURCE_BACKEND") {
++            Ok(value) if value == "hami" => Backend::Hami,
++            Ok(value) if value == "mps" && option_env!("FLYT_BUILD_BACKEND") != Some("hami") => Backend::LegacyMps,
++            Err(env::VarError::NotPresent) if option_env!("FLYT_BUILD_BACKEND") != Some("hami") => Backend::LegacyMps,
++            _ => panic!("Invalid FLYT_RESOURCE_BACKEND for this build; no automatic backend fallback"),
++        };
++        if result == Backend::Hami && env::vars_os().any(|(k,_)| k.to_string_lossy().starts_with("CUDA_MPS_")) {
++            panic!("HAMi backend rejects CUDA_MPS_* settings");
++        }
++        result
++    })
++}
++pub fn hami() -> bool { selected() == Backend::Hami }
++pub fn require_legacy() -> Result<(),String> { if hami() {Err(UNSUPPORTED.into())} else {Ok(())} }
++pub fn require_controlled() {
++    if hami() && env::var("FLYT_BINDING_API").as_deref() != Ok("1") {
++        panic!("stage-5 HAMi runtime requires the controlled binding protocol");
++    }
++}
++fn number(name: &str, low: u64, high: u64) -> Result<u64,String> {
++    let value = env::var(name).map_err(|_| format!("missing {}",name))?;
++    if value.is_empty() || !value.bytes().all(|b| b.is_ascii_digit()) {return Err(format!("invalid {}",name));}
++    let n = value.parse::<u64>().map_err(|_| format!("invalid {}",name))?;
++    if n < low || n > high {return Err(format!("{} out of range",name));}
++    Ok(n)
++}
++pub struct WorkerSettings { pub capability_sm: u32, pub memory_bytes: u64, pub max_clients: usize }
++pub fn worker_settings() -> Result<WorkerSettings,String> {
++    if !hami() {return Err("HAMi settings requested for a legacy backend".into());}
++    let uuid = env::var("FLYT_GPU_UUID").map_err(|_| "GPU UUID required")?;
++    if uuid.len()!=40 || !uuid.starts_with("GPU-") || !uuid[4..].bytes().enumerate().all(|(i,b)| {
++        if [8,13,18,23].contains(&i) {b==b'-'} else {b.is_ascii_hexdigit()}
++    }) {return Err("invalid GPU UUID".into());}
++    if env::var("GPU_CORE_UTILIZATION_POLICY").as_deref()!=Ok("force") {return Err("HAMi force policy required".into());}
++    Ok(WorkerSettings {
++        capability_sm:number("FLYT_REPORTED_SM",1,u32::MAX as u64)? as u32,
++        memory_bytes:number("FLYT_MEMORY_BYTES",256*1024*1024,1048576*1024*1024)?,
++        max_clients:number("FLYT_MAX_CLIENTS",1,32)? as usize,
++    })
++}
+diff --git a/cpu/cpu-server-resource-controller.h b/cpu/cpu-server-resource-controller.h
+--- a/cpu/cpu-server-resource-controller.h
++++ b/cpu/cpu-server-resource-controller.h
+@@ -6,6 +6,7 @@
+ #include <stdint.h>
+ 
+ int flyt_hami_backend(void);
++int flyt_backend_get_memory(uint64_t *available, uint64_t *total);
+ 
+ int change_sm_cores(uint32_t new_num_sm_cores);
+ 
+diff --git a/cpu/Makefile b/cpu/Makefile
+--- a/cpu/Makefile
++++ b/cpu/Makefile
+@@ -61,6 +61,11 @@
+ 			 cpu-server-mem_manager.c \
+ 			 flyt-cr.c \
+ 			 cpu-server-dev-mem.c
++
++SRC_SERVER += resource-backend-hami.c resource-backend-mps.c
++ifeq ($(FLYT_BUILD_BACKEND),hami)
++CC_FLAGS += -DFLYT_HAMI_ONLY
++endif
+ 
+ SRC_SERVER_LIB = server-library.c
+ SRC_SERVER_EXE = server-exe.c
+diff --git a/cpu/cpu-server-runtime.c b/cpu/cpu-server-runtime.c
+--- a/cpu/cpu-server-runtime.c
++++ b/cpu/cpu-server-runtime.c
+@@ -2193,9 +2193,10 @@
+     // result->err = cudaMemGetInfo(&result->dsz_result_u.data.sz1,
+     //                          &result->dsz_result_u.data.sz2);
+ 
+-    result->dsz_result_u.data.sz1 = get_mem_free();
+-    result->dsz_result_u.data.sz2 = get_mem_limit();
+-    result->err = cudaSuccess;
++    uint64_t available = 0, total = 0;
++    result->err = flyt_backend_get_memory(&available, &total);
++    result->dsz_result_u.data.sz1 = available;
++    result->dsz_result_u.data.sz2 = total;
+ 
+     GSCHED_RELEASE;
+     return 1;
+diff --git a/cpu/server-exe.c b/cpu/server-exe.c
+--- a/cpu/server-exe.c
++++ b/cpu/server-exe.c
+@@ -7,8 +7,12 @@
+ #include <stdlib.h>
+ #include <stdint.h>
+ 
++extern int flyt_hami_backend(void);
++
+ int main(int argc, char** argv)
+ {
++    (void)flyt_hami_backend();
++
+     uint64_t vers, memory;
+     uint32_t gpu_id, num_sm_cores, thread_mode;
+     if (argc == 6) {
+diff --git a/cpu/cpu-server-mgr-listener.c b/cpu/cpu-server-mgr-listener.c
+--- a/cpu/cpu-server-mgr-listener.c
++++ b/cpu/cpu-server-mgr-listener.c
+@@ -70,8 +70,19 @@
+     while (1) {
+         if (msgrcv(snode_mqueue_id, &msg, sizeof(mqueue_msg), recv_type, 0) == -1) {
+             LOGE(LOG_ERROR, "Error receiving message from node manager: %s", strerror(errno));
+-        }
+-
++            continue;
++        }
++
++        if (flyt_hami_backend() &&
++            (strncmp(msg.msg.cmd, SNODE_VIRTS_CHANGE_RESOURCES, strlen(SNODE_VIRTS_CHANGE_RESOURCES)) == 0 ||
++             strncmp(msg.msg.cmd, SNODE_VIRTS_CHECKPOINT, strlen(SNODE_VIRTS_CHECKPOINT)) == 0 ||
++             strncmp(msg.msg.cmd, SNODE_VIRTS_RESTORE, strlen(SNODE_VIRTS_RESTORE)) == 0)) {
++            struct msgbuf_uint32 rsp;
++            rsp.mtype = send_type; rsp.data = htonl(501);
++            if (msgsnd(snode_mqueue_id, &rsp, sizeof(uint32_t), 0) == -1)
++                LOGE(LOG_ERROR, "Unable to send unsupported-operation response");
++            continue;
++        }
+         if (strncmp(msg.msg.cmd, SNODE_VIRTS_CHANGE_RESOURCES, strlen(SNODE_VIRTS_CHANGE_RESOURCES)) == 0) {
+             LOGE(LOG_INFO, "Received message from node manager: %s", msg.msg.cmd);
+             
+diff --git a/cpu/flyt-cr.c b/cpu/flyt-cr.c
+--- a/cpu/flyt-cr.c
++++ b/cpu/flyt-cr.c
+@@ -245,7 +245,10 @@
+ 
+ #define FILE_EXTRA_LENGTH 64
+ 
++extern int flyt_hami_backend(void);
++
+ int flyt_create_checkpoint(char *basepath) {
++    if (flyt_hami_backend()) return -1;
+ 
+     SET_EXEC_CTX;
+ 
+@@ -644,6 +647,7 @@
+ 
+ 
+ int flyt_restore_checkpoint(char *basepath) {
++    if (flyt_hami_backend()) return -1;
+ 
+     SET_EXEC_CTX;
+ 
+diff --git a/cpu/device-management.c b/cpu/device-management.c
+--- a/cpu/device-management.c
++++ b/cpu/device-management.c
+@@ -1,6 +1,7 @@
+ /* Copyright (c) 2024-2026 SynerG Lab, IITB */
+ 
+ #include <nvml.h>
++#include "cpu-server-resource-controller.h"
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -27,8 +28,7 @@
+     pid = getpid();
+     active_device = device_id;
+ 
+-    const char *backend = getenv("FLYT_RESOURCE_BACKEND");
+-    if (backend != NULL && strcmp(backend, "hami") == 0) {
++    if (flyt_hami_backend()) {
+         const char *uuid = getenv("FLYT_GPU_UUID");
+         if (uuid == NULL) return -1;
+         // CUDA ordinal 0 is the allocated GPU, not necessarily NVML physical 0.
+diff --git a/control-managers/src/common/mod.rs b/control-managers/src/common/mod.rs
+--- a/control-managers/src/common/mod.rs
++++ b/control-managers/src/common/mod.rs
+@@ -1,6 +1,7 @@
+ // Copyright (c) 2024-2026 SynerG Lab, IITB
+ 
+ pub mod api_commands;
++pub mod resource_backend;
+ pub mod utils;
+ pub mod types;
+ pub mod config;
+diff --git a/control-managers/src/cluster-manager/bookkeeping.rs b/control-managers/src/cluster-manager/bookkeeping.rs
+--- a/control-managers/src/cluster-manager/bookkeeping.rs
++++ b/control-managers/src/cluster-manager/bookkeeping.rs
+@@ -12,7 +12,7 @@
+ use crate::common::utils::Utils;
+ 
+ pub fn hami_static_enabled() -> bool {
+-    std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami")
++    crate::common::resource_backend::hami()
+ }
+ 
+ struct ConfigOptions;
+diff --git a/control-managers/src/cluster-manager/main.rs b/control-managers/src/cluster-manager/main.rs
+--- a/control-managers/src/cluster-manager/main.rs
++++ b/control-managers/src/cluster-manager/main.rs
+@@ -21,6 +21,7 @@
+ fn main() {
+ 
+     env_logger::init();
++    common::resource_backend::require_controlled();
+ 
+     let ( servernode_port, client_port) = bookkeeping::get_ports();
+     let ( metrics_port, metrics_interval) = bookkeeping::get_metrics_port();
+diff --git a/control-managers/src/servernode-daemon/main.rs b/control-managers/src/servernode-daemon/main.rs
+--- a/control-managers/src/servernode-daemon/main.rs
++++ b/control-managers/src/servernode-daemon/main.rs
+@@ -34,6 +34,7 @@
+ fn main() {
+ 
+     env_logger::init();
++    common::resource_backend::require_controlled();
+ 
+     let gpu_manager = GPUManager::new();
+ 
+diff --git a/control-managers/src/cluster-manager/cli_frontend.rs b/control-managers/src/cluster-manager/cli_frontend.rs
+--- a/control-managers/src/cluster-manager/cli_frontend.rs
++++ b/control-managers/src/cluster-manager/cli_frontend.rs
+@@ -103,6 +103,10 @@
+ fn main() {
+     env_logger::init();
+     let args = Args::parse();
++    if common::resource_backend::hami() && !matches!(&args.cmd, Commands::ListVms | Commands::ListServernodes | Commands::ListVirtServers) {
++        eprintln!("{}", common::resource_backend::UNSUPPORTED);
++        std::process::exit(2);
++    }
+     let stream_path = get_stream_path();
+ 
+     let stream_org = UnixStream::connect(stream_path);
+diff --git a/control-managers/src/cluster-manager/tcp_frontend.rs b/control-managers/src/cluster-manager/tcp_frontend.rs
+--- a/control-managers/src/cluster-manager/tcp_frontend.rs
++++ b/control-managers/src/cluster-manager/tcp_frontend.rs
+@@ -18,6 +18,10 @@
+ }
+ 
+ fn main() {
++    if common::resource_backend::hami() {
++        eprintln!("Legacy TCP scaling frontend is unavailable for HAMi; use FlytGPURequest");
++        std::process::exit(2);
++    }
+     let mut curr_sm_cores = 10;
+     let mut migration_done = false;
+     let migration_vm_mem = 8192 * 1024 * 1024;
+diff --git a/control-managers/src/cluster-manager/frontend_handler.rs b/control-managers/src/cluster-manager/frontend_handler.rs
+--- a/control-managers/src/cluster-manager/frontend_handler.rs
++++ b/control-managers/src/cluster-manager/frontend_handler.rs
+@@ -48,7 +48,7 @@
+         }
+     }
+ 
+-    fn handle_request(&self, stream: UnixStream) {
++    fn handle_request(&self, mut stream: UnixStream) {
+         let reader_clone = match stream.try_clone() {
+             Ok(stream) => stream,
+             Err(e) => {
+@@ -66,6 +66,11 @@
+             }
+         };
+         
++        if crate::common::resource_backend::hami() && !matches!(command.as_str(),
++            FrontEndCommand::LIST_VMS | FrontEndCommand::LIST_SERVER_NODES | FrontEndCommand::LIST_VIRT_SERVERS) {
++            let _ = StreamUtils::write_all(&mut stream, format!("501\n{}\n",crate::common::resource_backend::UNSUPPORTED));
++            return;
++        }
+         match command.as_str() {
+             FrontEndCommand::LIST_VMS => {
+                 self.list_vms(stream);
+@@ -110,6 +115,11 @@
+     }
+ 
+     fn migrate_vm(&self, mut stream: UnixStream, mut reader: BufReader<UnixStream>) {
++        if crate::common::resource_backend::hami() {
++            let _ = StreamUtils::write_all(&mut stream, format!("501\n{}\n",crate::common::resource_backend::UNSUPPORTED));
++            return;
++        }
++
+ 
+         log::info!("Received migrate request");
+ 
+@@ -184,6 +194,11 @@
+     }
+ 
+     fn migrate_vm_auto(&self, mut stream: UnixStream, mut reader: BufReader<UnixStream>) {
++        if crate::common::resource_backend::hami() {
++            let _ = StreamUtils::write_all(&mut stream, format!("501\n{}\n",crate::common::resource_backend::UNSUPPORTED));
++            return;
++        }
++
+ 
+         log::info!("Received migrate auto request");
+ 
+@@ -320,6 +335,11 @@
+     }
+ 
+     fn change_resources(&self, mut stream: UnixStream, mut reader: BufReader<UnixStream>, change_for: ChangeConfigFor) {
++        if crate::common::resource_backend::hami() {
++            let _ = StreamUtils::write_all(&mut stream, format!("501\n{}\n",crate::common::resource_backend::UNSUPPORTED));
++            return;
++        }
++
+ 
+         log::info!("Received change resource request");
+ 
+@@ -384,6 +404,11 @@
+ 
+ 
+     fn increase_resources(&self, mut stream: UnixStream, mut reader: BufReader<UnixStream>, decrement: bool) {
++        if crate::common::resource_backend::hami() {
++            let _ = StreamUtils::write_all(&mut stream, format!("501\n{}\n",crate::common::resource_backend::UNSUPPORTED));
++            return;
++        }
++
+         let buffer = match StreamUtils::read_response(&mut reader, 1) {
+             Ok(buffer) => buffer,
+             Err(e) => {
+@@ -446,6 +471,11 @@
+     }
+ 
+     fn set_vm_grouping(&self, mut stream: UnixStream, mut reader: BufReader<UnixStream>, enable: bool) {
++        if crate::common::resource_backend::hami() {
++            let _ = StreamUtils::write_all(&mut stream, format!("501\n{}\n",crate::common::resource_backend::UNSUPPORTED));
++            return;
++        }
++
+         let buffer = match StreamUtils::read_response(&mut reader, 1) {
+             Ok(buffer) => buffer,
+             Err(e) => {
+diff --git a/control-managers/src/servernode-daemon/resource_manager_handler.rs b/control-managers/src/servernode-daemon/resource_manager_handler.rs
+--- a/control-managers/src/servernode-daemon/resource_manager_handler.rs
++++ b/control-managers/src/servernode-daemon/resource_manager_handler.rs
+@@ -100,6 +100,19 @@
+                 break;
+             }
+ 
++            if crate::common::resource_backend::hami() {
++                let lines = match buf.trim() {
++                    FlytApiCommand::RMGR_SNODE_CHANGE_RESOURCES => 1,
++                    FlytApiCommand::RMGR_SNODE_CHECKPOINT | FlytApiCommand::RMGR_SNODE_RESTORE => 2,
++                    _ => 0,
++                };
++                if lines > 0 {
++                    for _ in 0..lines { let _ = stream_read_line!(reader); }
++                    stream_write!(writer, format!("501\n{}\n",crate::common::resource_backend::UNSUPPORTED));
++                    buf.clear();
++                    continue;
++                }
++            }
+             match buf.trim() {
+                 FlytApiCommand::RMGR_SNODE_SEND_GPU_INFO => {
+                     log::info!("Got send gpu info command");
+diff --git a/control-managers/src/servernode-daemon/virt_server_manager.rs b/control-managers/src/servernode-daemon/virt_server_manager.rs
+--- a/control-managers/src/servernode-daemon/virt_server_manager.rs
++++ b/control-managers/src/servernode-daemon/virt_server_manager.rs
+@@ -80,7 +80,7 @@
+         
+ 
+         VirtServerManager {
+-            counter: Mutex::new(if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") {
++            counter: Mutex::new(if crate::common::resource_backend::hami() {
+                 // Avoid reusing version 1 after a Worker generation ends. Sessions
+                 // still need explicit client restart; this is not session recovery.
+                 let mut bytes = [0u8; 4];
+@@ -109,22 +109,20 @@
+ 
+ 
+     pub fn create_virt_server(&self, gpu_id: u32, gpu_memory: u64, num_sm_cores: u32) -> Result<u64,String> {
+-        let hami = std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami");
++        let hami = crate::common::resource_backend::hami();
+         let (num_sm_cores, gpu_memory) = if hami {
+-            if gpu_id != 0 { return Err("Worker exposes only CUDA device 0".into()); }
+-            let limit: usize = std::env::var("FLYT_MAX_CLIENTS").map_err(|e| e.to_string())?
+-                .parse::<usize>().map_err(|e| e.to_string())?;
++            if gpu_id != 0 || gpu_memory != 0 || num_sm_cores != 0 {
++                return Err("HAMi allocation requires device 0 and inactive legacy SM/memory fields".into());
++            }
++            let settings = crate::common::resource_backend::worker_settings()?;
++            let limit = settings.max_clients;
+             let mut servers = self.virts_servers.lock().unwrap();
+             servers.retain(|_, server| match server.process.lock().unwrap().try_wait() {
+                 Ok(Some(_)) => false,
+                 _ => true,
+             });
+             if limit == 0 || servers.len() >= limit { return Err("Worker client limit reached".into()); }
+-            let sm = std::env::var("FLYT_REPORTED_SM").map_err(|e| e.to_string())?
+-                .parse::<u32>().map_err(|e| e.to_string())?;
+-            let mem = std::env::var("FLYT_MEMORY_BYTES").map_err(|e| e.to_string())?
+-                .parse::<u64>().map_err(|e| e.to_string())?;
+-            (sm, mem)
++            (settings.capability_sm, settings.memory_bytes)
+         } else { (num_sm_cores, gpu_memory) };
+         log::debug!("create_virt_server: gpu_id: {}, gpu_memory: {}, num_sm_cores: {}", gpu_id, gpu_memory, num_sm_cores);
+         let rpc_id = {
+@@ -223,7 +221,7 @@
+     }
+ 
+     pub fn checkpoint_virt_server(&self, rpc_id: u64, ckp_path: &str) -> Result<(),String> {
+-        if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") { return Err("unsupported for static HAMi Worker".into()); }
++        crate::common::resource_backend::require_legacy()?;
+         log::debug!("checkpoint_virt_server: rpc_id: {}, ckp_path: {}", rpc_id, ckp_path);
+         
+         let virt_server = self.get_virt_server(rpc_id).ok_or("Virt server not found")?;
+@@ -244,7 +242,7 @@
+     }
+ 
+     pub fn restore_virt_server(&self, rpc_id: u64, ckp_path: &str) -> Result<(),String> {
+-        if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") { return Err("unsupported for static HAMi Worker".into()); }
++        crate::common::resource_backend::require_legacy()?;
+         log::debug!("restore_virt_server: rpc_id: {}, ckp_path: {}", rpc_id, ckp_path);
+         
+         let virt_server = self.get_virt_server(rpc_id).ok_or("Virt server not found")?;
+@@ -313,7 +311,7 @@
+     }
+ 
+     pub fn change_resources(&self, rpc_id: u64, new_num_sm_cores: u32, new_gpu_memory: u64) -> Result<(),String> {
+-        if std::env::var("FLYT_RESOURCE_BACKEND").as_deref() == Ok("hami") { return Err("unsupported for static HAMi Worker".into()); }
++        crate::common::resource_backend::require_legacy()?;
+ 
+         let mut virt_server = self.get_virt_server(rpc_id).ok_or("Virt server not found")?;
+ 
+diff --git a/control-managers/src/cluster-manager/servernode_handler.rs b/control-managers/src/cluster-manager/servernode_handler.rs
+--- a/control-managers/src/cluster-manager/servernode_handler.rs
++++ b/control-managers/src/cluster-manager/servernode_handler.rs
+@@ -413,6 +413,10 @@
+     }
+ 
+     pub fn create_virt_server(&self, snode_ip: &String, gpu_id: u64, compute_units: u32, memory: u64, allow_overprovision: bool) -> Result<Arc<RwLock<VirtServer>>,String> {
++        let hami = hami_static_enabled();
++        if hami && (gpu_id != 0 || compute_units != 0 || memory != 0) {
++            return Err("HAMi session allocation accepts only device 0 and inactive legacy quota fields".into());
++        }
+         
+         let server_node = self.get_server_node(&snode_ip);
+ 
+@@ -437,7 +441,7 @@
+         {
+             let gpu_read = target_gpu.read().unwrap();
+ 
+-            if !allow_overprovision && (compute_units > (gpu_read.compute_units - gpu_read.allocated_compute_units) 
++            if !hami && !allow_overprovision && (compute_units > (gpu_read.compute_units - gpu_read.allocated_compute_units) 
+                                         || memory > (gpu_read.memory - gpu_read.allocated_memory)) 
+             {
+                 log::error!("Not enough resources to allocate compute_units: {}, memory: {}", compute_units, memory);
+@@ -470,8 +474,10 @@
+ 
+         {
+             let mut gpu_write = target_gpu.write().unwrap();
+-            gpu_write.allocated_compute_units += compute_units;
+-            gpu_write.allocated_memory += memory;
++            if !hami {
++                gpu_write.allocated_compute_units += compute_units;
++                gpu_write.allocated_memory += memory;
++            }
+         }
+ 
+         self.update_server_node(server_node);
+@@ -480,6 +486,7 @@
+     }
+ 
+     pub fn checkpoint(&self, virt_ip: &String, rpc_id: u64, ckp_path: &String) -> Result<(),String> {
++        crate::common::resource_backend::require_legacy()?;
+         let server_node = self.get_server_node(&virt_ip);
+ 
+         if server_node.is_none() {
+@@ -509,6 +516,7 @@
+     }
+ 
+     pub fn restore_state(&self, snode_ip: &String, rpc_id: u64, ckp_path: &String) -> Result<(),String> {
++        crate::common::resource_backend::require_legacy()?;
+         
+         let server_node = self.get_server_node(&snode_ip);
+ 
+@@ -532,7 +540,7 @@
+     }
+ 
+     pub fn migrate_virt_server(&self, client_mgr: &FlytClientManager, client_ip: &String, client_id: i32, target_snode_id: &String, target_gpu_id: u64, new_sm_cores: u32, new_mem: u64) -> Result<Arc<RwLock<VirtServer>>,String> {
+-        if hami_static_enabled() { return Err("HAMi stage 2 uses static Pod quotas; migration/scaling is unsupported".into()); }
++        crate::common::resource_backend::require_legacy()?;
+         
+         log::info!("Migrating client vm: {},{} to server node: {}", client_ip, client_id, target_snode_id);
+ 
+@@ -696,7 +704,7 @@
+     }
+ 
+     pub fn migrate_virt_server_auto(&self, client_mgr: &FlytClientManager, client_ip: &String, client_id: i32, new_sm_cores: u32, new_mem: u64) -> Result<Arc<RwLock<VirtServer>>,String> {
+-        if hami_static_enabled() { return Err("HAMi stage 2 uses static Pod quotas; migration/scaling is unsupported".into()); }
++        crate::common::resource_backend::require_legacy()?;
+         let vm_required_resources = self.vm_resource_getter.get_vm_required_resources(client_ip);
+         
+         if vm_required_resources.is_none() {
+@@ -781,8 +789,10 @@
+             let target_vserver_lock_guard = target_vserver.read().unwrap();
+             let mut gpu_write_lock_guard = target_vserver_lock_guard.gpu.write().unwrap();
+ 
+-            gpu_write_lock_guard.allocated_compute_units -= target_vserver_lock_guard.compute_units;
+-            gpu_write_lock_guard.allocated_memory -= target_vserver_lock_guard.memory;
++            if !hami_static_enabled() {
++                gpu_write_lock_guard.allocated_compute_units -= target_vserver_lock_guard.compute_units;
++                gpu_write_lock_guard.allocated_memory -= target_vserver_lock_guard.memory;
++            }
+         }
+ 
+         server_node.virt_servers.retain(|virt_server| virt_server.read().unwrap().rpc_id != rpc_id);
+@@ -793,7 +803,7 @@
+     }
+ 
+     pub fn change_resource_configurations(&self, server_ip: &String, rpc_id: u64, compute_units: u32, memory: u64, vm_ip: &String) -> Result<(),String> {
+-        if hami_static_enabled() { return Err("HAMi stage 2 uses static Pod quotas; migration/scaling is unsupported".into()); }
++        crate::common::resource_backend::require_legacy()?;
+         // Get the server node for the given IP
+         let mut server_node = self.get_server_node(server_ip)
+             .ok_or_else(|| {
+diff --git a/control-managers/src/cluster-manager/client_handler.rs b/control-managers/src/cluster-manager/client_handler.rs
+--- a/control-managers/src/cluster-manager/client_handler.rs
++++ b/control-managers/src/cluster-manager/client_handler.rs
+@@ -526,7 +526,7 @@
+                         }
+                     };
+                     let mut vmr = self.server_nodes_manager.vm_resource_getter.get_vm_required_resources(&client_ip).unwrap();
+-                    if sm_core > 0 {
++                    if !hami_static_enabled() && sm_core > 0 {
+                         vmr.compute_units = sm_core as u32;
+                     }
+ 

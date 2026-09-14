@@ -23,6 +23,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 2: VM별 정적 HAMi Worker | `stage/02-per-vm-worker` | 구현 완료 | NOT_RUN |
 | 3: CRD 기반 VM/Worker Controller | `stage/03-controller` | 소스 구현 완료 | NOT_RUN |
 | 4: VM GPU 요청과 quota 변환 | `stage/04-gpu-request` | 소스 구현 완료 | NOT_RUN |
+| 5: HAMi 자원 제어 backend 분리 | `stage/05-hami-backend` | 소스 구현 완료 | NOT_RUN |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -99,3 +100,19 @@ Worker를 재생성해도 값을 바꾸지 않는다. 요청 변경은 PendingRe
 4단계 Controller는 기존 3단계 설치를 같은 namespace/Lease/리소스 식별자로 확장한다.
 별도의 HAMi 설치나 GPU 설정 변경은 없다. 빌드·정적 검사·CRD 검사·시험·실제 배포는 모두
 미실행이며 커밋에 `[skip ci]`를 사용한다. 개발 완료를 실행 가능성 검증으로 해석하지 않는다.
+
+## 5단계 구현
+
+`stage/04-gpu-request`의 `ed46a8939521ee5a59f38a39c6a15359d85fb34a`에서 분기했다.
+[HAMi backend 안내](../experiments/hami-backend/README.md)에 실행 경로·차단 명령·이미지
+전환과 검증 대기를 기록했다. 1~4단계 실험, Go Controller/CRD와 기본 패치는 보존한다.
+
+기본→2단계→3단계 뒤에 별도 5단계 패치를 추가한다. C 자원 제어 dispatch에서 HAMi와 legacy
+MPS 구현을 분리하고, 5단계 이미지는 C MPS 구현을 제외하며 Rust에도 HAMi 빌드 정책을 내장한다.
+메모리 조회 오류를 CUDA 응답에 전달하고, CLI·Manager·Node Manager·RPC queue의 자원 변경과
+checkpoint/migration 명령을 실행 전에 거절한다. HAMi에서 기존 SM/memory 장부의 비교·증감을
+우회하며 실제 quota는 기존 HAMi에 맡긴다. RPC API와 handle/pointer mapping은 보존한다.
+
+4단계의 불변 image/ref 정책에 따라 새 Profile/ControlPlane/Request로 명시적으로 전환한다.
+VM 자동 재시작이나 GPU 설정 변경은 없다. patch 적용·빌드·정적 검사·GPU 실행·실제 배포는
+모두 NOT_RUN이며 `[skip ci]`로 커밋한다. 6단계 interception·quota 검증과 CUDA 회귀 시험은 남아 있다.

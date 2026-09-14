@@ -1,0 +1,93 @@
+ARG CUDA_DEVEL_IMAGE=docker.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04@sha256:ad6d59a3bbf3e82c1c849c9ac09cfc2a3e0bbb8655042fd899be6681b3fe2a85
+ARG CUDA_RUNTIME_IMAGE=docker.io/nvidia/cuda:12.8.1-cudnn-runtime-ubuntu22.04@sha256:17e2934e1fa96152b14f78078bfbafd0f00f391df995dc6c641a720fce1202bb
+
+FROM ${CUDA_DEVEL_IMAGE} AS build
+ARG FLYT_REPOSITORY=https://github.com/WoogiBoogi1129/flyt_custom_for_k8s.git
+ARG FLYT_COMMIT=596a86939bae125d127a9ed6f70d92c332f47644
+ARG RUST_TOOLCHAIN=1.97.1
+WORKDIR /build
+COPY patches /input/patches
+COPY experiments/per-vm-worker /input/stage2
+COPY experiments/controller /input/stage3
+COPY experiments/hami-backend /input/stage5
+# C excludes the legacy MPS backend; Rust embeds this selection at compile time.
+ENV FLYT_BUILD_BACKEND=hami
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      autoconf automake build-essential ca-certificates curl git libegl1-mesa-dev \
+      libelf-dev libssl-dev libtool libtool-bin libvdpau-dev patch pkg-config \
+      rpcbind rpcsvc-proto \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl --proto '=https' --tlsv1.2 -fsS https://sh.rustup.rs \
+      | sh -s -- -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}"
+ENV PATH=/root/.cargo/bin:${PATH}
+RUN git clone "${FLYT_REPOSITORY}" flyt \
+    && cd flyt && git checkout --detach "${FLYT_COMMIT}" \
+    && git submodule update --init submodules/libtirpc submodules/patchelf \
+    && while IFS= read -r item; do \
+         [ -z "$item" ] || [ "${item#\#}" != "$item" ] || \
+           patch -p1 --forward < "/input/patches/$item" || exit 1; \
+       done < /input/patches/series \
+    && while IFS= read -r item; do \
+         [ -z "$item" ] || [ "${item#\#}" != "$item" ] || \
+           patch -p1 --forward < "/input/stage2/patches/$item" || exit 1; \
+       done < /input/stage2/patches/series \
+    && while IFS= read -r item; do \
+         [ -z "$item" ] || [ "${item#\#}" != "$item" ] || \
+           patch -p1 --forward < "/input/stage3/patches/$item" || exit 1; \
+       done < /input/stage3/patches/series \
+    && while IFS= read -r item; do \
+         [ -z "$item" ] || [ "${item#\#}" != "$item" ] || \
+           patch -p1 --forward < "/input/stage5/patches/$item" || exit 1; \
+       done < /input/stage5/patches/series \
+    && make -C submodules patchelf/install \
+    && make -C cpu/metrics \
+    && LOG=INFO make install-cpu \
+    && LOG=INFO make install-cmgr \
+    && install -d /out/control-plane /out/gpu-cell /out/guest \
+    && install -m 0755 bin/flyt-cluster-manager bin/flytctl bin/flytctlnet /out/control-plane/ \
+    && install -m 0755 bin/flyt-node-manager bin/cricket-rpc-server /out/gpu-cell/ \
+    && install -m 0755 bin/flyt-client-manager bin/cricket-client.so /out/guest/ \
+    && cp -a submodules/libtirpc/install/lib/libtirpc.so* /out/gpu-cell/ \
+    && cp -a submodules/libtirpc/install/lib/libtirpc.so* /out/guest/ \
+    && git rev-parse HEAD > /out/FLYT_COMMIT \
+    && sha256sum /input/patches/*.patch > /out/PATCHES.sha256
+RUN install -m 0755 /build/flyt/cpu/metrics/libprofiler.so /out/gpu-cell/ \
+    && nvcc -std=c++17 --cudart shared -arch=sm_120 /input/stage2/guard.cu -o /out/gpu-cell/flyt-hami-guard \
+    && sha256sum /input/stage2/patches/*.patch > /out/STAGE2_PATCHES.sha256 \
+    && sha256sum /input/stage3/patches/*.patch > /out/STAGE3_PATCHES.sha256 \
+    && sha256sum /input/stage5/patches/*.patch > /out/STAGE5_PATCHES.sha256 \
+    && cp /input/stage5/versions.json /out/STAGE5.json
+
+FROM docker.io/library/ubuntu:22.04@sha256:3b06811b2afd352be909dd088a004166d665dc76d38b13eada33522a9d915c6f AS cluster-manager
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libssl3 tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 65532 flyt && useradd --system --uid 65532 --gid 65532 flyt
+COPY --from=build /out/control-plane/ /opt/flyt/bin/
+COPY --from=build /out/FLYT_COMMIT /out/PATCHES.sha256 /out/STAGE2_PATCHES.sha256 /out/STAGE3_PATCHES.sha256 /opt/flyt/metadata/
+USER 65532:65532
+ENV FLYT_RESOURCE_BACKEND=hami
+ENV FLYT_BINDING_API=1
+COPY --from=build /out/STAGE5_PATCHES.sha256 /out/STAGE5.json /opt/flyt/metadata/
+ENTRYPOINT ["/usr/bin/tini", "--", "/opt/flyt/bin/flyt-cluster-manager"]
+
+FROM ${CUDA_RUNTIME_IMAGE} AS worker
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libelf1 libssl3 netbase procps python3 rpcbind tini util-linux \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /out/gpu-cell/ /opt/flyt/bin/
+COPY experiments/per-vm-worker/worker.py /opt/flyt/worker-base.py
+COPY experiments/controller/worker.py /opt/flyt/worker.py
+COPY --from=build /out/FLYT_COMMIT /out/PATCHES.sha256 /out/STAGE2_PATCHES.sha256 /out/STAGE3_PATCHES.sha256 /opt/flyt/metadata/
+ENV FLYT_RESOURCE_BACKEND=hami
+ENV FLYT_BINDING_API=1
+COPY --from=build /out/STAGE5_PATCHES.sha256 /out/STAGE5.json /opt/flyt/metadata/
+ENV LD_LIBRARY_PATH=/opt/flyt/bin:/usr/local/cuda/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+ENTRYPOINT ["/usr/bin/tini", "--", "python3", "/opt/flyt/worker.py"]
+
+FROM docker.io/library/ubuntu:22.04@sha256:3b06811b2afd352be909dd088a004166d665dc76d38b13eada33522a9d915c6f AS guest-artifacts
+COPY --from=build /out/guest/ /opt/flyt/guest/
+COPY --from=build /out/FLYT_COMMIT /opt/flyt/metadata/FLYT_COMMIT
+COPY --from=build /out/PATCHES.sha256 /opt/flyt/metadata/PATCHES.sha256
+
+COPY --from=build /out/STAGE2_PATCHES.sha256 /out/STAGE3_PATCHES.sha256 /opt/flyt/metadata/
+COPY --from=build /out/STAGE5_PATCHES.sha256 /out/STAGE5.json /opt/flyt/metadata/

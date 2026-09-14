@@ -1,0 +1,28 @@
+{
+  "stage": "05-hami-backend",
+  "parent_branch": "stage/04-gpu-request",
+  "parent_commit": "ed46a8939521ee5a59f38a39c6a15359d85fb34a",
+  "flyt_upstream_commit": "596a86939bae125d127a9ed6f70d92c332f47644",
+  "patch_order": ["../../patches/series", "../per-vm-worker/patches/series", "../controller/patches/series", "patches/series"],
+  "build_backend": "hami",
+  "controller": "stage-4 unchanged",
+  "crds": "stage-4 unchanged",
+  "hami_chart_version": "2.8.0",
+  "cuda_toolkit": "12.8.1",
+  "rust_toolchain": "1.97.1",
+  "implementation": "implemented-unvalidated",
+  "validation": {
+    "patch_application": "NOT_RUN",
+    "static_checks": "NOT_RUN",
+    "build": "NOT_RUN",
+    "manifest_validation": "NOT_RUN",
+    "backend_selection": "NOT_RUN",
+    "unsupported_commands": "NOT_RUN",
+    "memory_error_propagation": "NOT_RUN",
+    "context_lifecycle": "NOT_RUN",
+    "legacy_mps_regression": "NOT_RUN",
+    "hami_interception_and_quota": "NOT_RUN",
+    "multi_vm_and_cuda_compatibility": "NOT_RUN",
+    "cluster_apply": "NOT_RUN"
+  }
+}
