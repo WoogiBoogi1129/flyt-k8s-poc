@@ -1,0 +1,44 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: flyt-request-controller
+  namespace: flyt-hami-stage3
+rules:
+  - apiGroups: [flyt.dev]
+    resources: [flytgpurequests, flytgpurequests/status, flytgpurequests/finalizers]
+    verbs: [get, list, watch, patch, update]
+  - apiGroups: [kubevirt.io]
+    resources: [virtualmachines]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: flyt-request-controller
+  namespace: flyt-hami-stage3
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: flyt-request-controller
+subjects:
+  - kind: ServiceAccount
+    name: flyt-controller
+    namespace: flyt-hami-stage3
+---
+# No binding is created automatically. A platform administrator may grant this
+# role to trusted request authors. It cannot approve profiles or forge Workers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: flyt-gpu-request-author
+  namespace: flyt-hami-stage3
+rules:
+  - apiGroups: [flyt.dev]
+    resources: [flytgpurequests]
+    verbs: [get, list, watch, create, patch, update, delete]
+  - apiGroups: [flyt.dev]
+    resources: [flytgpuprofiles, flytcontrolplanes, flytworkers]
+    verbs: [get, list, watch]
+  - apiGroups: [kubevirt.io]
+    resources: [virtualmachines, virtualmachineinstances]
+    verbs: [get, list, watch]

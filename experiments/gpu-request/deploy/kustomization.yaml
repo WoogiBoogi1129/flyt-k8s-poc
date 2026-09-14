@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# This upgrades the stage-3 installation in the same namespace. It is not a
+# second, independent controller or a new HAMi release.
+resources:
+  - flytgpuprofiles.json
+  - flytcontrolplanes.json
+  - flytworkers.json
+  - flytgpurequests.json
+  - rbac.yaml
+  - request-rbac.yaml
+  - controller.yaml

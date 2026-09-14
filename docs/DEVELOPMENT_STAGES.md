@@ -22,6 +22,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 1: HAMi 단독 PoC | `stage/01-hami-standalone` | 구현 완료 | NOT_RUN |
 | 2: VM별 정적 HAMi Worker | `stage/02-per-vm-worker` | 구현 완료 | NOT_RUN |
 | 3: CRD 기반 VM/Worker Controller | `stage/03-controller` | 소스 구현 완료 | NOT_RUN |
+| 4: VM GPU 요청과 quota 변환 | `stage/04-gpu-request` | 소스 구현 완료 | NOT_RUN |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -79,3 +80,22 @@ CRD 단위 관리를 위해 4단계에서 계획한 요구량 표현 중 최소 
 reconcile 시험, GPU 실행과 실제 배포를 수행하지 않았다. 검증 결과는 모두 NOT_RUN이며
 커밋에 `[skip ci]`를 사용한다. 1·2단계 소스, 기본 patch series와 main은 보존한다.
 GPU 소유권은 재확인하거나 변경하지 않았으며, 기존 외부 플랫폼의 사용 해제는 별도 전제다.
+
+## 4단계 구현
+
+`stage/03-controller`의 `cdf086e921e6ce14a46ccca50528c2115a1f1fb3`에서 분기했다.
+[GPU 요청 안내](../experiments/gpu-request/README.md)에 CRD 책임과 변경 정책, 배포 순서,
+권한 및 검증 대기 항목을 정리했다. 1·2·3단계 실험 디렉터리와 runtime 패치는 보존한다.
+
+`FlytGPURequest`에 VM/Profile/ControlPlane UID 참조와 count/compute/memory를 선언한다.
+Profile은 승인된 실행 환경과 Worker별 상한을 제공한다. 정규화된 값 하나에서 HAMi의
+Pod requests/limits와 FLYT_MEMORY_BYTES를 계산하며, 다중 GPU와 live resize는 포함하지 않는다.
+
+VMI Controller가 유일한 자동 Worker 생성자다. Request Controller는 검증·상태·삭제 조정을
+담당한다. 최초 admission의 요청값을 VMI annotation과 Worker spec에 고정해 같은 VMI에서
+Worker를 재생성해도 값을 바꾸지 않는다. 요청 변경은 PendingRestart로 기록하고 새 VMI에서
+반영한다. Request 삭제 또는 승인 철회는 현재 할당의 명시적 해제다.
+
+4단계 Controller는 기존 3단계 설치를 같은 namespace/Lease/리소스 식별자로 확장한다.
+별도의 HAMi 설치나 GPU 설정 변경은 없다. 빌드·정적 검사·CRD 검사·시험·실제 배포는 모두
+미실행이며 커밋에 `[skip ci]`를 사용한다. 개발 완료를 실행 가능성 검증으로 해석하지 않는다.

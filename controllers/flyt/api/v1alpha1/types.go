@@ -38,6 +38,7 @@ type WorkerSpec struct {
     ProfileRef Reference `json:"profileRef"`
     ControlPlaneRef Reference `json:"controlPlaneRef"`
     Suspend bool `json:"suspend,omitempty"`
+    Request *RequestAllocation `json:"request,omitempty"`
 }
 type Status struct {
     ObservedGeneration int64 `json:"observedGeneration,omitempty"`
@@ -87,7 +88,8 @@ type FlytWorkerList struct {
 }
 func AddToScheme(s *runtime.Scheme) error {
     s.AddKnownTypes(GroupVersion, &FlytGPUProfile{}, &FlytGPUProfileList{},
-        &FlytControlPlane{}, &FlytControlPlaneList{}, &FlytWorker{}, &FlytWorkerList{})
+        &FlytControlPlane{}, &FlytControlPlaneList{}, &FlytWorker{}, &FlytWorkerList{},
+        &FlytGPURequest{}, &FlytGPURequestList{})
     metav1.AddToGroupVersion(s, GroupVersion)
     return nil
 }

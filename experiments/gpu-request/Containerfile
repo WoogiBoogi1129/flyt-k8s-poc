@@ -1,0 +1,15 @@
+ARG GO_IMAGE=docker.io/library/golang:1.24.6-bookworm
+FROM ${GO_IMAGE} AS build
+WORKDIR /src
+COPY controllers/flyt/ ./
+# Explicit future build only. No dependency resolution was run at authoring time.
+RUN go mod tidy && CGO_ENABLED=0 go build -trimpath -o /out/flyt-controller ./cmd \
+    && cp go.mod go.sum /out/
+FROM scratch AS controller
+COPY --from=build /out/flyt-controller /flyt-controller
+COPY --from=build /out/go.mod /out/go.sum /metadata/
+COPY experiments/gpu-request/versions.json /metadata/stage4.json
+USER 65532:65532
+ENTRYPOINT ["/flyt-controller"]
+FROM scratch AS dependency-lock
+COPY --from=build /out/go.mod /out/go.sum /

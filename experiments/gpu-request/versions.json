@@ -1,0 +1,24 @@
+{
+  "stage": "04-gpu-request",
+  "parent_branch": "stage/03-controller",
+  "parent_commit": "cdf086e921e6ce14a46ccca50528c2115a1f1fb3",
+  "api": "flyt.dev/v1alpha1",
+  "new_crd": "FlytGPURequest",
+  "worker_extension": "optional immutable request allocation snapshot",
+  "runtime_patch_source": "stage-3 unchanged",
+  "request_update_policy": "next VMI after initial snapshot; no live resize",
+  "implementation": "implemented-unvalidated",
+  "validation": {
+    "go_dependency_resolution": "NOT_RUN",
+    "go_sum": "NOT_GENERATED",
+    "build": "NOT_RUN",
+    "static_checks": "NOT_RUN",
+    "crd_schema_and_cel": "NOT_RUN",
+    "manifest_render": "NOT_RUN",
+    "request_normalization": "NOT_RUN",
+    "controller_reconcile": "NOT_RUN",
+    "lifecycle_and_compatibility": "NOT_RUN",
+    "cluster_apply": "NOT_RUN",
+    "gpu_execution": "NOT_RUN"
+  }
+}

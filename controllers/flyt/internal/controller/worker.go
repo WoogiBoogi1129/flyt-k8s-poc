@@ -60,6 +60,7 @@ func (r *WorkerReconciler) Reconcile(ctx context.Context,req ctrl.Request)(ctrl.
     if apierrors.IsNotFound(err)||string(p.UID)!=w.Spec.ProfileRef.UID{return r.stop(ctx,w,cp,"Blocked","ProfileMissing","GPU profile UID no longer exists")}
     if !p.DeletionTimestamp.IsZero()&&w.Status.VMIP==""{return r.mark(ctx,w,"Blocked","ProfileDeleting","New allocations are blocked while the profile is deleting")}
     if err=r.profileReady(ctx,p);err!=nil{return r.stop(ctx,w,cp,"Blocked","ProfileUnavailable",err.Error())}
+    if err=r.workerRequest(ctx,w,v,p);err!=nil{return r.stop(ctx,w,cp,"Blocked","RequestUnavailable",err.Error())}
     ip:=vmIP(v)
     if phase(v)!="Running"||ip==""{return r.stop(ctx,w,cp,"Pending","WaitingForVMI","Waiting for a Running VMI with a pod-network IPv4 address")}
     if w.Status.VMIP!=""&&w.Status.VMIP!=ip{return r.stop(ctx,w,cp,"Pending","VMIPChanged","Old network identity removed; recreate Worker before admitting new sessions")}

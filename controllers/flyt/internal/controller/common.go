@@ -32,6 +32,7 @@ const WorkerLabel = "flyt.dev/worker-uid"
 const PlaneLabel = "flyt.dev/control-plane-uid"
 const Period = 15 * time.Second
 var VMIGVK = schema.GroupVersionKind{Group:"kubevirt.io", Version:"v1", Kind:"VirtualMachineInstance"}
+var VMGVK = schema.GroupVersionKind{Group:"kubevirt.io", Version:"v1", Kind:"VirtualMachine"}
 
 type Base struct { client.Client; Reader client.Reader; Scheme *runtime.Scheme; Events record.EventRecorder }
 func key(o client.Object) types.NamespacedName { return client.ObjectKeyFromObject(o) }
@@ -48,6 +49,7 @@ func (b *Base) status(ctx context.Context, o client.Object, phase, reason, messa
     case *api.FlytWorker: status=&x.Status
     case *api.FlytGPUProfile: status=&x.Status
     case *api.FlytControlPlane: status=&x.Status
+    case *api.FlytGPURequest: status=&x.Status.Status
     default: return fmt.Errorf("unsupported status object")
     }
     status.Phase=phase; status.ObservedGeneration=o.GetGeneration()
@@ -57,7 +59,7 @@ func (b *Base) status(ctx context.Context, o client.Object, phase, reason, messa
     meta.SetStatusCondition(&status.Conditions,metav1.Condition{Type:"Ready",Status:ready,
         Reason:reason,Message:message,ObservedGeneration:o.GetGeneration()})
     if reflect.DeepEqual(old,o) { return nil }
-    if err:=b.Status().Patch(ctx,o,client.MergeFrom(old)); err!=nil { return err }
+    if err:=b.Status().Patch(ctx,o,client.MergeFromWithOptions(old,client.MergeFromWithOptimisticLock{})); err!=nil { return err }
     if b.Events!=nil { b.Events.Event(o,corev1.EventTypeNormal,reason,message) }
     return nil
 }

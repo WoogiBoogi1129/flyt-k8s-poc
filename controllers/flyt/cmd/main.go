@@ -54,8 +54,23 @@ func main(){
         out:=[]reconcile.Request{};for _,p:=range list.Items{out=append(out,reconcile.Request{NamespacedName:client.ObjectKeyFromObject(&p)})};return out
     })
     vmi:=&unstructured.Unstructured{};vmi.SetGroupVersionKind(impl.VMIGVK)
+    vm:=&unstructured.Unstructured{};vm.SetGroupVersionKind(impl.VMGVK)
+    allRequests:=handler.EnqueueRequestsFromMapFunc(func(ctx context.Context,_ client.Object)[]reconcile.Request{
+        list:=&api.FlytGPURequestList{};if err:=base.Reader.List(ctx,list,client.InNamespace(*ns));err!=nil{return nil}
+        out:=[]reconcile.Request{};for _,q:=range list.Items{out=append(out,reconcile.Request{NamespacedName:client.ObjectKeyFromObject(&q)})};return out
+    })
+    allVMIs:=handler.EnqueueRequestsFromMapFunc(func(ctx context.Context,_ client.Object)[]reconcile.Request{
+        list:=&unstructured.UnstructuredList{};gvk:=impl.VMIGVK;gvk.Kind+="List";list.SetGroupVersionKind(gvk)
+        if err:=base.Reader.List(ctx,list,client.InNamespace(*ns));err!=nil{return nil}
+        out:=[]reconcile.Request{};for _,v:=range list.Items{out=append(out,reconcile.Request{NamespacedName:client.ObjectKeyFromObject(&v)})};return out
+    })
     must(ctrl.NewControllerManagedBy(mgr).Named("flyt-vmi").For(vmi).
+        Watches(&api.FlytGPURequest{},allVMIs).Watches(vm.DeepCopy(),allVMIs).
         Watches(&api.FlytWorker{},vmiForWorker).Complete(&impl.VMIReconciler{Base:base}))
+    must(ctrl.NewControllerManagedBy(mgr).Named("flyt-request").For(&api.FlytGPURequest{}).
+        Watches(&api.FlytWorker{},allRequests).Watches(&api.FlytGPUProfile{},allRequests).
+        Watches(&api.FlytControlPlane{},allRequests).Watches(vm.DeepCopy(),allRequests).Watches(vmi.DeepCopy(),allRequests).
+        Complete(&impl.RequestReconciler{Base:base}))
     must(ctrl.NewControllerManagedBy(mgr).Named("flyt-profile").For(&api.FlytGPUProfile{}).
         Watches(&api.FlytWorker{},profileForWorker).Watches(&corev1.Node{},allProfiles).
         Complete(&impl.ProfileReconciler{Base:base}))
@@ -65,6 +80,7 @@ func main(){
     must(ctrl.NewControllerManagedBy(mgr).Named("flyt-worker").For(&api.FlytWorker{}).
         Owns(&appsv1.Deployment{}).Owns(&corev1.Service{}).Owns(&corev1.ConfigMap{}).Owns(&netv1.NetworkPolicy{}).
         Watches(&corev1.Pod{},allWorkers).Watches(&api.FlytGPUProfile{},allWorkers).
+        Watches(&api.FlytGPURequest{},allWorkers).Watches(vm.DeepCopy(),allWorkers).
         Watches(&api.FlytControlPlane{},allWorkers).Watches(vmi.DeepCopy(),allWorkers).
         Complete(&impl.WorkerReconciler{Base:base}))
     must(mgr.AddHealthzCheck("healthz",healthz.Ping));must(mgr.AddReadyzCheck("readyz",healthz.Ping))

@@ -47,6 +47,7 @@ func (in *FlytControlPlaneList) DeepCopyObject() runtime.Object {
 func (in *FlytWorker) DeepCopy() *FlytWorker {
     if in == nil { return nil }
     out := new(FlytWorker); *out = *in
+    if in.Spec.Request != nil { v := *in.Spec.Request; out.Spec.Request = &v }
     in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
     out.Status.Conditions = append(in.Status.Conditions[:0:0], in.Status.Conditions...)
     return out

@@ -99,14 +99,15 @@ program-args = ""
 [ipc]
 mqueue-path = "/tmp/flyt-servernode-queue"
 `,dnsHost(planeName(cp),cp.Namespace,cp.Spec.ClusterDomain))
-    quota:=corev1.ResourceList{corev1.ResourceName("nvidia.com/gpu"):resource.MustParse("1"),
-        corev1.ResourceName("nvidia.com/gpumem"):resource.MustParse(strconv.FormatInt(p.Spec.MemoryMiB,10)),
-        corev1.ResourceName("nvidia.com/gpucores"):resource.MustParse(strconv.Itoa(int(p.Spec.Cores)))}
+    q:=allocation(w,p)
+    quota:=corev1.ResourceList{corev1.ResourceName("nvidia.com/gpu"):resource.MustParse(strconv.Itoa(int(q.Count))),
+        corev1.ResourceName("nvidia.com/gpumem"):resource.MustParse(strconv.FormatInt(q.MemoryMiB,10)),
+        corev1.ResourceName("nvidia.com/gpucores"):resource.MustParse(strconv.Itoa(int(q.Compute)))}
     requests:=quota.DeepCopy();requests[corev1.ResourceCPU]=resource.MustParse("250m");requests[corev1.ResourceMemory]=resource.MustParse("512Mi")
     limits:=quota.DeepCopy();limits[corev1.ResourceCPU]=resource.MustParse("4");limits[corev1.ResourceMemory]=resource.MustParse("4Gi")
     container:=corev1.Container{Name:"worker",Image:p.Spec.WorkerImage,Resources:corev1.ResourceRequirements{Requests:requests,Limits:limits},
         Env:[]corev1.EnvVar{{Name:"FLYT_RESOURCE_BACKEND",Value:"hami"},{Name:"FLYT_BINDING_API",Value:"1"},
-            {Name:"FLYT_GPU_UUID",Value:p.Spec.GPUUUID},{Name:"FLYT_MEMORY_BYTES",Value:strconv.FormatInt(p.Spec.MemoryMiB*1024*1024,10)},
+            {Name:"FLYT_GPU_UUID",Value:p.Spec.GPUUUID},{Name:"FLYT_MEMORY_BYTES",Value:strconv.FormatInt(q.MemoryMiB*1024*1024,10)},
             {Name:"FLYT_MAX_CLIENTS",Value:strconv.Itoa(int(p.Spec.MaxClients))},{Name:"GPU_CORE_UTILIZATION_POLICY",Value:"force"},
             {Name:"RUST_LOG",Value:"info"},{Name:"FLYT_POD_UID",ValueFrom:&corev1.EnvVarSource{FieldRef:&corev1.ObjectFieldSelector{FieldPath:"metadata.uid"}}}},
         SecurityContext:&corev1.SecurityContext{RunAsUser:int64p(0),AllowPrivilegeEscalation:boolp(false),Capabilities:&corev1.Capabilities{Drop:[]corev1.Capability{"ALL"},Add:[]corev1.Capability{"SETUID","SETGID","NET_BIND_SERVICE","KILL"}}},

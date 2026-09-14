@@ -1,0 +1,18 @@
+apiVersion: flyt.dev/v1alpha1
+kind: FlytGPURequest
+metadata:
+  name: vm-a-gpu
+  namespace: flyt-hami-stage3
+spec:
+  vmRef:
+    name: REPLACE_WITH_EXISTING_VM_NAME
+    uid: REPLACE_WITH_VM_UID
+  profileRef:
+    name: gpu2-small
+    uid: REPLACE_WITH_APPROVED_PROFILE_UID
+  controlPlaneRef:
+    name: main
+    uid: REPLACE_WITH_CONTROL_PLANE_UID
+  count: 1
+  compute: 30
+  memory: 8Gi

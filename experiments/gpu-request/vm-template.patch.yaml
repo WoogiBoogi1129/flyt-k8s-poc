@@ -1,0 +1,8 @@
+# Review and use as a merge patch for the intended VM, not as a new VM manifest.
+spec:
+  template:
+    metadata:
+      annotations:
+        flyt.dev/gpu-request: vm-a-gpu
+        flyt.dev/profile: null
+        flyt.dev/control-plane: null

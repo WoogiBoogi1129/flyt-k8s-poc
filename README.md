@@ -7,6 +7,8 @@
 이 브랜치의 [3단계 CRD 기반 Controller](experiments/controller/README.md)는
 `FlytGPUProfile`, `FlytControlPlane`, `FlytWorker`와 VMI reconcile을 추가했다.
 현재 **소스 구현 완료·검증 미실행(NOT_RUN)**이며 실제 클러스터에는 배포하지 않았다.
+이 브랜치의 [4단계 VM GPU 요청](experiments/gpu-request/README.md)은 `FlytGPURequest`와
+요청 검증·quota 변환·VMI별 불변 할당을 추가했다. 4단계도 **NOT_RUN** 상태다.
 브랜치와 기준 버전 보존 방식은 [단계별 개발 문서](docs/DEVELOPMENT_STAGES.md)를 참고한다.
 
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가
