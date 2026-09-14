@@ -24,6 +24,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 3: CRD 기반 VM/Worker Controller | `stage/03-controller` | 소스 구현 완료 | NOT_RUN |
 | 4: VM GPU 요청과 quota 변환 | `stage/04-gpu-request` | 소스 구현 완료 | NOT_RUN |
 | 5: HAMi 자원 제어 backend 분리 | `stage/05-hami-backend` | 소스 구현 완료 | NOT_RUN |
+| 6: FLYT+HAMi End-to-End 실험 도구 | `stage/06-hami-e2e` | 도구 소스 구현 완료 | NOT_RUN; 실제 검증 단계 미완료 |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -116,3 +117,24 @@ checkpoint/migration 명령을 실행 전에 거절한다. HAMi에서 기존 SM/
 4단계의 불변 image/ref 정책에 따라 새 Profile/ControlPlane/Request로 명시적으로 전환한다.
 VM 자동 재시작이나 GPU 설정 변경은 없다. patch 적용·빌드·정적 검사·GPU 실행·실제 배포는
 모두 NOT_RUN이며 `[skip ci]`로 커밋한다. 6단계 interception·quota 검증과 CUDA 회귀 시험은 남아 있다.
+
+## 6단계 구현
+
+`stage/05-hami-backend`의 `63f93010479499003918f88f55917f55fd81067a`에서 분기했다.
+[End-to-End 실험 도구 안내](../experiments/hami-e2e/README.md)에 대상 고정, GPU 실행 전제,
+함수 진입 증거와 quota 측정·보고 절차를 기록했다. 1~5단계 소스와 기본 patch series,
+Go Controller/CRD를 보존하며 새 runtime 패치는 없다.
+
+실험기는 CRD의 VMI/Worker/Pod/Request UID, Worker generation, Manager epoch와 quota를
+읽어 대상을 고정한다. CUDA Runtime/Driver/async 메모리 시험, 동일 Worker의 두 client 합산
+경계, CPU 결과 비교, GDB 기반 HAMi allocation/launch 진입 추적과 두 quota 처리량 비교를
+작성했다. 기존 전체 GPU Cell/Manager reset 스크립트는 호출하지 않는다.
+
+진단 Worker는 5단계 이미지에 probe/GDB/binutils만 추가한다. 기존 Controller의 ptrace 권한은
+확장하지 않으므로 정책상 추적이 불가능하면 BLOCKED다. 라이브러리 로드만으로 interception,
+kernel 성공만으로 compute 제한을 PASS로 기록하지 않는다. 신규 Profile/Request로 전환하며
+승인·VM 재시작·실험 실행은 명시적 후속 절차다.
+
+이 단계도 빌드·정적 검사·패치 검사·도구 실행·매니페스트 검사·GPU 실행·배포를 수행하지
+않고 `[skip ci]`로 커밋한다. 구현 완료는 검증 도구의 소스 작성 완료이며 원래 계획의
+6단계 검증 성공을 의미하지 않는다. 기존 GPU/외부 플랫폼 설정은 변경하지 않는다.

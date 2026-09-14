@@ -1,0 +1,23 @@
+ARG CUDA_DEVEL_IMAGE=docker.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04@sha256:ad6d59a3bbf3e82c1c849c9ac09cfc2a3e0bbb8655042fd899be6681b3fe2a85
+ARG STAGE5_WORKER_IMAGE=registry.example.com/flyt/worker-stage5:REPLACE_WITH_DIGEST
+FROM ${CUDA_DEVEL_IMAGE} AS build
+ARG CUDA_ARCH=sm_120
+WORKDIR /input
+COPY experiments/hami-e2e/probe.cu experiments/hami-e2e/kernel.cu experiments/hami-e2e/burn.cuh ./
+RUN mkdir /out \
+    && nvcc -std=c++17 --cudart shared -arch=${CUDA_ARCH} probe.cu -L/usr/local/cuda/lib64/stubs -lcuda -o /out/flyt-e2e-probe \
+    && nvcc -std=c++17 -arch=${CUDA_ARCH} -ptx kernel.cu -o /out/burn.ptx \
+    && sha256sum /out/flyt-e2e-probe /out/burn.ptx > /out/SHA256SUMS
+
+FROM scratch AS probe-artifacts
+COPY --from=build /out/ /opt/flyt-e2e/
+
+# Diagnostic image only. No new RPC patch, Controller, GPU mode or privilege change.
+# The current Controller does not grant SYS_PTRACE; tracing may be BLOCKED.
+FROM ${STAGE5_WORKER_IMAGE} AS worker-diagnostic
+USER 0
+RUN apt-get update && apt-get install -y --no-install-recommends gdb binutils \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /out/ /opt/flyt-e2e/
+COPY experiments/hami-e2e/versions.json /opt/flyt/metadata/STAGE6.json
+# Inherit the exact stage-5 Worker entrypoint/environment.

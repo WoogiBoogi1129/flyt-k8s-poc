@@ -1,0 +1,10 @@
+{
+  "low_report_sha256": "REPLACE_WITH_LOW_REPORT_SHA256",
+  "high_report_sha256": "REPLACE_WITH_HIGH_REPORT_SHA256",
+  "same_driver": false,
+  "no_other_gpu_workload": false,
+  "no_tracer_during_compute": false,
+  "no_power_or_clock_change": false,
+  "evidence_paths": [],
+  "note": "Fill from observations covering both runs. False or missing evidence blocks comparison; do not change these merely to get PASS."
+}

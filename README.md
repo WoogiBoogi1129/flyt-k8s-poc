@@ -11,6 +11,8 @@
 요청 검증·quota 변환·VMI별 불변 할당을 추가했다. 4단계도 **NOT_RUN** 상태다.
 이 브랜치의 [5단계 HAMi backend](experiments/hami-backend/README.md)는 MPS 자원 제어와
 HAMi 경로를 분리하고, 미지원 제어 명령 차단·메모리 조회 오류 처리를 추가했다. **NOT_RUN** 상태다.
+이 브랜치의 [6단계 End-to-End 실험 도구](experiments/hami-e2e/README.md)는 대상 UID 고정,
+CUDA probe·HAMi 함수 진입 추적·합산 memory quota·compute 비교를 구현했다. **검증은 NOT_RUN**이다.
 브랜치와 기준 버전 보존 방식은 [단계별 개발 문서](docs/DEVELOPMENT_STAGES.md)를 참고한다.
 
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가

@@ -1,0 +1,26 @@
+{
+  "stage": "06-hami-e2e",
+  "parent_branch": "stage/05-hami-backend",
+  "parent_commit": "63f93010479499003918f88f55917f55fd81067a",
+  "implementation": "implemented-unvalidated",
+  "runtime_patches": "stage-5 unchanged; baseline -> stage-2 -> stage-3 -> stage-5",
+  "controller_and_crds": "stage-4 unchanged",
+  "cuda_toolkit": "12.8.1",
+  "default_cuda_arch": "sm_120",
+  "hami_chart_reference": "2.8.0; actual mounted libvgpu digest must be recorded",
+  "validation": {
+    "patch_application": "NOT_RUN",
+    "static_checks": "NOT_RUN",
+    "build": "NOT_RUN",
+    "runner_and_reporter": "NOT_RUN",
+    "manifest_validation": "NOT_RUN",
+    "standalone_hami": "NOT_RUN",
+    "runtime_and_driver_rpc": "NOT_RUN",
+    "interception_trace": "NOT_RUN",
+    "memory_and_aggregate_quota": "NOT_RUN",
+    "compute_comparison": "NOT_RUN",
+    "cuda_compatibility_regression": "NOT_RUN",
+    "cluster_apply": "NOT_RUN",
+    "gpu_execution": "NOT_RUN"
+  }
+}
