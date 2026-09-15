@@ -7,6 +7,7 @@ import os
 import secrets
 import time
 from kube import API, ref, require_ref
+from observe import observe_guest, observe_worker_exit
 
 FINAL='flyt.dev/shm-detach'
 def owned(o,c):return any(r['uid']==c['metadata']['uid'] for r in o['metadata'].get('ownerReferences',[]))
@@ -32,6 +33,8 @@ def update(api,c,**values):
 
 def reconcile(api,c):
     name=c['metadata']['name'];s=c.setdefault('status',{});spec=c['spec']
+    observe_guest(api,c)
+    observe_worker_exit(api,c)
     if FINAL not in c['metadata'].get('finalizers',[]):
         if c['metadata'].get('deletionTimestamp'):return
         c['metadata'].setdefault('finalizers',[]).append(FINAL);api.replace('channels',c);return
@@ -52,7 +55,11 @@ def reconcile(api,c):
             a['spec']['generation']==s.get('generation') for a in attachments))
         # Even pre-bind failed allocation needs explicit backing detach evidence.
         if not complete:update(api,c,phase='Draining',reason='AwaitingDetachEvidence');return
-        update(api,c,phase='Released',reason='DetachConfirmed')
+        cleanup=ensure(api,'pods',pod(c,name+'-reclaim',spec['image'],['python3','/opt/flyt/control/reclaim.py',
+            '--root','/flyt-channel','--allocation',s['allocation'],'--generation',s['generation']]),c)
+        if cleanup.get('status',{}).get('phase')!='Succeeded':
+            update(api,c,phase='Draining',reason='ReclamationPending');return
+        update(api,c,phase='Released',reason='DetachAndReclamationConfirmed')
         if c['metadata'].get('deletionTimestamp'):
             fresh=api.get('channels',name);fresh['metadata']['finalizers'].remove(FINAL);api.replace('channels',fresh)
         return
@@ -102,7 +109,16 @@ def reconcile(api,c):
     if s.get('vmiUID') and s['vmiUID']!=vmi['metadata']['uid']:raise ValueError('VMI generation changed')
     if vmi.get('status',{}).get('nodeName') not in (None,'',s['nodeName']):raise ValueError('VMI placed on wrong node')
     if not s.get('vmiUID'):update(api,c,phase='Bound',vmiUID=vmi['metadata']['uid'],everBound=True);return
+    service=ensure(api,'serviceaccounts',{'apiVersion':'v1','kind':'ServiceAccount','metadata':meta(c,name+'-worker')},c)
+    ensure(api,'roles',{'apiVersion':'rbac.authorization.k8s.io/v1','kind':'Role','metadata':meta(c,name+'-worker'),
+        'rules':[{'apiGroups':['flyt.dev'],'resources':['flytsharedmemorychannels'],'resourceNames':[name],'verbs':['get']},
+            {'apiGroups':['flyt.dev'],'resources':['flytchannelattachments','flytchannelattachments/status'],
+             'resourceNames':[name+'-worker',name+'-guest'],'verbs':['get','update']}]},c)
+    ensure(api,'rolebindings',{'apiVersion':'rbac.authorization.k8s.io/v1','kind':'RoleBinding','metadata':meta(c,name+'-worker'),
+        'roleRef':{'apiGroup':'rbac.authorization.k8s.io','kind':'Role','name':name+'-worker'},
+        'subjects':[{'kind':'ServiceAccount','name':service['metadata']['name'],'namespace':c['metadata']['namespace']}]},c)
     worker=pod(c,name+'-worker',spec['workerImage'],['python3','/opt/flyt/control/supervisor.py'])
+    worker['spec']['serviceAccountName']=name+'-worker';worker['spec']['automountServiceAccountToken']=True
     worker['spec']['schedulerName']=p['spec']['schedulerName']
     if p['spec'].get('runtimeClass'):worker['spec']['runtimeClassName']=p['spec']['runtimeClass']
     worker['metadata'].setdefault('annotations',{})['nvidia.com/use-gpuuuid']=s['gpuUUID']
@@ -111,7 +127,10 @@ def reconcile(api,c):
     container['resources']={'requests':quota,'limits':quota}
     container['env']=[{'name':k,'value':str(v)} for k,v in {
         'FLYT_ALLOCATION':s['allocation'],'FLYT_GPU_UUID':s['gpuUUID'],'FLYT_RESOURCE_BACKEND':'hami',
-        'FLYT_MEMORY_BYTES':s['memoryMiB']*1048576,'FLYT_SESSIONS':len(s['sessions'])}.items()]
+        'FLYT_MEMORY_BYTES':s['memoryMiB']*1048576,'FLYT_SESSIONS':len(s['sessions']),
+        'FLYT_CHANNEL_NAME':name,'FLYT_CHANNEL_UID':c['metadata']['uid'],'FLYT_GENERATION':s['generation'],
+        'FLYT_NAMESPACE':c['metadata']['namespace']}.items()]
+    container['env'].append({'name':'FLYT_POD_UID','valueFrom':{'fieldRef':{'fieldPath':'metadata.uid'}}})
     container['readinessProbe']={'exec':{'command':['test','-f','/tmp/flyt-worker-ready']},'periodSeconds':2}
     w=ensure(api,'pods',worker,c)
     # Bound identities are immutable; a restarted/removed Worker requires a new channel.

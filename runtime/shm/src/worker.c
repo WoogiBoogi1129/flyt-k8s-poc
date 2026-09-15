@@ -24,11 +24,15 @@ int main(int argc,char **argv){
     size_t capacity=flyt_shm_response_capacity(channel);uint8_t *output=malloc(capacity);
     if(!output)goto done;
     snprintf(ready,sizeof(ready),"/tmp/flyt-slot-%u-mapped",slot);FILE *f=fopen(ready,"wx");if(!f){free(output);goto done;}fclose(f);
+    struct timespec last,now;clock_gettime(CLOCK_MONOTONIC,&last);
     while(!stopping){
+        clock_gettime(CLOCK_MONOTONIC,&now);
+        if(now.tv_sec-last.tv_sec>(hello?60:600))break;
         if(flyt_async_reap())break;
         struct flyt_shm_request q={0};int rc=flyt_shm_worker_take(channel,&q);
         if(rc==FLYT_SHM_AGAIN){struct timespec pause={0,1000000};nanosleep(&pause,NULL);continue;}
         if(rc)break;
+        clock_gettime(CLOCK_MONOTONIC,&last);
         struct flyt_shm_response r={.output=output,.output_capacity=capacity};
         if(q.api_id==FLYT_HELLO&&!hello&&q.payload_schema==1&&!q.input_bytes){hello=1;}
         else if(!hello){r.transport_status=FLYT_SHM_CHANNEL_CLOSED;stopping=1;}
@@ -41,7 +45,7 @@ int main(int argc,char **argv){
         rc=flyt_shm_worker_respond(channel,&r);flyt_shm_request_release(&q);if(rc)break;
         if(hello){char path[128];snprintf(path,sizeof(path),"/tmp/flyt-slot-%u-guest",slot);FILE *g=fopen(path,"a");if(g)fclose(g);}
     }
-    unlink(ready);free(output);
+    unlink(ready);char guest_marker[128];snprintf(guest_marker,sizeof(guest_marker),"/tmp/flyt-slot-%u-guest",slot);unlink(guest_marker);free(output);
 done:
     if(session.exec&&flyt_compat_close())return 1;
     if(session.exec&&flyt_async_close())return 1; /* process exit releases uncertain CUDA state */

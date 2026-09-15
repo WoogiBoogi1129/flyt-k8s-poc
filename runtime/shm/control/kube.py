@@ -19,6 +19,7 @@ class API:
                 'profiles':('flyt.dev/v1alpha1','flytgpuprofiles'),
                 'vms':('kubevirt.io/v1','virtualmachines'),
                 'vmis':('kubevirt.io/v1','virtualmachineinstances')}
+        if kind in ('roles','rolebindings'):groups[kind]=('rbac.authorization.k8s.io/v1',kind)
         if kind in groups:
             group,plural=groups[kind];root='/apis/'+group
         else: root='/api/v1';plural=kind

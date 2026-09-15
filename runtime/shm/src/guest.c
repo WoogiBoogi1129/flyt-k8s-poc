@@ -7,6 +7,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <stdatomic.h>
+#include <time.h>
+#include <errno.h>
 
 pthread_mutex_t flyt_guest_lock=PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t io_lock=PTHREAD_MUTEX_INITIALIZER;
@@ -21,7 +23,10 @@ static _Thread_local cudaError_t last_error;
 static void before_fork(void){pthread_mutex_lock(&flyt_guest_lock);pthread_mutex_lock(&io_lock);}
 static void after_fork(void){pthread_mutex_unlock(&io_lock);pthread_mutex_unlock(&flyt_guest_lock);}
 static void child_fork(void){broken=1;after_fork();}
-__attribute__((constructor)) static void setup_fork(void){pthread_atfork(before_fork,after_fork,child_fork);}
+__attribute__((constructor)) static void setup_fork(void){
+    pthread_condattr_t attr;pthread_condattr_init(&attr);pthread_condattr_setclock(&attr,CLOCK_MONOTONIC);
+    pthread_cond_init(&io_cond,&attr);pthread_condattr_destroy(&attr);pthread_atfork(before_fork,after_fork,child_fork);
+}
 
 static int exchange(struct flyt_shm_channel *c,struct flyt_shm_identity identity,uint64_t *id,
                     uint32_t api,const void *in,size_t n,void *out,size_t cap,size_t *got){
@@ -44,10 +49,20 @@ static void *io_main(void *unused){
         if(exchange(c,identity,&id,FLYT_HELLO,NULL,0,NULL,0,&got))broken=1;}
     pthread_mutex_lock(&io_lock);initialized=1;pthread_cond_broadcast(&io_cond);
     while(!broken){
-        while(!work)pthread_cond_wait(&io_cond,&io_lock);
+        while(!work&&!broken){
+            struct timespec deadline;clock_gettime(CLOCK_MONOTONIC,&deadline);deadline.tv_sec+=2;
+            int wait=pthread_cond_timedwait(&io_cond,&io_lock,&deadline);
+            if(wait==ETIMEDOUT&&!work){
+                pthread_mutex_unlock(&io_lock);size_t ignored;
+                if(exchange(c,identity,&id,FLYT_HEARTBEAT,NULL,0,NULL,0,&ignored))broken=1;
+                pthread_mutex_lock(&io_lock);
+            }else if(wait&&wait!=ETIMEDOUT)broken=1;
+        }
+        if(broken)break;
         pthread_mutex_unlock(&io_lock);
         job.result=exchange(c,identity,&id,job.api,job.input,job.bytes,job.output,job.capacity,&job.received);
         pthread_mutex_lock(&io_lock);work=0;finished=1;pthread_cond_broadcast(&io_cond);
+        if(job.api==FLYT_GOODBYE)broken=1;
     }
     pthread_cond_broadcast(&io_cond);pthread_mutex_unlock(&io_lock);flyt_shm_close(c);flyt_unmap(&m);return NULL;
 }
@@ -62,6 +77,11 @@ int flyt_guest_exchange(uint32_t api,const void *input,size_t bytes,void *output
     while(!finished&&!broken)pthread_cond_wait(&io_cond,&io_lock);
     int result=finished?job.result:999;if(received)*received=job.received;
     pthread_mutex_unlock(&io_lock);return result;
+}
+__attribute__((destructor)) static void shutdown_guest(void){
+    if(!started||owner_pid!=getpid()||pthread_mutex_trylock(&flyt_guest_lock))return;
+    size_t ignored;if(!broken)flyt_guest_exchange(FLYT_GOODBYE,NULL,0,NULL,0,&ignored);
+    pthread_mutex_unlock(&flyt_guest_lock);if(initialized)pthread_join(io_thread,NULL);
 }
 int flyt_guest_ref(const void *p,size_t n,struct flyt_device_ref *r){
     uintptr_t v=(uintptr_t)p;
