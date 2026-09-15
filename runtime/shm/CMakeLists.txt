@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.18)
+project(flyt_shm LANGUAGES C)
+add_subdirectory(../../experiments/shm-queue queue)
+add_library(flyt_mapping STATIC src/mapping.c)
+target_compile_features(flyt_mapping PUBLIC c_std_11)
+target_include_directories(flyt_mapping PUBLIC include)
+target_link_libraries(flyt_mapping PUBLIC flyt_shm_queue)
+set_target_properties(flyt_mapping PROPERTIES POSITION_INDEPENDENT_CODE ON)

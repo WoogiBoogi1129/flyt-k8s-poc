@@ -1,0 +1,7 @@
+{
+  "stage": "10-04",
+  "parentCommit": "40630e80e83fe65bdcd7a4fef590ff86f7e0a10b",
+  "implementation": "source-authored",
+  "validation": "NOT_RUN",
+  "vmMappingValidation": "NOT_RUN"
+}

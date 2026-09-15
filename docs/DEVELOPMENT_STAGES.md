@@ -200,3 +200,7 @@ Controller gate, CUDA payload 해석과 실행 adapter는 아직 연결하지 �
 
 configure·compile·link·정적 검사·테스트·프로세스 간 실행·배포·VM/GPU 실행은 모두 NOT_RUN이다.
 이전 단계와 실제 GPU/노드 설정을 보존하고 `[skip ci]`로 GitHub에 반영한다.
+
+## 10-04 VM SHM adapter
+
+`stage/10-04-vm-shm-channel`: [backing·mapping·hook](../experiments/vm-shm-channel/README.md) 소스 작성. 모든 검증 NOT_RUN.
