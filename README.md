@@ -22,6 +22,9 @@ Manager·Guest 제어 경로와 세션 ID·JSON 조회를 분리했다. **소스
 이 브랜치의 [10-02 CUDA 실행 모듈](experiments/cuda-dispatch/README.md)은 기본 Runtime API,
 세션별 handle 및 결과 버퍼 수명을 RPC/XDR에서 분리한 소스다. **runtime 미연결·NOT_RUN** 상태다.
 
+이 브랜치의 [10-03 SHM Queue](experiments/shm-queue/README.md)는 ring·payload snapshot·
+descriptor 직렬화·polling 소스를 제공한다. **VM/runtime 미연결·NOT_RUN** 상태다.
+
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가
 할당한 whole GPU를 GPU Cell이 소비하도록 만든 실험의 공개·재현 가능한 버전이다.
 Flyt 원본을 그대로 배포하는 저장소가 아니며, 고정된 Flyt 기준 커밋에

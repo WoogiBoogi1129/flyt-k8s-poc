@@ -1,0 +1,23 @@
+{
+  "stage": "10-03",
+  "branch": "stage/10-03-shm-queue",
+  "parentCommit": "d47670f0effaa79f64254a74a1133adfaaec4a6e",
+  "implementation": "shm-queue-payload-codec-polling-source-authored",
+  "wireABI": "1.0",
+  "rpcFallback": false,
+  "runtimeIntegration": "NOT_IMPLEMENTED",
+  "vmMapping": "NOT_IMPLEMENTED",
+  "cudaPayloadAdapter": "NOT_IMPLEMENTED",
+  "deferredValidationStages": [8, 9],
+  "validation": {
+    "configure": "NOT_RUN",
+    "compile": "NOT_RUN",
+    "link": "NOT_RUN",
+    "staticChecks": "NOT_RUN",
+    "tests": "NOT_RUN",
+    "interprocessQueue": "NOT_RUN",
+    "kubernetes": "NOT_RUN",
+    "vmMemoryOrdering": "NOT_RUN",
+    "gpu": "NOT_RUN"
+  }
+}

@@ -29,6 +29,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 8·9: 호환성·Multi-VM 검증 | 별도 개발 없음 | 사용자 요청으로 보류 | NOT_RUN |
 | 10-01: SHM 전환 계약 | `stage/10-01-shm-contract` | 계약·인터페이스 작성 완료 | NOT_RUN; runtime 미연결 |
 | 10-02: CUDA 실행 모듈 | `stage/10-02-cuda-dispatch` | 기본 Runtime dispatcher/backend 소스 작성 완료 | NOT_RUN; runtime 미연결 |
+| 10-03: SHM Queue | `stage/10-03-shm-queue` | ring·payload·직렬화·polling 소스 작성 완료 | NOT_RUN; VM/runtime 미연결 |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -187,3 +188,15 @@ RPC/XDR stub 호출 없이 CUDA를 호출하는 별도 라이브러리 소스이
 필요하다. 실제 supervisor 연결은 후속 작업이다. async/Graph/라이브러리 API도 후속 범위다.
 CMake configure·빌드·링크·정적 검사·테스트·배포·GPU 실행은 모두 NOT_RUN이다.
 이전 브랜치, 기존 패치, GPU/노드/외부 플랫폼 설정은 보존하고 `[skip ci]`로 커밋한다.
+
+## 10-03단계 구현
+
+10-02 커밋 `d47670f0effaa79f64254a74a1133adfaaec4a6e`에서 분기했다.
+[SHM Queue](../experiments/shm-queue/README.md)에 전체 layout 검사, header/descriptor 직렬화,
+SPSC ring, private payload snapshot, Guest submit/receive, Worker take/respond와 polling을 작성했다.
+한 세션에 한 in-flight 요청을 허용하며 counter/identity 오류와 게시 후 timeout을 실패 처리한다.
+RPC fallback과 자동 재실행은 없다. 이미 매핑된 메모리를 받는 라이브러리이며 VM mapping,
+Controller gate, CUDA payload 해석과 실행 adapter는 아직 연결하지 않았다.
+
+configure·compile·link·정적 검사·테스트·프로세스 간 실행·배포·VM/GPU 실행은 모두 NOT_RUN이다.
+이전 단계와 실제 GPU/노드 설정을 보존하고 `[skip ci]`로 GitHub에 반영한다.
