@@ -116,6 +116,12 @@ static int copy_call(struct flyt_cuda_exec *s, const struct flyt_cuda_call *c,
     return status(r, FLYT_SHM_OK);
 }
 
+int flyt_cuda_exec_resolve(struct flyt_cuda_exec *s, struct flyt_device_ref r,size_t n,void **out)
+{
+    if(!s||!out||s->closing||!pthread_equal(s->owner,pthread_self()))return 0;
+    return resolve(s,r,n,out);
+}
+
 int flyt_cuda_exec_call(struct flyt_cuda_exec *s, const struct flyt_cuda_call *c,
                         struct flyt_cuda_result *r)
 {

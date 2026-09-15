@@ -30,7 +30,7 @@ static int exchange(struct flyt_shm_channel *c,struct flyt_shm_identity identity
     if(flyt_shm_submit(c,&q)||flyt_shm_receive(c,*id,&r)){broken=1;return 999;}
     ++*id;*got=r.output_bytes;
     if(r.transport_status){if(r.transport_status==FLYT_SHM_UNSUPPORTED_API)return 801;broken=1;return 999;}
-    if(r.result_domain!=FLYT_RESULT_CUDA_RUNTIME&&api>FLYT_HEARTBEAT){broken=1;return 999;}
+    if(r.result_domain!=FLYT_RESULT_CUDA_RUNTIME&&r.result_domain!=FLYT_RESULT_CUDA_DRIVER&&api>FLYT_HEARTBEAT){broken=1;return 999;}
     return (int)r.api_result;
 }
 static void *io_main(void *unused){

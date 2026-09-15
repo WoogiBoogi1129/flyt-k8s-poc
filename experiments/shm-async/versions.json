@@ -1,0 +1,8 @@
+{
+  "stage": "10-07",
+  "parentCommit": "fa33d2974aceb825db49454bf6340c140eb6a056",
+  "implementation": "source-authored",
+  "validation": "NOT_RUN",
+  "kernelCompatibility": "explicit-PTX-ABI-only",
+  "dtohAsync": "blocking-completion"
+}

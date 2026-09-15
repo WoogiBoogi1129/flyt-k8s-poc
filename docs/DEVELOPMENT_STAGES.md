@@ -212,3 +212,7 @@ configure·compile·link·정적 검사·테스트·프로세스 간 실행·배
 ## 10-06 SHM CUDA core
 
 `stage/10-06-shm-cuda-core`: [Guest/Worker 기본 CUDA 경로](../experiments/shm-cuda-core/README.md) 연결 소스. 검증 NOT_RUN.
+
+## 10-07 SHM async
+
+`stage/10-07-shm-async`: [stream/event/staging/PTX kernel](../experiments/shm-async/README.md) 소스 작성. 검증 NOT_RUN; 명시적 ABI kernel만 지원.

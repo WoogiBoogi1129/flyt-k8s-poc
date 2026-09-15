@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "flyt_wire.h"
+#include "flyt_async.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +24,7 @@ int main(int argc,char **argv){
     if(!output)goto done;
     snprintf(ready,sizeof(ready),"/tmp/flyt-slot-%u-mapped",slot);FILE *f=fopen(ready,"wx");if(!f){free(output);goto done;}fclose(f);
     while(!stopping){
+        if(flyt_async_reap())break;
         struct flyt_shm_request q={0};int rc=flyt_shm_worker_take(channel,&q);
         if(rc==FLYT_SHM_AGAIN){struct timespec pause={0,1000000};nanosleep(&pause,NULL);continue;}
         if(rc)break;
@@ -32,12 +34,14 @@ int main(int argc,char **argv){
         else if((q.api_id==FLYT_HEARTBEAT||q.api_id==FLYT_GOODBYE)&&q.payload_schema==1&&!q.input_bytes){
             if(q.api_id==FLYT_GOODBYE){stopping=1;exitcode=0;}
         }else if(q.api_id==FLYT_HELLO){r.transport_status=FLYT_SHM_BAD_DESCRIPTOR;stopping=1;}
+        else if(q.api_id>=0x2000){if(flyt_async_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
         else if(flyt_cuda_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}
         rc=flyt_shm_worker_respond(channel,&r);flyt_shm_request_release(&q);if(rc)break;
         if(hello){char path[128];snprintf(path,sizeof(path),"/tmp/flyt-slot-%u-guest",slot);FILE *g=fopen(path,"a");if(g)fclose(g);}
     }
     unlink(ready);free(output);
 done:
+    if(session.exec&&flyt_async_close())return 1; /* process exit releases uncertain CUDA state */
     if(session.exec&&flyt_cuda_exec_destroy(&session.exec,&error))exitcode=1;
     if(!session.exec)flyt_cuda_runtime_close(runtime);
     flyt_shm_close(channel);flyt_unmap(&mapping);return exitcode;
