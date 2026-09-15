@@ -208,3 +208,7 @@ configure·compile·link·정적 검사·테스트·프로세스 간 실행·배
 ## 10-05 Channel Controller
 
 `stage/10-05-channel-controller`: [채널·attachment CRD, reconcile, 시작 gate](../experiments/channel-controller/README.md) 소스 작성. 검증 NOT_RUN.
+
+## 10-06 SHM CUDA core
+
+`stage/10-06-shm-cuda-core`: [Guest/Worker 기본 CUDA 경로](../experiments/shm-cuda-core/README.md) 연결 소스. 검증 NOT_RUN.

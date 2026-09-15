@@ -149,7 +149,9 @@ int flyt_shm_open(void *p, size_t bytes, const struct flyt_shm_layout *l,
     if (memcmp(h + 16, l->allocation_id, 16) || memcmp(h + 32, l->channel_generation, 16))
         return FLYT_SHM_STALE_IDENTITY;
     s = &l->slots[slot];
-    if (acquire(b + s->request_ring.offset) || acquire(b + s->request_ring.offset + 64) ||
+    /* Worker may attach after Guest publishes its first HELLO. No reattachment
+     * after consumption is allowed. Request is decoded normally by take. */
+    if (acquire(b + s->request_ring.offset) > (uint64_t)(role == FLYT_SHM_WORKER) || acquire(b + s->request_ring.offset + 64) ||
         acquire(b + s->response_ring.offset) || acquire(b + s->response_ring.offset + 64))
         return FLYT_SHM_BAD_DESCRIPTOR;
     c = calloc(1, sizeof(*c));

@@ -3,6 +3,25 @@
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+
+static int worker_guard(void) {
+    const char *backend=getenv("FLYT_RESOURCE_BACKEND"),*uuid=getenv("FLYT_GPU_UUID"),*quota=getenv("FLYT_MEMORY_BYTES");
+    char line[4096],actual[41],*end;int hami=0,client=0,count=0;size_t free_bytes=0,total=0;
+    if(!backend||strcmp(backend,"hami")||!uuid||!quota||getenv("CUDA_MPS_PIPE_DIRECTORY"))return -1;
+    errno=0;unsigned long long limit=strtoull(quota,&end,10);if(errno||*end||!limit)return -1;
+    FILE *f=fopen("/proc/self/maps","r");if(!f)return -1;
+    while(fgets(line,sizeof(line),f)){if(strstr(line,"libvgpu.so"))hami=1;if(strstr(line,"cricket-client")||strstr(line,"libflyt_guest"))client=1;}fclose(f);
+    if(!hami||client||cudaGetDeviceCount(&count)!=cudaSuccess||count!=1)return -1;
+    struct cudaDeviceProp prop;memset(&prop,0,sizeof(prop));
+    if(cudaGetDeviceProperties(&prop,0)!=cudaSuccess)return -1;
+    const unsigned char *b=(const unsigned char *)prop.uuid.bytes;
+    snprintf(actual,sizeof(actual),"GPU-%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15]);
+    if(strcmp(uuid,actual)||cudaSetDevice(0)!=cudaSuccess||cudaMemGetInfo(&free_bytes,&total)!=cudaSuccess||!total||total>limit||free_bytes>total)return -1;
+    return 0;
+}
 
 struct flyt_cuda_runtime { pthread_t owner; };
 static atomic_flag runtime_opened = ATOMIC_FLAG_INIT;
@@ -89,6 +108,7 @@ int flyt_cuda_runtime_open(struct flyt_cuda_runtime **out, uint32_t *cuda_error)
         return FLYT_SHM_CHANNEL_CLOSED;
     }
     r->owner = pthread_self();
+    if(worker_guard()){free(r);return FLYT_SHM_INTERNAL_ERROR;}
     *cuda_error = get_count(r, &count);
     if (!*cuda_error) *cuda_error = set_device(r, 0);
     if (*cuda_error) {
