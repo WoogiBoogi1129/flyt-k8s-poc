@@ -1,0 +1,23 @@
+{
+  "stage": "10-02",
+  "branch": "stage/10-02-cuda-dispatch",
+  "parentCommit": "1a35dce6e01539a4078429cb951f9ea517598301",
+  "implementation": "basic-runtime-dispatch-source-authored",
+  "rpcFallback": false,
+  "runtimeIntegration": "NOT_IMPLEMENTED",
+  "guestAdapter": "NOT_IMPLEMENTED",
+  "shmPayloadAdapter": "NOT_IMPLEMENTED",
+  "driverAsyncLibraryMigration": "DEFERRED_TO_10_06_THROUGH_10_08",
+  "deferredValidationStages": [8, 9],
+  "validation": {
+    "configure": "NOT_RUN",
+    "compile": "NOT_RUN",
+    "link": "NOT_RUN",
+    "staticChecks": "NOT_RUN",
+    "tests": "NOT_RUN",
+    "patchApplication": "NOT_RUN",
+    "kubernetes": "NOT_RUN",
+    "gpu": "NOT_RUN",
+    "hamiInterception": "NOT_RUN"
+  }
+}

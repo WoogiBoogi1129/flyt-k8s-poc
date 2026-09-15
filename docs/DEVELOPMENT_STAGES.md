@@ -28,6 +28,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 7: Manager 자원 관리 역할 축소 | `stage/07-session-control-plane` | 소스 구현 완료 | NOT_RUN |
 | 8·9: 호환성·Multi-VM 검증 | 별도 개발 없음 | 사용자 요청으로 보류 | NOT_RUN |
 | 10-01: SHM 전환 계약 | `stage/10-01-shm-contract` | 계약·인터페이스 작성 완료 | NOT_RUN; runtime 미연결 |
+| 10-02: CUDA 실행 모듈 | `stage/10-02-cuda-dispatch` | 기본 Runtime dispatcher/backend 소스 작성 완료 | NOT_RUN; runtime 미연결 |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -173,3 +174,16 @@ Worker generation, Guest instance와 GID로 연결을 식별한다. 지연 정�
 
 10-02~10-10은 별도 후속 브랜치로 진행한다. 헤더 compile·Schema 검증·정적 검사·build·test·
 배포·GPU 실행은 모두 NOT_RUN이며 `[skip ci]`로 커밋한다. GPU/노드 설정은 변경하지 않는다.
+
+## 10-02단계 구현
+
+10-01 커밋 `1a35dce6e01539a4078429cb951f9ea517598301`에서 분기했다.
+[CUDA 실행 모듈](../experiments/cuda-dispatch/README.md)에 typed dispatcher, 기본 Runtime
+backend, 세션별 handle/범위 검사, 결과 버퍼 소유권, 오류 후 세션 종료 처리를 작성했다.
+RPC/XDR stub 호출 없이 CUDA를 호출하는 별도 라이브러리 소스이며, 기존 RPC handler 전체를
+교체하거나 Guest/Worker 실행 경로에 연결한 것은 아니다. SHM adapter는 10-06에 연결한다.
+
+한 프로세스당 한 세션·한 실행 thread로 제한하며, CUDA cleanup 오류는 해당 프로세스 종료가
+필요하다. 실제 supervisor 연결은 후속 작업이다. async/Graph/라이브러리 API도 후속 범위다.
+CMake configure·빌드·링크·정적 검사·테스트·배포·GPU 실행은 모두 NOT_RUN이다.
+이전 브랜치, 기존 패치, GPU/노드/외부 플랫폼 설정은 보존하고 `[skip ci]`로 커밋한다.

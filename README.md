@@ -19,6 +19,9 @@ Manager·Guest 제어 경로와 세션 ID·JSON 조회를 분리했다. **소스
 배치·회수 절차를 정의한다. **인터페이스 작성 완료·runtime 미연결·NOT_RUN** 상태다.
 브랜치와 기준 버전 보존 방식은 [단계별 개발 문서](docs/DEVELOPMENT_STAGES.md)를 참고한다.
 
+이 브랜치의 [10-02 CUDA 실행 모듈](experiments/cuda-dispatch/README.md)은 기본 Runtime API,
+세션별 handle 및 결과 버퍼 수명을 RPC/XDR에서 분리한 소스다. **runtime 미연결·NOT_RUN** 상태다.
+
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가
 할당한 whole GPU를 GPU Cell이 소비하도록 만든 실험의 공개·재현 가능한 버전이다.
 Flyt 원본을 그대로 배포하는 저장소가 아니며, 고정된 Flyt 기준 커밋에
