@@ -204,3 +204,7 @@ configure·compile·link·정적 검사·테스트·프로세스 간 실행·배
 ## 10-04 VM SHM adapter
 
 `stage/10-04-vm-shm-channel`: [backing·mapping·hook](../experiments/vm-shm-channel/README.md) 소스 작성. 모든 검증 NOT_RUN.
+
+## 10-05 Channel Controller
+
+`stage/10-05-channel-controller`: [채널·attachment CRD, reconcile, 시작 gate](../experiments/channel-controller/README.md) 소스 작성. 검증 NOT_RUN.
