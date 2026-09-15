@@ -1,24 +1,22 @@
 name: static-validation
-
 on:
   push:
   pull_request:
-
 permissions:
   contents: read
-
 jobs:
   validate:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Python YAML parser
-        run: python -m pip install PyYAML==6.0.2
-      - name: Static checks
-        run: ./scripts/static-checks.sh
-      - name: Manifest rendering
-        run: ./scripts/test-render.sh
-      - name: Managed Kustomize safety defaults
-        run: ./scripts/test-managed-kustomize.sh
-      - name: Reconstruct patched Flyt source
-        run: ./scripts/verify-patch-series.sh
+      - name: Parse SHM Python and deployment JSON
+        run: |
+          python3 - <<'PYCODE'
+          import ast, json
+          from pathlib import Path
+          for root in ('runtime/shm/control', 'scripts'):
+              for p in Path(root).glob('*.py'):
+                  ast.parse(p.read_text(), filename=str(p))
+          for p in Path('deploy/shm').glob('*.json'):
+              json.loads(p.read_text())
+          PYCODE

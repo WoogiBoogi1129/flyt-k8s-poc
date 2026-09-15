@@ -10,7 +10,10 @@ static int call(uint32_t api,const void *p,size_t n,void **out){
     uint8_t result[8];size_t got;pthread_mutex_lock(&flyt_guest_lock);
     int e=flyt_guest_exchange(api,p,n,result,sizeof(result),&got);
     if(!e&&out){if(got!=8)e=999;else *out=(void *)(uintptr_t)flyt_get(result,8);}
-    pthread_mutex_unlock(&flyt_guest_lock);return e;
+    pthread_mutex_unlock(&flyt_guest_lock);
+    if(api>=0x3200){if(e==999)return CUDNN_STATUS_INTERNAL_ERROR;if(e==801)return CUDNN_STATUS_NOT_SUPPORTED;}
+    else if(api>=0x3100){if(e==999)return CUBLAS_STATUS_INTERNAL_ERROR;if(e==801)return CUBLAS_STATUS_NOT_SUPPORTED;}
+    return e;
 }
 static int one(uint32_t api,void *h,void **out){uint8_t p[8];flyt_put(p,(uintptr_t)h,8);return call(api,p,8,out);}
 cudaError_t cudaGraphCreate(cudaGraph_t *g,unsigned flags){if(!g)return cudaErrorInvalidValue;if(flags)return cudaErrorNotSupported;return (cudaError_t)call(FLYT_GRAPH_CREATE,NULL,0,(void **)g);}
@@ -37,7 +40,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t h,cublasOperation_t ta,cublasOperat
     for(int i=0;i<8;i++)flyt_put(p+8+i*4,fields[i],4);memcpy(p+40,alpha,4);memcpy(p+44,beta,4);
     flyt_put(p+48,ar.handle,8);flyt_put(p+56,ar.offset,8);flyt_put(p+64,br.handle,8);flyt_put(p+72,br.offset,8);flyt_put(p+80,cr.handle,8);flyt_put(p+88,cr.offset,8);
     e=flyt_guest_exchange(FLYT_BLAS_SGEMM,p,sizeof(p),NULL,0,&got);
-done:pthread_mutex_unlock(&flyt_guest_lock);return (cublasStatus_t)e;
+done:pthread_mutex_unlock(&flyt_guest_lock);return e==999?CUBLAS_STATUS_INTERNAL_ERROR:e==801?CUBLAS_STATUS_NOT_SUPPORTED:(cublasStatus_t)e;
 }
 cudnnStatus_t cudnnCreate(cudnnHandle_t *h){return h?(cudnnStatus_t)call(FLYT_DNN_CREATE,NULL,0,(void **)h):CUDNN_STATUS_BAD_PARAM;}
 cudnnStatus_t cudnnDestroy(cudnnHandle_t h){return (cudnnStatus_t)one(FLYT_DNN_DESTROY,h,NULL);}
@@ -54,6 +57,13 @@ cudaError_t cudaLaunchKernel(const void *f,struct dim3 grid,struct dim3 block,vo
 CUresult cuGetProcAddress(const char *symbol,void **pfn,int version,cuuint64_t flags){
     if(!symbol||!pfn)return CUDA_ERROR_INVALID_VALUE;*pfn=NULL;
     if(flags||version<2000||version>12080)return CUDA_ERROR_NOT_SUPPORTED;
+    if(version>=3020){
+        if(!strcmp(symbol,"cuMemAlloc")){*pfn=(void *)&cuMemAlloc_v2;return CUDA_SUCCESS;}
+        if(!strcmp(symbol,"cuMemFree")){*pfn=(void *)&cuMemFree_v2;return CUDA_SUCCESS;}
+        if(!strcmp(symbol,"cuMemcpyHtoD")){*pfn=(void *)&cuMemcpyHtoD_v2;return CUDA_SUCCESS;}
+        if(!strcmp(symbol,"cuMemcpyDtoH")){*pfn=(void *)&cuMemcpyDtoH_v2;return CUDA_SUCCESS;}
+        if(!strcmp(symbol,"cuMemcpyDtoD")){*pfn=(void *)&cuMemcpyDtoD_v2;return CUDA_SUCCESS;}
+    }
 #define SYMBOL(name) if(!strcmp(symbol,#name)){*pfn=(void *)&name;return CUDA_SUCCESS;}
     SYMBOL(cuInit) SYMBOL(cuDeviceGet) SYMBOL(cuDeviceGetCount)
     SYMBOL(cuMemAlloc_v2) SYMBOL(cuMemFree_v2) SYMBOL(cuMemcpyHtoD_v2) SYMBOL(cuMemcpyDtoH_v2) SYMBOL(cuMemcpyDtoD_v2)

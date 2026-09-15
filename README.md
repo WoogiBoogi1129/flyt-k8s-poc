@@ -1,115 +1,41 @@
-# Flyt on Kubernetes/KubeVirt reproducible PoC
+# FLYT SHM-only Kubernetes / KubeVirt development
 
-개발 중인 [1단계 HAMi 단독 PoC](experiments/hami-standalone/README.md)는
-기존 MPS 구현과 분리되어 있으며 현재 **구현 완료·검증 미실행** 상태다.
-이 브랜치의 [2단계 VM별 HAMi Worker](experiments/per-vm-worker/README.md)도
-**구현 완료·검증 미실행** 상태이며, 별도 이미지와 정적 VM/Worker 배포 도구를 제공한다.
-이 브랜치의 [3단계 CRD 기반 Controller](experiments/controller/README.md)는
-`FlytGPUProfile`, `FlytControlPlane`, `FlytWorker`와 VMI reconcile을 추가했다.
-현재 **소스 구현 완료·검증 미실행(NOT_RUN)**이며 실제 클러스터에는 배포하지 않았다.
-이 브랜치의 [4단계 VM GPU 요청](experiments/gpu-request/README.md)은 `FlytGPURequest`와
-요청 검증·quota 변환·VMI별 불변 할당을 추가했다. 4단계도 **NOT_RUN** 상태다.
-이 브랜치의 [5단계 HAMi backend](experiments/hami-backend/README.md)는 MPS 자원 제어와
-HAMi 경로를 분리하고, 미지원 제어 명령 차단·메모리 조회 오류 처리를 추가했다. **NOT_RUN** 상태다.
-이 브랜치의 [6단계 End-to-End 실험 도구](experiments/hami-e2e/README.md)는 대상 UID 고정,
-CUDA probe·HAMi 함수 진입 추적·합산 memory quota·compute 비교를 구현했다. **검증은 NOT_RUN**이다.
-이 브랜치의 [7단계 세션 Control Plane](experiments/session-control-plane/README.md)은 HAMi용
-Manager·Guest 제어 경로와 세션 ID·JSON 조회를 분리했다. **소스 구현 완료·NOT_RUN** 상태다.
-이 브랜치의 [10-01 SHM 전환 계약](experiments/shm-contract/README.md)은 채널·세션 ABI와
-배치·회수 절차를 정의한다. **인터페이스 작성 완료·runtime 미연결·NOT_RUN** 상태다.
-브랜치와 기준 버전 보존 방식은 [단계별 개발 문서](docs/DEVELOPMENT_STAGES.md)를 참고한다.
+현재 브랜치는 `stage/10-10-rpc-removal`이다. **SHM 경로 소스 작성·모든 검증 NOT_RUN** 상태이며,
+전체 CUDA/PyTorch 호환성은 미완료다. 이전 RPC 구현은 `legacy/rpc`와 1~7단계 브랜치에 보존했다.
+기본 Makefile, 이미지, 배포 진입점은 RPC 서버·Manager·rpcbind·libtirpc를 사용하지 않는다.
 
-이 브랜치의 [10-02 CUDA 실행 모듈](experiments/cuda-dispatch/README.md)은 기본 Runtime API,
-세션별 handle 및 결과 버퍼 수명을 RPC/XDR에서 분리한 소스다. **runtime 미연결·NOT_RUN** 상태다.
+## 현재 구조
 
-이 브랜치의 [10-03 SHM Queue](experiments/shm-queue/README.md)는 ring·payload snapshot·
-descriptor 직렬화·polling 소스를 제공한다. **VM/runtime 미연결·NOT_RUN** 상태다.
+VM의 CUDA interception → per-session Request/Response Ring + payload → Worker dispatcher →
+HAMi/CUDA 순서다. `runtime/shm`에 mapping, CUDA adapter, Guest library, Worker 및 관리 코드를 둔다.
+`FlytSharedMemoryChannel`은 allocation과 VM/Worker 배치를, `FlytChannelAttachment`는
+매핑·해제 근거를 관리한다. Kubernetes API와 KubeVirt hook 관리 통신은 계속 사용한다.
 
-이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가
-할당한 whole GPU를 GPU Cell이 소비하도록 만든 실험의 공개·재현 가능한 버전이다.
-Flyt 원본을 그대로 배포하는 저장소가 아니며, 고정된 Flyt 기준 커밋에
-`patches/series`의 패치를 적용한다.
+## 지원 범위
 
-## 무엇이 포함되는가
+기본 메모리/device, stream/event, 제한된 async 복사, 명시적 ABI의 PTX Driver launch,
+빈 노드 Graph lifecycle, cuBLAS float SGEMM, cuDNN handle/version 소스를 작성했다.
+Runtime fatbinary 등록·전체 Graph 연산·cuDNN 연산·기타 라이브러리·unmodified PyTorch는 미지원이다.
+[지원 표](experiments/shm-compatibility/README.md)와 [남은 작업](experiments/rpc-removal/README.md)을 확인한다.
+과거 MPS의 PyTorch 결과를 SHM 검증 결과로 사용할 수 없다.
 
-- Flyt 기준 소스와 PyTorch 소스를 full commit SHA로 고정
-- K8s 설정 경로, GPU discovery/accounting, CUDA/PyTorch 호환 패치
-- Builder, MongoDB, Cluster Manager, whole-GPU Cell, KubeVirt VM 매니페스트
-- CUDA 및 PyTorch 호환성 시험, 그리고 과거 whole-GPU 동적 quota 시험 코드
-- 비파괴 preflight와 범위가 제한된 cleanup
-- 환경값을 분리하는 manifest renderer
+## 향후 빌드·배포 준비
 
-아키텍처와 원본 대비 변경은 [아키텍처](docs/ARCHITECTURE.md),
-[계보](docs/PROVENANCE.md), [패치 목록](docs/PATCH_CATALOG.md)을 참고한다.
+아래는 실행하지 않은 후속 절차다. GPU 설정과 기존 Kubernetes 설치를 이 작업에서 변경하지 않았다.
 
-## 요구 환경
+1. 개발물 검증을 재개할 때 CMake/이미지 빌드와 CPU Queue 시험부터 수행한다.
+2. `images/flyt/Containerfile`의 `control-plane`, `worker`, `guest-artifacts`를 각각 빌드한다.
+   hook은 별도 `Hook.Containerfile`과 실제 설치 버전의 digest-pinned Sidecar-shim image가 필요하다.
+3. 별도 SHM 실험 클러스터/namespace에 Profile/Request 및 Channel/Attachment CRD를 설치한다.
+   `deploy/shm`의 CRD는 SHM 전용이며 기존 RPC 클러스터 CRD를 무조건 덮어쓰면 안 된다.
+4. admission TLS Secret과 CA를 준비하고 `scripts/render-shm.py`로 manifests를 만든다.
+   이 renderer는 출력만 하며 apply하지 않는다. webhook과 전용 namespace가 함께 있어야 시작 gate가 작동한다.
+5. 승인 GPU Profile, 정지 VM, 같은 노드 local filesystem PVC, Request와 Channel을 준비한다.
+   BackingReady 이후 VM을 수동 시작한다. Guest에 layout.bin을 전달하고 명시적 ivshmem BDF/slot을 지정한다.
+6. 양쪽 mapping ACK와 Ready를 확인한 뒤 지원 API를 실행·검증한다. 종료는 Channel drain 절차를 따른다.
 
-- Kubernetes 1.34 계열과 `resource.k8s.io/v1` DRA API
-- KubeVirt와 `virtctl`
-- NVIDIA GPU DRA driver 및 `gpu.nvidia.com` DeviceClass
-- CUDA 12.8 호환 NVIDIA GPU와 드라이버
-- `kubectl`, `jq`, `rg`, `git`, `openssl`, `nvidia-smi`
-- GPU 노드에서 실행할 수 있는 셸; preflight가 로컬 `nvidia-smi`를 사용한다
+일반 GPU 없는 노드에서는 control plane/Queue 검증까지 가능하지만 실제 CUDA Worker 실행은 별개다.
+KubeVirt hook/PVC 공유·Guest BAR mapping 속성과 HAMi 실행은 아직 실제 환경에서 확인하지 않았다.
+검증을 생략한 소스 개발만으로 배포 가능/운영 준비 완료라고 판단하지 않는다.
 
-검증된 하드웨어는 Blackwell CC 12.0 whole GPU다. 다른 GPU 아키텍처는
-CUDA arch와 기대 SM 값을 함께 수정하고 별도로 검증해야 한다.
-
-## 빠른 시작
-
-```bash
-cp config.example.env config.env
-# config.env의 REPLACE_* 값을 실제 클러스터 값으로 수정
-
-make render
-make validate
-make preflight
-make build
-make control-plane
-make gpu-cell
-make vms
-make start-vms
-./scripts/seed-vm-resources.sh
-```
-
-Builder가 끝난 뒤 guest bundle과 PyTorch wheel을 설치하고 시험한다.
-
-```bash
-export PYTORCH_WHEEL="$PWD/artifacts/torch-2.11.0+flyt.cu128-cp310-cp310-linux_x86_64.whl"
-./scripts/install-guests.sh
-make test
-./scripts/run-pytorch-matrix.sh
-make evidence
-```
-
-실행 중 quota 변경 시험은 기본적으로 `RUN_DYNAMIC=false`다. 명시적으로 활성화한
-whole-GPU 실험에서만 수행한다.
-
-상세 절차와 판정 기준은 [REPRODUCING.md](docs/REPRODUCING.md)에 있다.
-공유 클러스터에서 whole GPU 한 개와 VM 한 대부터 검증하는 실행 경로는
-[WHOLE_GPU_EXPERIMENT.md](docs/WHOLE_GPU_EXPERIMENT.md)에 정리했다.
-새 GitHub 저장소에 게시하는 절차는
-[GITHUB_PUBLISHING.md](docs/GITHUB_PUBLISHING.md)에 정리했다.
-
-## 안전성
-
-`make preflight`는 다른 namespace의 GPU claim과 프로세스를 읽기만 하며,
-GPU mode를 변경하거나 타 workload를 삭제하지 않는다. GPU gate가 실패하면
-GPU Cell을 배포하지 않는다. `make cleanup`은 VM을 중지하고 GPU Cell만 제거한다.
-
-## Artifact 정책
-
-multi-GB guest bundle, PyTorch wheel, raw evidence는 Git에 넣지 않는다. 저장소에는
-빌드 방법, 고정 입력, checksum과 축약 결과만 둔다. 자세한 내용은
-[ARTIFACT_POLICY.md](docs/ARTIFACT_POLICY.md)를 참고한다.
-
-## 현재 한계
-
-이 저장소는 연구용 PoC다. cuDNN 9 backend와 실행 중 memory 변경 안정성은
-완전하지 않다. 일반 목적의 다중 tenant GPU 운영 환경으로 간주하지 않는다.
-[KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md)에 검증 경계를 기록한다.
-
-## License
-
-PoC 자동화와 문서는 MIT License로 배포한다. Flyt 패치는 원본 Flyt의 MIT
-License와 저작권 고지를 유지한다. NVIDIA CUDA, cuDNN, PyTorch와 컨테이너
-이미지는 각각의 라이선스가 적용된다.
+[단계별 기록](docs/DEVELOPMENT_STAGES.md) · [최종 개발 상태](experiments/rpc-removal/README.md)

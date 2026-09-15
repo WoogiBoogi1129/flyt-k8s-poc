@@ -66,6 +66,8 @@ def reconcile(api,c):
     vm=require_ref(api,'vms',spec['vmRef']);q=require_ref(api,'requests',spec['requestRef'])
     p=require_ref(api,'profiles',q['spec']['profileRef']);pvc=require_ref(api,'persistentvolumeclaims',spec['pvcRef'])
     if q['spec']['vmRef']!=spec['vmRef'] or not p['spec']['approved']:raise ValueError('request/profile not approved')
+    if spec['workerImage']!=p['spec']['workerImage'] or spec['sessions']>p['spec']['maxClients']:
+        raise ValueError('worker image/client count not approved by profile')
     if q['spec']['count']!=1 or not 1<=q['spec']['compute']<=p['spec']['cores']:raise ValueError('quota invalid')
     # Accept explicit Mi/Gi request only; frozen in status for this allocation.
     memory=q['spec']['memory'];unit=1024 if memory.endswith('Gi') else 1
@@ -89,6 +91,14 @@ def reconcile(api,c):
     if prep.get('status',{}).get('phase')!='Succeeded':
         if prep.get('status',{}).get('phase')=='Failed':raise ValueError('provision failed; allocation cannot be reused')
         return
+    pvc=require_ref(api,'persistentvolumeclaims',spec['pvcRef'])
+    volume=pvc['spec'].get('volumeName')
+    pv=api.call('GET','/api/v1/persistentvolumes/'+volume) if volume else None
+    if not pv or not pv['spec'].get('local'):raise ValueError('local filesystem PV required for shared memory')
+    terms=pv['spec'].get('nodeAffinity',{}).get('required',{}).get('nodeSelectorTerms',[])
+    if not terms or not all(any(e.get('key')=='kubernetes.io/hostname' and e.get('operator')=='In' and
+        e.get('values')==[s['nodeName']] for e in t.get('matchExpressions',[])) for t in terms):
+        raise ValueError('local PV must be pinned to the approved node')
     ann=vm['spec'].setdefault('template',{}).setdefault('metadata',{}).setdefault('annotations',{})
     if not ann.get('flyt.dev/shm-channel'):
         ann.update({'flyt.dev/shm-channel':name,'flyt.dev/shm-channel-uid':c['metadata']['uid'],
@@ -109,6 +119,8 @@ def reconcile(api,c):
     if s.get('vmiUID') and s['vmiUID']!=vmi['metadata']['uid']:raise ValueError('VMI generation changed')
     if vmi.get('status',{}).get('nodeName') not in (None,'',s['nodeName']):raise ValueError('VMI placed on wrong node')
     if not s.get('vmiUID'):update(api,c,phase='Bound',vmiUID=vmi['metadata']['uid'],everBound=True);return
+    if vmi.get('status',{}).get('phase') in ('Succeeded','Failed') or vmi['metadata'].get('deletionTimestamp'):
+        update(api,c,phase='Draining',reason='VMIEnded');return
     service=ensure(api,'serviceaccounts',{'apiVersion':'v1','kind':'ServiceAccount','metadata':meta(c,name+'-worker')},c)
     ensure(api,'roles',{'apiVersion':'rbac.authorization.k8s.io/v1','kind':'Role','metadata':meta(c,name+'-worker'),
         'rules':[{'apiGroups':['flyt.dev'],'resources':['flytsharedmemorychannels'],'resourceNames':[name],'verbs':['get']},
@@ -139,8 +151,11 @@ def reconcile(api,c):
         ensure(api,'attachments',{'apiVersion':'flyt.dev/v1alpha1','kind':'FlytChannelAttachment',
             'metadata':meta(c,name+'-'+role),'spec':{'channelRef':ref(c),'generation':s['generation'],
             'role':role,'holderUID':holder,'nodeName':s['nodeName']}},c)
+    if w.get('status',{}).get('phase') in ('Succeeded','Failed') or w['metadata'].get('deletionTimestamp'):
+        update(api,c,phase='Draining',reason='WorkerEnded',workerPodUID=w['metadata']['uid']);return
     attachments=[a for a in api.items('attachments') if a['spec']['channelRef']==ref(c)]
-    ready=len(attachments)==2 and all(a.get('status',{}).get('phase')=='Mapped' and
+    pod_ready=any(x['type']=='Ready' and x['status']=='True' for x in w.get('status',{}).get('conditions',[]))
+    ready=pod_ready and len(attachments)==2 and all(a.get('status',{}).get('phase')=='Mapped' and
         a['status'].get('observedGeneration')==a['metadata']['generation'] for a in attachments)
     update(api,c,phase='Ready' if ready else 'Bound',workerPodUID=w['metadata']['uid'],reason='MappingACK' if ready else 'AwaitingMappingACK')
 

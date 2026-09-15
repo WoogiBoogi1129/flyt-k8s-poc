@@ -1,0 +1,366 @@
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "flytgpurequests.flyt.dev"
+  },
+  "spec": {
+    "group": "flyt.dev",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "FlytGPURequest",
+      "listKind": "FlytGPURequestList",
+      "plural": "flytgpurequests",
+      "singular": "flytgpurequest",
+      "shortNames": [
+        "fgr"
+      ]
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "additionalPrinterColumns": [
+          {
+            "name": "Phase",
+            "type": "string",
+            "jsonPath": ".status.phase"
+          },
+          {
+            "name": "Accepted",
+            "type": "string",
+            "jsonPath": ".status.conditions[?(@.type==\"Accepted\")].status"
+          },
+          {
+            "name": "VM",
+            "type": "string",
+            "jsonPath": ".spec.vmRef.name"
+          },
+          {
+            "name": "Compute",
+            "type": "integer",
+            "jsonPath": ".spec.compute"
+          },
+          {
+            "name": "Memory",
+            "type": "string",
+            "jsonPath": ".spec.memory"
+          },
+          {
+            "name": "AppliedMiB",
+            "type": "integer",
+            "jsonPath": ".status.applied.memoryMiB"
+          },
+          {
+            "name": "Age",
+            "type": "date",
+            "jsonPath": ".metadata.creationTimestamp"
+          }
+        ],
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "required": [
+              "spec"
+            ],
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "required": [
+                  "vmRef",
+                  "profileRef",
+                  "count",
+                  "compute",
+                  "memory"
+                ],
+                "properties": {
+                  "vmRef": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "uid"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 253,
+                        "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+                      },
+                      "uid": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 36,
+                        "pattern": "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$"
+                      }
+                    }
+                  },
+                  "profileRef": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "uid"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 253,
+                        "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+                      },
+                      "uid": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 36,
+                        "pattern": "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$"
+                      }
+                    }
+                  },
+                  "count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "enum": [
+                      1
+                    ]
+                  },
+                  "compute": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "memory": {
+                    "type": "string",
+                    "maxLength": 9,
+                    "pattern": "^[1-9][0-9]{0,6}(Mi|Gi)$"
+                  }
+                },
+                "x-kubernetes-validations": [
+                  {
+                    "rule": "self.vmRef == oldSelf.vmRef",
+                    "message": "vmRef is immutable; create a separate request"
+                  },
+                  {
+                    "rule": "self.profileRef == oldSelf.profileRef",
+                    "message": "profileRef is immutable; create a separate request"
+                  }
+                ]
+              },
+              "status": {
+                "type": "object",
+                "properties": {
+                  "observedGeneration": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0
+                  },
+                  "phase": {
+                    "type": "string",
+                    "enum": [
+                      "Pending",
+                      "Ready",
+                      "Blocked",
+                      "Suspended",
+                      "Terminating"
+                    ]
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "x-kubernetes-list-type": "map",
+                    "x-kubernetes-list-map-keys": [
+                      "type"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "type",
+                        "status",
+                        "lastTransitionTime",
+                        "reason",
+                        "message"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 316
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "True",
+                            "False",
+                            "Unknown"
+                          ]
+                        },
+                        "lastTransitionTime": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024
+                        },
+                        "message": {
+                          "type": "string",
+                          "maxLength": 8192
+                        },
+                        "observedGeneration": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  },
+                  "consumers": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "endpoint": {
+                    "type": "string"
+                  },
+                  "podUID": {
+                    "type": "string"
+                  },
+                  "podIP": {
+                    "type": "string"
+                  },
+                  "vmIP": {
+                    "type": "string"
+                  },
+                  "workerGeneration": {
+                    "type": "string"
+                  },
+                  "managerEpoch": {
+                    "type": "string"
+                  },
+                  "requested": {
+                    "type": "object",
+                    "required": [
+                      "count",
+                      "compute",
+                      "memoryMiB"
+                    ],
+                    "properties": {
+                      "count": {
+                        "type": "integer",
+                        "format": "int32",
+                        "enum": [
+                          1
+                        ]
+                      },
+                      "compute": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      "memoryMiB": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 256,
+                        "maximum": 1048576
+                      }
+                    }
+                  },
+                  "applied": {
+                    "type": "object",
+                    "required": [
+                      "count",
+                      "compute",
+                      "memoryMiB"
+                    ],
+                    "properties": {
+                      "count": {
+                        "type": "integer",
+                        "format": "int32",
+                        "enum": [
+                          1
+                        ]
+                      },
+                      "compute": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      "memoryMiB": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 256,
+                        "maximum": 1048576
+                      }
+                    }
+                  },
+                  "appliedRequestGeneration": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0
+                  },
+                  "workerRef": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "uid"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 253,
+                        "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+                      },
+                      "uid": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 36,
+                        "pattern": "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$"
+                      }
+                    }
+                  },
+                  "vmiRef": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "uid"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 253,
+                        "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+                      },
+                      "uid": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 36,
+                        "pattern": "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

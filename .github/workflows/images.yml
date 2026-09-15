@@ -4,7 +4,10 @@ on:
   pull_request:
     paths:
       - images/**
-      - patches/**
+      - runtime/shm/**
+      - experiments/shm-queue/**
+      - experiments/cuda-dispatch/**
+      - experiments/shm-contract/**
       - versions.lock.yaml
       - .github/workflows/images.yml
   push:
@@ -20,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [cluster-manager, gpu-cell, guest-artifacts]
+        target: [control-plane, worker, guest-artifacts]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

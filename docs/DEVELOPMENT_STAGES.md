@@ -48,14 +48,14 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 
 ## 1단계 구현
 
-[HAMi standalone 안내](../experiments/hami-standalone/README.md)에 설치 설정,
+[HAMi standalone 안내](../legacy/rpc/experiments/hami-standalone/README.md)에 설치 설정,
 CUDA probe, 실행/수집/정리 절차 및 미검증 항목을 정리했다.
 기존 MPS 관리, CUDA RPC, KubeVirt VM, patch series는 변경하지 않는다.
 
 ## 2단계 구현
 
 `stage/01-hami-standalone`의 `260e3cd1bb2f1683926e892bdbb41485e2dec38e`에서 분기했다.
-[VM별 Worker 안내](../experiments/per-vm-worker/README.md)에 구현, 배포 전제,
+[VM별 Worker 안내](../legacy/rpc/experiments/per-vm-worker/README.md)에 구현, 배포 전제,
 guest 연결, 개별 삭제와 검증 대기 항목을 정리했다.
 
 VM별 Worker Deployment와 정적 CM 매핑을 추가하고 Worker 안의 프로세스별 RPC 구조는
@@ -70,7 +70,7 @@ MPS 제어 우회를 5단계에서 앞당긴다. VMI watcher/controller와 SHM�
 ## 3단계 구현
 
 `stage/02-per-vm-worker`의 `6423897213057bf3ec0411c213f880ad549dda5f`에서 분기했다.
-[Controller 안내](../experiments/controller/README.md)에 CRD 책임, 생성·삭제 순서,
+[Controller 안내](../legacy/rpc/experiments/controller/README.md)에 CRD 책임, 생성·삭제 순서,
 장애 복구 범위, 설치 준비와 검증 대기 항목을 정리했다.
 
 `FlytGPUProfile`은 승인된 GPU UUID와 정적 quota, `FlytControlPlane`은 공유 Manager,
@@ -91,7 +91,7 @@ GPU 소유권은 재확인하거나 변경하지 않았으며, 기존 외부 플
 ## 4단계 구현
 
 `stage/03-controller`의 `cdf086e921e6ce14a46ccca50528c2115a1f1fb3`에서 분기했다.
-[GPU 요청 안내](../experiments/gpu-request/README.md)에 CRD 책임과 변경 정책, 배포 순서,
+[GPU 요청 안내](../legacy/rpc/experiments/gpu-request/README.md)에 CRD 책임과 변경 정책, 배포 순서,
 권한 및 검증 대기 항목을 정리했다. 1·2·3단계 실험 디렉터리와 runtime 패치는 보존한다.
 
 `FlytGPURequest`에 VM/Profile/ControlPlane UID 참조와 count/compute/memory를 선언한다.
@@ -110,7 +110,7 @@ Worker를 재생성해도 값을 바꾸지 않는다. 요청 변경은 PendingRe
 ## 5단계 구현
 
 `stage/04-gpu-request`의 `ed46a8939521ee5a59f38a39c6a15359d85fb34a`에서 분기했다.
-[HAMi backend 안내](../experiments/hami-backend/README.md)에 실행 경로·차단 명령·이미지
+[HAMi backend 안내](../legacy/rpc/experiments/hami-backend/README.md)에 실행 경로·차단 명령·이미지
 전환과 검증 대기를 기록했다. 1~4단계 실험, Go Controller/CRD와 기본 패치는 보존한다.
 
 기본→2단계→3단계 뒤에 별도 5단계 패치를 추가한다. C 자원 제어 dispatch에서 HAMi와 legacy
@@ -126,7 +126,7 @@ VM 자동 재시작이나 GPU 설정 변경은 없다. patch 적용·빌드·정
 ## 6단계 구현
 
 `stage/05-hami-backend`의 `63f93010479499003918f88f55917f55fd81067a`에서 분기했다.
-[End-to-End 실험 도구 안내](../experiments/hami-e2e/README.md)에 대상 고정, GPU 실행 전제,
+[End-to-End 실험 도구 안내](../legacy/rpc/experiments/hami-e2e/README.md)에 대상 고정, GPU 실행 전제,
 함수 진입 증거와 quota 측정·보고 절차를 기록했다. 1~5단계 소스와 기본 patch series,
 Go Controller/CRD를 보존하며 새 runtime 패치는 없다.
 
@@ -147,7 +147,7 @@ kernel 성공만으로 compute 제한을 PASS로 기록하지 않는다. 신규 
 ## 7단계 구현
 
 `stage/06-hami-e2e`의 `c960d13bf729085d6226311b7175b2a91da22798`에서 분기했다.
-[세션 Control Plane 안내](../experiments/session-control-plane/README.md)에 코드 분리,
+[세션 Control Plane 안내](../legacy/rpc/experiments/session-control-plane/README.md)에 코드 분리,
 프로토콜 변경과 전환·복구 절차를 기록했다. 원문 본문의 7단계인 Manager 자원 관리 역할
 축소이며, 요약표의 Multi-VM/Lifecycle 검증 완료를 의미하지 않는다.
 
@@ -219,8 +219,16 @@ configure·compile·link·정적 검사·테스트·프로세스 간 실행·배
 
 ## 10-08 SHM compatibility
 
-`stage/10-08-shm-compatibility`: [Graph/SGEMM/cuDNN lifecycle 部分 지원](../experiments/shm-compatibility/README.md). 전체 PyTorch/Graph/library 이관 미완료, 검증 NOT_RUN.
+`stage/10-08-shm-compatibility`: [Graph/SGEMM/cuDNN lifecycle 부분 지원](../experiments/shm-compatibility/README.md). 전체 PyTorch/Graph/library 이관 미완료, 검증 NOT_RUN.
 
 ## 10-09 SHM lifecycle
 
 `stage/10-09-shm-lifecycle`: [heartbeat/detach/reclaim](../experiments/shm-lifecycle/README.md) 소스 작성. 검증 NOT_RUN.
+
+## 10-10 RPC 제거와 최종 개발 상태
+
+`stage/10-10-rpc-removal`: 기본 build/deploy를 SHM-only로 교체하고 과거 RPC 파일을
+`legacy/rpc`로 이동했다. 이전 브랜치는 수정하지 않았다. [최종 상태](../experiments/rpc-removal/README.md).
+10-04~10-10 브랜치는 각각 push한다. 모든 검증 NOT_RUN이며 10-08 전체 Graph/library/PyTorch
+호환 구현은 미완료다. 과거 단계의 “완료” 표시는 해당 당시 소스 범위만 뜻하며 최종 기능 검증이 아니다.
+이 문서의 과거 파일 경로/명령은 해당 브랜치 당시 기준이며 재현 시 이전 브랜치를 사용한다.

@@ -1,0 +1,9 @@
+{
+  "stage": "10-10",
+  "parentCommit": "94d96db9645e2f247220dc584dc27e8bf2b26da9",
+  "implementation": "shm-only-entrypoints-source-authored",
+  "rpcFallback": false,
+  "legacyArchive": "legacy/rpc",
+  "validation": "NOT_RUN",
+  "fullCompatibility": "NOT_IMPLEMENTED"
+}

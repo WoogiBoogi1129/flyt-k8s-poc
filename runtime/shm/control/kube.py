@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import ssl
+import re
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from urllib.parse import quote
@@ -10,6 +11,7 @@ from urllib.parse import quote
 class API:
     def __init__(self):
         self.namespace=os.environ['FLYT_NAMESPACE']
+        if not re.fullmatch('flyt-shm-[a-z0-9-]{1,40}',self.namespace):raise ValueError('dedicated SHM namespace required')
         self.base='https://kubernetes.default.svc'
         self.tls=ssl.create_default_context(cafile='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
     def path(self,kind,name=''):

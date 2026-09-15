@@ -12,7 +12,7 @@ def identifier(value):
         raise ValueError('nonzero 128-bit identifier required')
     return bytes.fromhex(value)
 
-def provision(root, allocation, generation, sessions, uid, gid):
+def make_layout(allocation, generation, sessions):
     aid, gen = identifier(allocation), identifier(generation)
     ids = [identifier(s) for s in sessions]
     if not 1 <= len(ids) <= 32 or len(set(ids)) != len(ids):
@@ -28,6 +28,21 @@ def provision(root, allocation, generation, sessions, uid, gid):
         slots.append((sid,req,resp,inp,out))
     size = 1 << (pos-1).bit_length()
     if size > 2**32: raise ValueError('backing too large')
+    layout=struct.pack('<16s16sQI20x',aid,gen,size,len(ids))
+    for sid,req,resp,inp,out in slots:
+        layout += struct.pack('<16sQI4xQI4xQQQQ',sid,req,64,resp,64,inp,arena,out,arena)
+    return layout,size
+
+def write_all(fd,data):
+    view=memoryview(data)
+    while view:
+        written=os.write(fd,view)
+        if written<=0:raise OSError('short write')
+        view=view[written:]
+
+def provision(root, allocation, generation, sessions, uid, gid):
+    layout,size=make_layout(allocation,generation,sessions)
+    aid,gen=identifier(allocation),identifier(generation)
     directory = Path(root) / allocation
     directory.mkdir(mode=0o750)  # exclusive, no exist_ok; incomplete attempt is retained
     os.chown(directory,uid,gid)
@@ -37,16 +52,13 @@ def provision(root, allocation, generation, sessions, uid, gid):
         os.posix_fallocate(fd,0,size)
         with mmap.mmap(fd,size) as m:
             # New file's allocated extents are zero; write only the ABI header.
-            m[:60]=struct.pack('<8sHHI16s16sQI',b'FLYTCHN1',1,0,4096,aid,gen,size,len(ids))
+            m[:60]=struct.pack('<8sHHI16s16sQI',b'FLYTCHN1',1,0,4096,aid,gen,size,len(sessions))
             m.flush()
         os.fsync(fd)
     finally: os.close(fd)
-    layout=struct.pack('<16s16sQI20x',aid,gen,size,len(ids))
-    for sid,req,resp,inp,out in slots:
-        layout += struct.pack('<16sQI4xQI4xQQQQ',sid,req,64,resp,64,inp,arena,out,arena)
     for name,data in [('layout.bin',layout),('ready.json',json.dumps({'allocationId':allocation,'generation':generation,'regionBytes':size,'sessions':sessions}).encode())]:
         fd=os.open(directory/name,os.O_CREAT|os.O_EXCL|os.O_WRONLY|os.O_NOFOLLOW,0o640)
-        try: os.fchown(fd,uid,gid); os.write(fd,data); os.fsync(fd)
+        try: os.fchown(fd,uid,gid); write_all(fd,data); os.fsync(fd)
         finally: os.close(fd)
     fd=os.open(directory,os.O_RDONLY|os.O_DIRECTORY)
     try: os.fsync(fd)

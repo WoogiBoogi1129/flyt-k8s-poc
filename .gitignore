@@ -2,6 +2,7 @@ config.env
 .local/
 .cache/
 deploy/rendered/
+legacy/rpc/deploy/rendered/
 artifacts/*
 !artifacts/README.md
 evidence/

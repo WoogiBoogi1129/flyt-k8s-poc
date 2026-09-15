@@ -7,12 +7,33 @@ from kube import API
 
 def validate(api,request):
     o=request['object'];kind=request['kind']['kind']
+    if kind=='FlytChannelAttachment':
+        spec=o['spec'];c=api.get('channels',spec['channelRef']['name']);status=o.get('status',{})
+        if not c or c['metadata']['uid']!=spec['channelRef']['uid'] or c.get('status',{}).get('generation')!=spec['generation']:
+            raise ValueError('stale attachment')
+        actor=request['userInfo']['username'];prefix='system:serviceaccount:'+api.namespace+':'
+        if actor==prefix+'flyt-shm-controller':return
+        if actor!=prefix+c['metadata']['name']+'-worker':raise ValueError('unauthorized attachment reporter')
+        pod=api.get('pods',c['metadata']['name']+'-worker')
+        if not pod or pod['metadata']['uid']!=status.get('reporterPodUID'):raise ValueError('stale reporter Pod')
+        if status.get('observedGeneration')!=o['metadata']['generation']:raise ValueError('stale observation')
+        if spec['role']=='guest' and status.get('phase')!='Mapped':raise ValueError('Worker cannot attest QEMU detach')
+        if spec['role']=='worker' and spec['holderUID']!=pod['metadata']['uid']:raise ValueError('wrong worker holder')
+        if status.get('phase') not in ('Mapped','Detached'):raise ValueError('invalid phase')
+        if request.get('oldObject',{}).get('status',{}).get('phase')=='Detached':raise ValueError('terminal attachment')
+        return
     if kind=='VirtualMachineInstanceMigration':
         v=api.get('vmis',o['spec']['vmiName'])
         if v and v['metadata'].get('annotations',{}).get('flyt.dev/shm-channel'):
             raise ValueError('active SHM migration unsupported')
         return
     a=o['metadata'].get('annotations',{});name=a.get('flyt.dev/shm-channel')
+    if request['operation']=='UPDATE':
+        old=request['oldObject'];oa=old['metadata'].get('annotations',{})
+        for key in ('flyt.dev/shm-channel','flyt.dev/shm-channel-uid','flyt.dev/shm-allocation','flyt.dev/shm-generation','hooks.kubevirt.io/hookSidecars'):
+            if a.get(key)!=oa.get(key):raise ValueError('active VMI binding is immutable')
+        if o['spec'].get('nodeSelector')!=old['spec'].get('nodeSelector'):raise ValueError('active placement immutable')
+        return
     if not name:raise ValueError('SHM namespace requires channel binding')
     c=api.get('channels',name)
     if not c or c['metadata'].get('deletionTimestamp') or c['spec'].get('drain'):raise ValueError('channel unavailable')
@@ -24,9 +45,9 @@ def validate(api,request):
         raise ValueError('VM owner mismatch')
     if o['spec'].get('nodeSelector',{}).get('kubernetes.io/hostname')!=s['nodeName']:
         raise ValueError('co-placement required')
-    vm=api.get('vms',c['spec']['vmRef']['name'])
-    expected=vm['spec']['template']['metadata']['annotations']['hooks.kubevirt.io/hookSidecars']
-    if a.get('hooks.kubevirt.io/hookSidecars')!=expected:raise ValueError('hook configuration changed')
+    expected=[{'image':c['spec']['hookImage'],'args':['--version','v1alpha2'],
+        'pvc':{'name':c['spec']['pvcRef']['name'],'volumePath':'/flyt-channel','sharedComputePath':'/var/run/flyt-channel'}}]
+    if json.loads(a.get('hooks.kubevirt.io/hookSidecars','null'))!=expected:raise ValueError('hook configuration changed')
 
 class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
