@@ -25,6 +25,7 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 4: VM GPU 요청과 quota 변환 | `stage/04-gpu-request` | 소스 구현 완료 | NOT_RUN |
 | 5: HAMi 자원 제어 backend 분리 | `stage/05-hami-backend` | 소스 구현 완료 | NOT_RUN |
 | 6: FLYT+HAMi End-to-End 실험 도구 | `stage/06-hami-e2e` | 도구 소스 구현 완료 | NOT_RUN; 실제 검증 단계 미완료 |
+| 7: Manager 자원 관리 역할 축소 | `stage/07-session-control-plane` | 소스 구현 완료 | NOT_RUN |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -138,3 +139,22 @@ kernel 성공만으로 compute 제한을 PASS로 기록하지 않는다. 신규 
 이 단계도 빌드·정적 검사·패치 검사·도구 실행·매니페스트 검사·GPU 실행·배포를 수행하지
 않고 `[skip ci]`로 커밋한다. 구현 완료는 검증 도구의 소스 작성 완료이며 원래 계획의
 6단계 검증 성공을 의미하지 않는다. 기존 GPU/외부 플랫폼 설정은 변경하지 않는다.
+
+## 7단계 구현
+
+`stage/06-hami-e2e`의 `c960d13bf729085d6226311b7175b2a91da22798`에서 분기했다.
+[세션 Control Plane 안내](../experiments/session-control-plane/README.md)에 코드 분리,
+프로토콜 변경과 전환·복구 절차를 기록했다. 원문 본문의 7단계인 Manager 자원 관리 역할
+축소이며, 요약표의 Multi-VM/Lifecycle 검증 완료를 의미하지 않는다.
+
+별도 Cargo feature/실행 경로에서 MongoDB·GPU quota 장부·placement를 제외하고 binding,
+Worker 등록과 세션을 관리한다. 세션 기본 키는 서버가 생성한 ID이며 VMI/Worker/Pod UID,
+Worker generation, Guest instance와 GID로 연결을 식별한다. 지연 정리는 이전 세션과 RPC ID에
+한정하며 통신 결과가 불명확하면 해당 Worker generation을 종료한다.
+
+기존 Controller binding/Node Manager v3와 CUDA RPC는 유지한다. Guest 제어는 v7 JSON으로
+변경되어 새 Guest Client Manager와 설정이 필요하며, 조회 CLI도 v7 JSON으로 구분한다.
+신규 ControlPlane/Profile/Request로 전환하고 기존 Go Controller/CRD와 이전 단계는 보존한다.
+
+패치 적용·의존성 해결·빌드·정적 검사·프로토콜 시험·GPU 실행·배포는 모두 NOT_RUN이다.
+`[skip ci]`로 커밋하며 실제 GPU나 외부 플랫폼 설정은 변경하지 않는다.

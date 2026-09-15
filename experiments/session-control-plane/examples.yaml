@@ -1,0 +1,28 @@
+# New ControlPlane identity is required: guest protocol and CLI output changed.
+apiVersion: flyt.dev/v1alpha1
+kind: FlytControlPlane
+metadata:
+  name: main-stage7
+  namespace: flyt-hami-stage3
+spec:
+  managerImage: registry.example.com/flyt/manager-stage7@sha256:REPLACE_WITH_DIGEST
+  authSecretName: flyt-binding-auth-stage7
+  clusterDomain: cluster.local
+  imagePullSecrets: []
+---
+apiVersion: flyt.dev/v1alpha1
+kind: FlytGPUProfile
+metadata:
+  name: gpu2-stage7
+  namespace: flyt-hami-stage3
+spec:
+  approved: false
+  nodeName: REPLACE_WITH_NODE
+  gpuUUID: REPLACE_WITH_APPROVED_GPU_UUID
+  cores: 100
+  memoryMiB: 8192
+  maxClients: 8
+  workerImage: registry.example.com/flyt/worker-stage7@sha256:REPLACE_WITH_DIGEST
+  runtimeClass: REPLACE_WITH_EXISTING_RUNTIMECLASS_OR_EMPTY
+  hamiNamespace: flyt-hami-stage1
+  schedulerName: flyt-hami-stage1

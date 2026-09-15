@@ -1,0 +1,29 @@
+{
+  "stage": "07-session-control-plane",
+  "parent_branch": "stage/06-hami-e2e",
+  "parent_commit": "c960d13bf729085d6226311b7175b2a91da22798",
+  "implementation": "implemented-unvalidated",
+  "plan_scope": "Original detailed step 7: reduce Cluster Manager resource-management role",
+  "patch_order": ["../../patches/series", "../per-vm-worker/patches/series", "../controller/patches/series", "../hami-backend/patches/series", "patches/series"],
+  "flyt_upstream_commit": "596a86939bae125d127a9ed6f70d92c332f47644",
+  "cargo_features": "--no-default-features --features hami-control-plane",
+  "controller_and_crds": "stage-4 unchanged",
+  "controller_binding_protocol": "existing v3 request/reply shape with additive session_protocol response field",
+  "node_manager_protocol": "existing flyt-worker-v3 registration and stage-5 commands",
+  "guest_control_protocol": "flyt-session-v7; matching stage-7 Guest Client Manager required",
+  "cuda_rpc": "unchanged",
+  "validation": {
+    "patch_application": "NOT_RUN",
+    "static_checks": "NOT_RUN",
+    "dependency_resolution_and_mongodb_exclusion": "NOT_RUN",
+    "build": "NOT_RUN",
+    "manifest_validation": "NOT_RUN",
+    "session_protocol_and_lifecycle": "NOT_RUN",
+    "stale_cleanup_and_reconnect": "NOT_RUN",
+    "controller_compatibility": "NOT_RUN",
+    "stage6_e2e_regression": "NOT_RUN",
+    "legacy_regression": "NOT_RUN",
+    "gpu_execution": "NOT_RUN",
+    "cluster_apply": "NOT_RUN"
+  }
+}

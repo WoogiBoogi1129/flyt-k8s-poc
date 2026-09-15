@@ -1,0 +1,18 @@
+apiVersion: flyt.dev/v1alpha1
+kind: FlytGPURequest
+metadata:
+  name: vm-a-stage7
+  namespace: flyt-hami-stage3
+spec:
+  vmRef:
+    name: REPLACE_WITH_EXPERIMENT_VM_NAME
+    uid: REPLACE_WITH_VM_UID
+  profileRef:
+    name: gpu2-stage7
+    uid: REPLACE_WITH_STAGE7_PROFILE_UID
+  controlPlaneRef:
+    name: main-stage7
+    uid: REPLACE_WITH_STAGE7_CONTROL_PLANE_UID
+  count: 1
+  compute: 30
+  memory: 8Gi

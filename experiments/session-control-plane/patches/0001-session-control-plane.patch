@@ -1,0 +1,676 @@
+diff --git a/control-managers/Cargo.toml b/control-managers/Cargo.toml
+--- a/control-managers/Cargo.toml
++++ b/control-managers/Cargo.toml
+@@ -5,8 +5,13 @@
+ 
+ # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+ 
++[features]
++default = ["legacy-mps"]
++legacy-mps = ["dep:mongodb"]
++hami-control-plane = []
++
+ [dependencies]
+-mongodb = { version = "2.8.2", features = ["tokio-sync"] }
++mongodb = { version = "2.8.2", features = ["tokio-sync"], optional = true }
+ nix = { version = "0.28.0", features = ["fs"] }
+ nvml-wrapper = "0.10.0"
+ serde = "1.0.197"
+@@ -26,10 +31,12 @@
+ 
+ [[bin]]
+ name = "flyt-client-manager"
++required-features = ["legacy-mps"]
+ path = "src/client-manager-daemon/main.rs"
+ 
+ [[bin]]
+ name = "flyt-cluster-manager"
++required-features = ["legacy-mps"]
+ path = "src/cluster-manager/main.rs"
+ 
+ [[bin]]
+@@ -38,11 +45,28 @@
+ 
+ [[bin]]
+ name = "flytctl"
++required-features = ["legacy-mps"]
+ path = "src/cluster-manager/cli_frontend.rs"
+ 
+ [[bin]]
+ name = "flytctlnet"
++required-features = ["legacy-mps"]
+ path = "src/cluster-manager/tcp_frontend.rs"
+ 
+ [build-dependencies]
+ cc = "1.0.94"
++
++[[bin]]
++name = "flyt-session-manager"
++path = "src/session-control-plane/main.rs"
++required-features = ["hami-control-plane"]
++
++[[bin]]
++name = "flyt-session-client-manager"
++path = "src/session-control-plane/guest_main.rs"
++required-features = ["hami-control-plane"]
++
++[[bin]]
++name = "flyt-sessionctl"
++path = "src/session-control-plane/cli.rs"
++required-features = ["hami-control-plane"]
+diff --git a/control-managers/src/client-manager-daemon/vcuda_client_handler.rs b/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
+--- a/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
++++ b/control-managers/src/client-manager-daemon/vcuda_client_handler.rs
+@@ -21,6 +21,8 @@
+ }
+ 
+ struct ClientMessageTypeId {
++    #[cfg(feature="hami-control-plane")]
++    start_ticks: Option<u64>,
+     send_id: i64,
+     recv_id: i64,
+     gid: i32,
+@@ -216,9 +218,32 @@
+         }
+     }
+ 
++    #[cfg(feature="hami-control-plane")]
++    fn process_start_ticks(pid: u32) -> Option<u64> {
++        let stat=std::fs::read_to_string(format!("/proc/{}/stat",pid)).ok()?;
++        stat.rsplit_once(')')?.1.split_whitespace().nth(19)?.parse().ok()
++    }
++
++    #[cfg(feature="hami-control-plane")]
++    pub fn reap_session_clients<F>(&self, notify: F) where F: Fn(i32) {
++        // Snapshot identities, inspect /proc without a client lock, then remove
++        // only the exact old entry. Never notify an IP-wide ZERO_CLIENTS command.
++        let snapshot:Vec<_>=self.clients.read().unwrap().iter().map(|c|(c.send_id,c.gid,c.start_ticks)).collect();
++        for (pid,gid,start) in snapshot {
++            if start.is_some() && Self::process_start_ticks(pid as u32)==start {continue;}
++            let removed={
++                let mut clients=self.clients.write().unwrap();
++                if let Some(index)=clients.iter().position(|c|c.send_id==pid && c.gid==gid && c.start_ticks==start) {clients.remove(index);true} else {false}
++            };
++            if removed {notify(gid);}
++        }
++    }
++
+     pub fn get_client_gid(&self, pid: u32) -> i32 {
+         for client in self.clients.read().unwrap().iter() {
+             if client.send_id as u32  == pid {
++                #[cfg(feature="hami-control-plane")]
++                if client.start_ticks.is_none() || client.start_ticks!=Self::process_start_ticks(pid) {continue;}
+                 return client.gid;
+             }
+         }
+@@ -288,7 +313,17 @@
+                 COUNTER.fetch_add(1, Ordering::SeqCst);
+                 gid = COUNTER.load(Ordering::SeqCst);
+ 
++                #[cfg(feature="hami-control-plane")]
++                let start_ticks=Self::process_start_ticks(client_pid);
++                #[cfg(feature="hami-control-plane")]
++                if start_ticks.is_none() || gid<=0 {
++                    let bytes=MqueueClientControlCommand::new("500", "").as_bytes();
++                    let _=message_queue.send(&bytes,client_pid as i64);
++                    continue;
++                }
+                 let client_msgid = ClientMessageTypeId {
++                    #[cfg(feature="hami-control-plane")]
++                    start_ticks,
+                     send_id: client_pid as i64,
+                     recv_id: receive_id as i64,
+                     gid: gid as i32,
+@@ -312,6 +347,8 @@
+                             },
+                             Err(_) => {
+                                 log::error!("Error sending virt server details to client: {}", client_pid);
++                                #[cfg(feature="hami-control-plane")]
++                                { let _=virt_server_getter(gid,sm_core,false); }
+                             }
+                         }
+                     }
+diff --git a/control-managers/src/session-control-plane/cli.rs b/control-managers/src/session-control-plane/cli.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/cli.rs
+@@ -0,0 +1,21 @@
++#[cfg(feature="legacy-mps")]
++compile_error!("stage-7 CLI requires the isolated hami-control-plane feature");
++use std::{io::{BufRead, BufReader, Read, Write}, os::unix::net::UnixStream, time::Duration};
++use serde_json::{json, Value};
++fn main() {
++    let args:Vec<_>=std::env::args().skip(1).collect();
++    if args.is_empty() || !["list-bindings","list-workers","list-sessions"].contains(&args[0].as_str()) ||
++       !(args.len()==1 || (args.len()==3 && args[0]=="list-sessions" && args[1]=="--after" && args[2].len()==32 && args[2].bytes().all(|b|b.is_ascii_hexdigit()))) {
++        eprintln!("usage: flytctl list-bindings | list-workers | list-sessions [--after SESSION_ID]\nStage-7 emits versioned JSON; legacy resource commands/views are unavailable.");std::process::exit(2);
++    }
++    let result=(|| -> Result<Value,String> {
++        let mut stream=UnixStream::connect("/run/flyt/flyt-frontend-socket").map_err(|e|e.to_string())?;
++        stream.set_read_timeout(Some(Duration::from_secs(10))).map_err(|e|e.to_string())?;
++        stream.set_write_timeout(Some(Duration::from_secs(5))).map_err(|e|e.to_string())?;
++        writeln!(stream,"{}",json!({"op":args[0],"after":args.get(2)})).map_err(|e|e.to_string())?;
++        let mut raw=Vec::new();BufReader::new(stream).take(1<<20).read_until(b'\n',&mut raw).map_err(|e|e.to_string())?;
++        if raw.last()!=Some(&b'\n') {return Err("incomplete/oversized response".into());}
++        serde_json::from_slice(&raw).map_err(|_|"invalid response JSON".into())
++    })();
++    match result {Ok(v)=>{println!("{}",serde_json::to_string_pretty(&v).unwrap());if v.get("ok").and_then(Value::as_bool)!=Some(true){std::process::exit(1);}},Err(e)=>{eprintln!("{}",e);std::process::exit(1);}}
++}
+diff --git a/control-managers/src/session-control-plane/guest.rs b/control-managers/src/session-control-plane/guest.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/guest.rs
+@@ -0,0 +1,61 @@
++use std::{collections::HashMap, net::{Ipv4Addr, SocketAddr, TcpStream}, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}}, thread, time::Duration};
++use serde_json::{json, Value};
++use crate::wire::{nonce, token, Result, Wire, PROTOCOL};
++
++struct Lease { stop: AtomicBool, socket: TcpStream, session_id: String }
++pub struct Guest {
++    endpoint: SocketAddr, vmi_uid: String, worker_uid: String, instance: String,
++    leases: Mutex<HashMap<i32,Arc<Lease>>>,
++}
++impl Guest {
++    pub fn new(endpoint: SocketAddr, vmi_uid: String, worker_uid: String) -> Self {
++        Self {endpoint,vmi_uid,worker_uid,instance:nonce(),leases:Mutex::new(HashMap::new())}
++    }
++    fn close(&self, gid: i32) {
++        if let Some(v)=self.leases.lock().unwrap().remove(&gid) {
++            v.stop.store(true,Ordering::SeqCst);
++            // Closing this connection can only close its server-assigned session.
++            let _=v.socket.shutdown(std::net::Shutdown::Both);
++        }
++    }
++    pub fn reap(&self, gid: i32) {self.close(gid);}
++    pub fn get<'a>(&'a self, scope: &'a thread::Scope<'a,'_>, gid: i32, connect: bool) -> Option<(String,u64)> {
++        if !connect {self.close(gid);return None;}
++        if gid<=0 || self.leases.lock().unwrap().contains_key(&gid) {return None;}
++        match self.open(scope,gid) {Ok(v)=>Some(v),Err(_)=>{log::warn!("Session allocation failed; no legacy fallback or transparent reconnect");None}}
++    }
++    fn open<'a>(&'a self, scope: &'a thread::Scope<'a,'_>, gid: i32) -> Result<(String,u64)> {
++        let stream=TcpStream::connect_timeout(&self.endpoint,Duration::from_secs(5)).map_err(|e|e.to_string())?;
++        let mut w=Wire::new(stream)?;
++        w.json(&json!({"protocol":PROTOCOL,"op":"open","vmi_uid":self.vmi_uid,"worker_uid":self.worker_uid,
++            "guest_instance":self.instance,"client_id":gid}))?;
++        let reply=w.value(80)?;
++        if reply.get("ok").and_then(Value::as_bool)!=Some(true) || reply.get("session_protocol").and_then(Value::as_str)!=Some(PROTOCOL) {return Err("Manager protocol/allocation rejected".into());}
++        let id=reply.get("session_id").and_then(Value::as_str).filter(|s|token(s)).ok_or("session ID missing")?.to_string();
++        let epoch=reply.get("epoch").and_then(Value::as_str).filter(|s|token(s)).ok_or("epoch missing")?.to_string();
++        let ip=reply.get("pod_ip").and_then(Value::as_str).ok_or("endpoint missing")?.parse::<Ipv4Addr>().map_err(|_|"invalid endpoint")?.to_string();
++        let rpc=reply.get("rpc_id").and_then(Value::as_u64).filter(|n|*n>0).ok_or("RPC ID missing")?;
++        let lease=Arc::new(Lease {stop:AtomicBool::new(false),socket:w.shutdown_handle()?,session_id:id});
++        {
++            let mut leases=self.leases.lock().unwrap();
++            if leases.contains_key(&gid) {w.close();return Err("client already connected".into());}
++            leases.insert(gid,Arc::clone(&lease));
++        }
++        scope.spawn(move || {
++            while !lease.stop.load(Ordering::SeqCst) {
++                thread::sleep(Duration::from_secs(5));
++                if lease.stop.load(Ordering::SeqCst) {break;}
++                if w.json(&json!({"op":"heartbeat","session_id":lease.session_id,"epoch":epoch})).is_err() {break;}
++                match w.value(10) {
++                    Ok(v) if v.get("ok").and_then(Value::as_bool)==Some(true) && v.get("session_id").and_then(Value::as_str)==Some(lease.session_id.as_str()) && v.get("epoch").and_then(Value::as_str)==Some(epoch.as_str())=>{},
++                    _=>break,
++                }
++            }
++            w.close();lease.stop.store(true,Ordering::SeqCst);
++            let mut leases=self.leases.lock().unwrap();
++            if leases.get(&gid).map(|v|Arc::ptr_eq(v,&lease)).unwrap_or(false) {leases.remove(&gid);}
++            log::info!("Session control connection ended; CUDA session is not restored");
++        });
++        Ok((ip,rpc))
++    }
++}
+diff --git a/control-managers/src/session-control-plane/guest_main.rs b/control-managers/src/session-control-plane/guest_main.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/guest_main.rs
+@@ -0,0 +1,26 @@
++#[cfg(feature="legacy-mps")]
++compile_error!("stage-7 Guest requires the isolated hami-control-plane feature");
++mod wire;
++mod guest;
++#[path="../common/mod.rs"] mod common;
++#[path="../client-manager-daemon/vcuda_client_handler.rs"] mod vcuda_client_handler;
++use std::{net::{IpAddr, SocketAddr}, thread, time::Duration};
++
++fn main() {
++    env_logger::init();
++    assert!(!std::env::vars_os().any(|(k,_)|k.to_string_lossy().starts_with("CUDA_MPS_")),"stage-7 Guest rejects CUDA_MPS settings");
++    let config=common::utils::Utils::load_config_file(common::config::CLMGR_CONFIG_PATH);
++    let session=config.get("session-control").expect("stage-7 session-control config required");
++    assert_eq!(session.get("protocol").and_then(|v|v.as_str()),Some(wire::PROTOCOL),"Guest control protocol mismatch");
++    let vmi=session.get("vmi-uid").and_then(|v|v.as_str()).filter(|v|wire::identity(v)).expect("VMI UID required");
++    let worker=session.get("worker-uid").and_then(|v|v.as_str()).filter(|v|wire::identity(v)).expect("Worker UID required");
++    let address=config["resource-manager"]["address"].as_str().expect("Manager IP required").parse::<IpAddr>().expect("literal Manager IP required");
++    let port=config["resource-manager"]["port"].as_integer().filter(|v|*v>0 && *v<=65535).expect("invalid Manager port") as u16;
++    let path=config["ipc"]["mqueue-path"].as_str().expect("IPC path required");
++    let clients=vcuda_client_handler::VCudaClientManager::new(path);
++    let manager=guest::Guest::new(SocketAddr::new(address,port),vmi.into(),worker.into());
++    thread::scope(|scope| {
++        scope.spawn(|| clients.listen_to_clients(|gid,_legacy_sm,connect|manager.get(scope,gid,connect)));
++        scope.spawn(|| loop {thread::sleep(Duration::from_secs(5));clients.reap_session_clients(|gid|manager.reap(gid));});
++    });
++}
+diff --git a/control-managers/src/session-control-plane/main.rs b/control-managers/src/session-control-plane/main.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/main.rs
+@@ -0,0 +1,8 @@
++#[cfg(feature="legacy-mps")]
++compile_error!("build HAMi session binaries with --no-default-features --features hami-control-plane");
++mod wire;
++mod model;
++mod worker;
++mod manager;
++#[path="../common/resource_backend.rs"] mod resource_backend;
++fn main() { env_logger::init(); manager::run(); }
+diff --git a/control-managers/src/session-control-plane/manager.rs b/control-managers/src/session-control-plane/manager.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/manager.rs
+@@ -0,0 +1,266 @@
++// HAMi session plane. No MongoDB, GPU placement, quota arithmetic or CUDA API code.
++use std::{collections::HashSet, fs, net::{Ipv4Addr, Shutdown, TcpListener, TcpStream},
++    os::unix::net::{UnixListener, UnixStream}, io::{BufRead, BufReader, Write},
++    sync::{Arc, Mutex, atomic::{AtomicUsize, Ordering}}, thread, time::{Duration, Instant}};
++use serde_json::{json, Value};
++use crate::{model::{Binding, ClientKey, Phase, Session, State, WorkerKey}, worker::Worker,
++    wire::{identity, nonce, text, token, Result, Wire, PROTOCOL}};
++
++pub struct Manager { state: Mutex<State>, epoch: String }
++impl Manager {
++    fn new() -> Self {Self {state:Mutex::new(State::default()),epoch:nonce()}}
++    fn envelope(&self, mut v: Value) -> Value {v["epoch"]=json!(self.epoch);v["session_protocol"]=json!(PROTOCOL);v}
++    fn invalid(&self, worker: &Arc<Worker>) {
++        // Shutdown does not need the Worker I/O mutex; it wakes a blocked command.
++        worker.close();
++        let mut s=self.state.lock().unwrap();
++        if !s.nodes.get(&worker.key).map(|n| Arc::ptr_eq(n,worker)).unwrap_or(false) {return;}
++        s.nodes.remove(&worker.key);
++        s.bindings.retain(|_,b| b.node()!=worker.key);
++        let ids:Vec<_>=s.sessions.values().filter(|v| v.binding.node()==worker.key).map(|v| v.id.clone()).collect();
++        for id in ids {Self::forget(&mut s,&id);}
++    }
++    fn forget(s: &mut State, id: &str) {
++        if let Some(v)=s.sessions.remove(id) {
++            // An old session never erases the secondary index of its replacement.
++            if s.clients.get(&v.key).map(String::as_str)==Some(id) {s.clients.remove(&v.key);}
++            let _=v.guest_socket.shutdown(Shutdown::Both);
++        }
++    }
++    fn closing(&self, id: &str) {
++        let mut s=self.state.lock().unwrap();
++        if let Some(v)=s.sessions.get_mut(id) {
++            if v.phase==Phase::Active {
++                v.phase=Phase::Closing; v.close_at=Some(Instant::now()+Duration::from_secs(10));
++                let key=v.key.clone();
++                if s.clients.get(&key).map(String::as_str)==Some(id) {s.clients.remove(&key);}
++            }
++        }
++    }
++    fn cleanup(self: &Arc<Self>) {
++        let jobs:Vec<_>={
++            let mut s=self.state.lock().unwrap();
++            let now=Instant::now();
++            let due:Vec<_>=s.sessions.values().filter(|v| v.phase==Phase::Closing && v.close_at.map(|t|t<=now).unwrap_or(false))
++                .map(|v| (v.id.clone(),v.binding.node(),v.rpc_id)).collect();
++            let mut jobs=Vec::new();
++            let mut claimed=HashSet::new();
++            for (id,key,rpc) in due {
++                if let Some(n)=s.nodes.get(&key).cloned() {
++                    if !claimed.contains(&key) {
++                        if n.cleaning.compare_exchange(false,true,Ordering::SeqCst,Ordering::SeqCst).is_err() {continue;}
++                        claimed.insert(key);
++                    }
++                    if let Some(v)=s.sessions.get_mut(&id) {v.close_at=None;}
++                    jobs.push((id,n,rpc));
++                } else {Self::forget(&mut s,&id);}
++            }
++            jobs
++        };
++        // At most 32 sessions per Worker are admitted locally; group by Worker so
++        // a blocked cleanup cannot hold a Manager-wide lock or spawn per-session IO threads.
++        let mut groups=std::collections::HashMap::new();
++        for (id,n,rpc) in jobs {groups.entry(n.key.clone()).or_insert_with(Vec::new).push((id,n,rpc));}
++        for (_,jobs) in groups {
++            let manager=Arc::clone(self);
++            thread::spawn(move || {
++                let worker=Arc::clone(&jobs[0].1);
++                for (id,n,rpc) in jobs {
++                    if let Some(rpc)=rpc {if n.release(rpc).is_err() {manager.invalid(&n);break;}}
++                    Self::forget(&mut manager.state.lock().unwrap(),&id);
++                }
++                worker.cleaning.store(false,Ordering::SeqCst);
++            });
++        }
++    }
++    fn register(self: &Arc<Self>, stream: TcpStream) -> Result<()> {
++        let ip=stream.peer_addr().map_err(|e|e.to_string())?.ip().to_string();
++        ip.parse::<Ipv4Addr>().map_err(|_| "IPv4 required")?;
++        let mut wire=Wire::new(stream)?;let hello=wire.value(5)?;
++        if hello.get("protocol").and_then(Value::as_str)!=Some("flyt-worker-v3") {return Err("Worker protocol mismatch".into());}
++        let key=WorkerKey {pod_uid:text(&hello,"pod_uid")?.into(),generation:text(&hello,"generation")?.into()};
++        let n=Arc::new(Worker::new(key,ip,wire)?);n.probe()?;
++        {
++            let mut s=self.state.lock().unwrap();
++            if s.nodes.len()>=128 || s.nodes.values().any(|old| old.ip==n.ip || old.key.pod_uid==n.key.pod_uid) {
++                n.close();return Err("Worker identity already registered or capacity reached".into());
++            }
++            s.nodes.insert(n.key.clone(),Arc::clone(&n));
++        }
++        let manager=Arc::clone(self);
++        thread::spawn(move || {
++            while n.alive.load(Ordering::SeqCst) {
++                thread::sleep(Duration::from_secs(15));
++                if n.probe().is_err() {manager.invalid(&n);break;}
++            }
++        });
++        Ok(())
++    }
++    fn control(self: &Arc<Self>, v: &Value) -> Result<Value> {
++        match v.get("op").and_then(Value::as_str).unwrap_or("") {
++            "list" => Ok(json!({"bindings":self.state.lock().unwrap().bindings.values().cloned().collect::<Vec<_>>()})),
++            "observe" => {
++                let ip=v.get("pod_ip").and_then(Value::as_str).ok_or("pod_ip required")?;
++                let uid=text(v,"pod_uid")?;
++                let n=self.state.lock().unwrap().nodes.values().find(|n| n.ip==ip && n.key.pod_uid==uid).cloned().ok_or("Worker not registered")?;
++                if n.probe().is_err() {self.invalid(&n);return Err("Worker refresh failed".into());}
++                let s=self.state.lock().unwrap();
++                if !s.nodes.get(&n.key).map(|x| Arc::ptr_eq(x,&n)).unwrap_or(false) || !n.alive.load(Ordering::SeqCst) {return Err("Worker changed".into());}
++                Ok(json!({"generation":n.key.generation}))
++            },
++            "bind" => {
++                let b:Binding=serde_json::from_value(v.get("binding").cloned().ok_or("binding required")?).map_err(|_| "invalid binding")?;
++                for f in [&b.worker_uid,&b.vmi_uid,&b.pod_uid,&b.generation] {if !identity(f) {return Err("invalid identity".into());}}
++                b.vm_ip.parse::<Ipv4Addr>().map_err(|_| "IPv4 required")?;b.pod_ip.parse::<Ipv4Addr>().map_err(|_| "IPv4 required")?;
++                let mut s=self.state.lock().unwrap();
++                let n=s.nodes.get(&b.node()).ok_or("Worker generation not registered")?;
++                if n.ip!=b.pod_ip || !n.alive.load(Ordering::SeqCst) {return Err("Worker is unavailable".into());}
++                if let Some(old)=s.bindings.get(&b.worker_uid) {
++                    if old==&b {return Ok(json!({"binding":b}));} return Err("unbind previous generation first".into());
++                }
++                if s.bindings.values().any(|x|x.vm_ip==b.vm_ip || x.vmi_uid==b.vmi_uid || x.pod_ip==b.pod_ip || x.pod_uid==b.pod_uid) {return Err("binding identity reserved".into());}
++                s.bindings.insert(b.worker_uid.clone(),b.clone());Ok(json!({"binding":b}))
++            },
++            "unbind" => {
++                let uid=text(v,"worker_uid")?;
++                // Same v3 Controller contract: unbind revokes only this Worker's
++                // registration and ends its generation, including RPC children.
++                let node={let mut s=self.state.lock().unwrap();s.bindings.remove(uid).and_then(|b|s.nodes.get(&b.node()).cloned())};
++                if let Some(n)=node {self.invalid(&n);} Ok(json!({}))
++            },
++            _ => Err("unsupported binding operation".into()),
++        }
++    }
++    fn binding_connection(self: &Arc<Self>, stream: TcpStream) -> Result<()> {
++        let mut w=Wire::new(stream)?;
++        let response=(|| {
++            let v=w.value(5)?;
++            let path=std::env::var("FLYT_BINDING_TOKEN_FILE").map_err(|_|"token path missing")?;
++            let secret=fs::read_to_string(path).map_err(|_|"token unavailable")?;let secret=secret.trim();
++            let supplied=v.get("token").and_then(Value::as_str).unwrap_or("");
++            let equal=secret.len()==supplied.len() && secret.bytes().zip(supplied.bytes()).fold(0u8,|a,(b,c)|a|(b^c))==0;
++            if !(32..=256).contains(&secret.len()) || !equal {return Err("unauthorized".into());}
++            self.control(&v)
++        })();
++        let result=match response {Ok(mut r)=>{r["ok"]=json!(true);r},Err(e)=>json!({"ok":false,"error":e})};
++        w.json(&self.envelope(result))
++    }
++    fn open(&self, ip: &str, request: &Value, w: &Wire) -> Result<(String,Arc<Worker>)> {
++        if request.get("protocol").and_then(Value::as_str)!=Some(PROTOCOL) || request.get("op").and_then(Value::as_str)!=Some("open") {return Err("stage-7 Guest Client Manager required".into());}
++        let vmi=text(request,"vmi_uid")?;let worker=text(request,"worker_uid")?;
++        let guest=text(request,"guest_instance")?;if !token(guest) {return Err("invalid guest instance".into());}
++        let client=request.get("client_id").and_then(Value::as_i64).filter(|n|*n>0 && *n<=i32::MAX as i64).ok_or("invalid client ID")?;
++        let mut s=self.state.lock().unwrap();
++        let binding=s.bindings.get(worker).filter(|b|b.vm_ip==ip && b.vmi_uid==vmi).cloned().ok_or("guest identity has no active binding")?;
++        let n=s.nodes.get(&binding.node()).cloned().ok_or("Worker unavailable")?;
++        if !n.alive.load(Ordering::SeqCst) {return Err("Worker closed".into());}
++        let key=ClientKey {vmi_uid:vmi.into(),worker_uid:worker.into(),pod_uid:binding.pod_uid.clone(),generation:binding.generation.clone(),guest_instance:guest.into(),client_id:client};
++        if s.clients.contains_key(&key) {return Err("client already has a live session; no implicit reuse".into());}
++        // Transport/process admission bound, not a GPU quota or placement decision.
++        if s.sessions.len()>=4096 || s.sessions.values().filter(|v|v.binding.node()==n.key).count()>=32 {return Err("session capacity reached".into());}
++        let id=nonce();if s.sessions.contains_key(&id) {return Err("session ID collision".into());}
++        let socket=w.shutdown_handle()?;
++        s.clients.insert(key.clone(),id.clone());
++        s.sessions.insert(id.clone(),Session {id:id.clone(),key,binding,phase:Phase::Starting,rpc_id:None,close_at:None,guest_socket:socket});
++        Ok((id,n))
++    }
++    fn guest_connection(self: &Arc<Self>, stream: TcpStream) -> Result<()> {
++        let ip=stream.peer_addr().map_err(|e|e.to_string())?.ip().to_string();
++        let mut w=Wire::new(stream)?;
++        let request=match w.value(10) {Ok(v)=>v,Err(_)=>{w.json(&self.envelope(json!({"ok":false,"error":"stage-7 JSON session protocol required"})))?;return Ok(());}};
++        let (id,n)=match self.open(&ip,&request,&w) {Ok(v)=>v,Err(e)=>{w.json(&self.envelope(json!({"ok":false,"error":e})))?;return Ok(());}};
++        let rpc=match n.allocate() {
++            Ok(Ok(rpc))=>rpc,
++            Ok(Err(e))=>{let _=w.json(&self.envelope(json!({"ok":false,"error":e})));Self::forget(&mut self.state.lock().unwrap(),&id);return Ok(());},
++            Err(_)=>{self.invalid(&n);return Err("uncertain allocation; Worker generation revoked".into());},
++        };
++        let active={
++            let mut s=self.state.lock().unwrap();
++            let valid=s.sessions.get(&id).map(|v|s.bindings.get(&v.binding.worker_uid)==Some(&v.binding)).unwrap_or(false)
++                && s.nodes.get(&n.key).map(|v|Arc::ptr_eq(v,&n)).unwrap_or(false) && n.alive.load(Ordering::SeqCst);
++            if valid {let v=s.sessions.get_mut(&id).unwrap();v.rpc_id=Some(rpc);v.phase=Phase::Active;}
++            valid
++        };
++        if !active {self.invalid(&n);return Err("binding changed while allocating".into());}
++        let outcome=(|| {
++            w.json(&self.envelope(json!({"ok":true,"session_id":id,"pod_ip":n.ip,"rpc_id":rpc})))?;
++            loop {
++                let v=w.value(30)?;
++                if v.get("session_id").and_then(Value::as_str)!=Some(id.as_str()) || v.get("epoch").and_then(Value::as_str)!=Some(self.epoch.as_str()) {return Err("stale session message".into());}
++                let alive=self.state.lock().unwrap().sessions.get(&id).map(|s|s.phase==Phase::Active).unwrap_or(false);
++                if !alive {return Err("session revoked".into());}
++                match v.get("op").and_then(Value::as_str) {
++                    Some("heartbeat")=>w.json(&self.envelope(json!({"ok":true,"session_id":id})))?,
++                    Some("close")=>{w.json(&self.envelope(json!({"ok":true,"session_id":id})))?;break;},
++                    _=>return Err("unsupported session operation".into()),
++                }
++            }
++            Ok(())
++        })();
++        self.closing(&id);w.close();outcome
++    }
++    fn view(&self, request: &Value) -> Result<Value> {
++        let s=self.state.lock().unwrap();
++        let result=match request.get("op").and_then(Value::as_str) {
++            Some("list-bindings")=>json!({"bindings":s.bindings.values().collect::<Vec<_>>()}),
++            Some("list-workers")=>json!({"workers":s.nodes.values().map(|n|json!({"identity":n.key,"pod_ip":n.ip,"connection_id":n.connection_id,"registered":n.alive.load(Ordering::SeqCst)})).collect::<Vec<_>>()}),
++            Some("list-sessions")=>{
++                let after=request.get("after").and_then(Value::as_str).unwrap_or("");
++                if !after.is_empty() && !token(after) {return Err("invalid cursor".into());}
++                let mut records:Vec<_>=s.sessions.values().filter(|v|v.id.as_str()>after).collect();records.sort_by(|a,b|a.id.cmp(&b.id));
++                let more=records.len()>128;records.truncate(128);
++                let next=if more {records.last().map(|v|v.id.clone())} else {None};
++                json!({"sessions":records.iter().map(|v|json!({"session_id":v.id,"identity":v.key,"state":v.phase,"pod_ip":v.binding.pod_ip,"rpc_id":v.rpc_id})).collect::<Vec<_>>(),"next":next})
++            },
++            _=>return Err("use list-bindings, list-workers or list-sessions; legacy quota views are unavailable".into()),
++        };
++        Ok(self.envelope(json!({"ok":true,"schema":"flyt-session-view-v7","resource_authority":"Kubernetes/HAMi","data":result})))
++    }
++    fn frontend(&self, stream: UnixStream) -> Result<()> {
++        stream.set_read_timeout(Some(Duration::from_secs(5))).map_err(|e|e.to_string())?;
++        stream.set_write_timeout(Some(Duration::from_secs(5))).map_err(|e|e.to_string())?;
++        let mut input=BufReader::new(stream.try_clone().map_err(|e|e.to_string())?);
++        // Read a single bounded request, with a total deadline (not a per-byte lease).
++        let deadline=Instant::now()+Duration::from_secs(5);let mut raw=Vec::new();
++        loop {
++            let remaining=deadline.checked_duration_since(Instant::now()).ok_or("frontend timeout")?;
++            input.get_ref().set_read_timeout(Some(remaining)).map_err(|e|e.to_string())?;
++            let b=input.fill_buf().map_err(|e|e.to_string())?;if b.is_empty(){return Err("frontend closed".into());}
++            let count=b.iter().position(|c|*c==b'\n').map(|i|i+1).unwrap_or(b.len());
++            if raw.len()+count>8192 {return Err("frontend frame too large".into());}
++            let done=b[count-1]==b'\n';raw.extend_from_slice(&b[..count]);input.consume(count);if done {break;}
++        }
++        let result=serde_json::from_slice(&raw).map_err(|_|"JSON query required".to_string()).and_then(|v|self.view(&v));
++        let v=match result {Ok(v)=>v,Err(e)=>self.envelope(json!({"ok":false,"error":e}))};
++        writeln!(&stream,"{}",v).map_err(|e|e.to_string())
++    }
++}
++
++// Bounded accepted connections per listener, preserving binding capacity even
++// when guest heartbeats occupy all guest slots. No credentials are logged.
++fn listen(manager: Arc<Manager>, listener: TcpListener, maximum: usize, handler: fn(&Arc<Manager>,TcpStream)->Result<()>) {
++    let count=Arc::new(AtomicUsize::new(0));
++    for stream in listener.incoming() {
++        let Ok(stream)=stream else {continue};
++        if count.fetch_add(1,Ordering::SeqCst)>=maximum {count.fetch_sub(1,Ordering::SeqCst);continue;}
++        let m=Arc::clone(&manager);let counter=Arc::clone(&count);
++        thread::spawn(move || {let _=handler(&m,stream);counter.fetch_sub(1,Ordering::SeqCst);});
++    }
++}
++pub fn run() {
++    crate::resource_backend::require_controlled();
++    assert!(crate::resource_backend::hami(),"session Manager requires HAMi");
++    let manager=Arc::new(Manager::new());
++    for (port,maximum,handler) in [(12401,32,Manager::register as fn(&Arc<Manager>,TcpStream)->Result<()>),
++        (12402,512,Manager::guest_connection),(12404,32,Manager::binding_connection)] {
++        let listener=TcpListener::bind(("0.0.0.0",port)).expect("listener bind failed");
++        let m=Arc::clone(&manager);thread::spawn(move ||listen(m,listener,maximum,handler));
++    }
++    let m=Arc::clone(&manager);thread::spawn(move ||loop {thread::sleep(Duration::from_secs(1));m.cleanup();});
++    let path="/run/flyt/flyt-frontend-socket";
++    if std::path::Path::new(path).exists() {fs::remove_file(path).expect("stale frontend socket removal failed");}
++    let listener=UnixListener::bind(path).expect("frontend bind failed");
++    use std::os::unix::fs::PermissionsExt;
++    fs::set_permissions(path,fs::Permissions::from_mode(0o600)).expect("socket mode failed");
++    for stream in listener.incoming() {if let Ok(stream)=stream {let _=manager.frontend(stream);}}
++}
+diff --git a/control-managers/src/session-control-plane/model.rs b/control-managers/src/session-control-plane/model.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/model.rs
+@@ -0,0 +1,31 @@
++use std::{collections::HashMap, net::TcpStream, sync::Arc, time::Instant};
++use serde::{Deserialize, Serialize};
++use crate::worker::Worker;
++
++// Controller v3 binding shape intentionally preserved; no quota copy is accepted.
++#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
++pub struct Binding {
++    pub worker_uid: String, pub vmi_uid: String, pub vm_ip: String,
++    pub pod_uid: String, pub pod_ip: String, pub generation: String,
++}
++#[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize)]
++pub struct WorkerKey { pub pod_uid: String, pub generation: String }
++impl Binding { pub fn node(&self) -> WorkerKey { WorkerKey { pod_uid:self.pod_uid.clone(), generation:self.generation.clone() } } }
++#[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize)]
++pub struct ClientKey {
++    pub vmi_uid: String, pub worker_uid: String, pub pod_uid: String, pub generation: String,
++    pub guest_instance: String, pub client_id: i64,
++}
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum Phase { Starting, Active, Closing }
++pub struct Session {
++    pub id: String, pub key: ClientKey, pub binding: Binding, pub phase: Phase,
++    pub rpc_id: Option<u64>, pub close_at: Option<Instant>, pub guest_socket: TcpStream,
++}
++#[derive(Default)]
++pub struct State {
++    pub bindings: HashMap<String, Binding>, // Worker UID is the primary binding key.
++    pub nodes: HashMap<WorkerKey, Arc<Worker>>,
++    pub sessions: HashMap<String, Session>, // Opaque session ID is the primary session key.
++    pub clients: HashMap<ClientKey, String>, // Secondary lookup only; cleanup compares session IDs.
++}
+diff --git a/control-managers/src/session-control-plane/wire.rs b/control-managers/src/session-control-plane/wire.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/wire.rs
+@@ -0,0 +1,47 @@
++use std::{io::{BufRead, BufReader, Read, Write}, net::{Shutdown, TcpStream}, time::{Duration, Instant}};
++use serde_json::Value;
++
++pub const PROTOCOL: &str = "flyt-session-v7";
++pub type Result<T> = std::result::Result<T,String>;
++
++pub fn nonce() -> String {
++    let mut bytes = [0u8; 16];
++    std::fs::File::open("/dev/urandom").expect("entropy unavailable").read_exact(&mut bytes).expect("entropy read failed");
++    bytes.iter().map(|b| format!("{:02x}", b)).collect()
++}
++pub fn identity(s: &str) -> bool { !s.is_empty() && s.len() <= 128 && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-') }
++pub fn token(s: &str) -> bool { s.len() == 32 && s.bytes().all(|b| b.is_ascii_hexdigit()) }
++pub fn text<'a>(v: &'a Value, k: &str) -> Result<&'a str> {
++    v.get(k).and_then(Value::as_str).filter(|s| identity(s)).ok_or_else(|| format!("missing/invalid {}", k))
++}
++pub struct Wire { pub reader: BufReader<TcpStream>, writer: TcpStream }
++impl Wire {
++    pub fn new(stream: TcpStream) -> Result<Self> {
++        stream.set_nodelay(true).map_err(|e| e.to_string())?;
++        let copy = stream.try_clone().map_err(|e| e.to_string())?;
++        Ok(Self { reader: BufReader::new(copy), writer: stream })
++    }
++    pub fn shutdown_handle(&self) -> Result<TcpStream> { self.writer.try_clone().map_err(|e| e.to_string()) }
++    pub fn close(&self) { let _ = self.writer.shutdown(Shutdown::Both); }
++    pub fn send(&mut self, s: &str) -> Result<()> {
++        self.writer.set_write_timeout(Some(Duration::from_secs(5))).map_err(|e| e.to_string())?;
++        self.writer.write_all(s.as_bytes()).map_err(|e| e.to_string())
++    }
++    pub fn json(&mut self, v: &Value) -> Result<()> { self.send(&(v.to_string()+"\n")) }
++    pub fn line(&mut self, seconds: u64) -> Result<String> {
++        let deadline = Instant::now() + Duration::from_secs(seconds);
++        let mut out = Vec::new();
++        loop {
++            let remaining = deadline.checked_duration_since(Instant::now()).ok_or("line deadline expired")?;
++            self.reader.get_ref().set_read_timeout(Some(remaining)).map_err(|e| e.to_string())?;
++            let buf = self.reader.fill_buf().map_err(|e| e.to_string())?;
++            if buf.is_empty() { return Err("peer closed".into()); }
++            let n = buf.iter().position(|b| *b == b'\n').map(|i| i+1).unwrap_or(buf.len());
++            if out.len()+n > 8192 { return Err("frame exceeds 8192 bytes".into()); }
++            let done = buf[n-1] == b'\n';
++            out.extend_from_slice(&buf[..n]); self.reader.consume(n);
++            if done { return String::from_utf8(out).map(|s| s.trim_end_matches(|c| c=='\r' || c=='\n').to_string()).map_err(|_| "invalid UTF-8".into()); }
++        }
++    }
++    pub fn value(&mut self, seconds: u64) -> Result<Value> { serde_json::from_str(&self.line(seconds)?).map_err(|_| "invalid JSON frame".into()) }
++}
+diff --git a/control-managers/src/session-control-plane/worker.rs b/control-managers/src/session-control-plane/worker.rs
+--- /dev/null
++++ b/control-managers/src/session-control-plane/worker.rs
+@@ -0,0 +1,52 @@
++use std::{net::TcpStream, sync::{Mutex, atomic::{AtomicBool, Ordering}}};
++use crate::{model::WorkerKey, wire::{Result, Wire}};
++
++pub struct Worker {
++    pub key: WorkerKey, pub ip: String, pub connection_id: String,
++    pub alive: AtomicBool, pub cleaning: AtomicBool, io: Mutex<Wire>, shutdown: TcpStream,
++}
++impl Worker {
++    pub fn new(key: WorkerKey, ip: String, io: Wire) -> Result<Self> {
++        Ok(Self { key, ip, connection_id:crate::wire::nonce(), shutdown:io.shutdown_handle()?, io:Mutex::new(io), alive:AtomicBool::new(true), cleaning:AtomicBool::new(false) })
++    }
++    pub fn close(&self) {
++        self.alive.store(false,Ordering::SeqCst);
++        let _ = self.shutdown.shutdown(std::net::Shutdown::Both);
++    }
++    // No global Manager state lock is held during these per-Worker exchanges.
++    fn exchange<T>(&self, op: impl FnOnce(&mut Wire)->Result<T>) -> Result<T> {
++        let mut wire = self.io.lock().map_err(|_| "Worker channel poisoned")?;
++        if !self.alive.load(Ordering::SeqCst) {return Err("Worker is closed".into());}
++        match op(&mut wire) {Ok(v)=>Ok(v),Err(e)=>{self.close();Err(e)}}
++    }
++    pub fn probe(&self) -> Result<()> {
++        self.exchange(|w| {
++            w.send("RMGR_SNODE_SEND_GPU_INFO\n")?;
++            if w.line(5)? != "200" || w.line(5)? != "1" {return Err("Worker must expose one device".into());}
++            let line = w.line(5)?; let v:Vec<_> = line.split(',').collect();
++            if v.len()!=6 || v[0]!="0" {return Err("invalid Worker inventory".into());}
++            // Validate framing, then discard hardware inventory. It is not a quota ledger.
++            for i in [2,3,4,5] { v[i].parse::<u64>().map_err(|_| "invalid inventory number")?; }
++            Ok(())
++        })
++    }
++    pub fn allocate(&self) -> Result<std::result::Result<u64,String>> {
++        self.exchange(|w| {
++            // Stage-5 Node Manager derives quota from the immutable Pod environment.
++            w.send("RMGR_SNODE_ALLOC_VIRT_SERVER\n0,0,0\n")?;
++            let status=w.line(70)?; let payload=w.line(5)?;
++            if status=="200" {
++                let id=payload.parse::<u64>().map_err(|_| "invalid RPC ID")?;
++                if id==0 {return Err("zero RPC ID".into());} Ok(Ok(id))
++            } else if status=="400" || status=="500" { Ok(Err("Node Manager rejected session creation".into())) }
++            else {Err("invalid allocation response".into())}
++        })
++    }
++    pub fn release(&self, rpc: u64) -> Result<()> {
++        self.exchange(|w| {
++            w.send(&format!("RMGR_SNODE_DEALLOC_VIRT_SERVER\n{}\n",rpc))?;
++            let status=w.line(15)?; let _payload=w.line(5)?;
++            if status!="200" {return Err("Node Manager cleanup failed".into());} Ok(())
++        })
++    }
++}
