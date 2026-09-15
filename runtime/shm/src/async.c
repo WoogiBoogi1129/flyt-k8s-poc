@@ -11,6 +11,7 @@ struct stage {void *host;cudaEvent_t done;};static struct stage stages[128];
 static struct object *find(uint64_t id,int kind){for(int i=0;i<4096;i++)if(objects[i].id==id&&id&&objects[i].kind==kind)return &objects[i];return NULL;}
 static struct object *reserve(void){if(next==UINT64_MAX)return NULL;for(int i=0;i<4096;i++)if(!objects[i].id)return &objects[i];return NULL;}
 static int stream(uint64_t id,cudaStream_t *out){struct object *o;if(!id){*out=0;return 1;}o=find(id,STREAM);if(!o)return 0;*out=(cudaStream_t)o->pointer;return 1;}
+int flyt_async_stream(uint64_t id,void **out){cudaStream_t s;if(!stream(id,&s))return 0;*out=s;return 1;}
 int flyt_async_reap(void){
     for(int i=0;i<128;i++)if(stages[i].host){cudaError_t e=cudaEventQuery(stages[i].done);
         if(e==cudaErrorNotReady)continue;if(e!=cudaSuccess)return -1;

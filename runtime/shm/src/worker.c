@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "flyt_wire.h"
 #include "flyt_async.h"
+#include "flyt_compat.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +35,7 @@ int main(int argc,char **argv){
         else if((q.api_id==FLYT_HEARTBEAT||q.api_id==FLYT_GOODBYE)&&q.payload_schema==1&&!q.input_bytes){
             if(q.api_id==FLYT_GOODBYE){stopping=1;exitcode=0;}
         }else if(q.api_id==FLYT_HELLO){r.transport_status=FLYT_SHM_BAD_DESCRIPTOR;stopping=1;}
+        else if(q.api_id>=0x3000){if(flyt_compat_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
         else if(q.api_id>=0x2000){if(flyt_async_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
         else if(flyt_cuda_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}
         rc=flyt_shm_worker_respond(channel,&r);flyt_shm_request_release(&q);if(rc)break;
@@ -41,6 +43,7 @@ int main(int argc,char **argv){
     }
     unlink(ready);free(output);
 done:
+    if(session.exec&&flyt_compat_close())return 1;
     if(session.exec&&flyt_async_close())return 1; /* process exit releases uncertain CUDA state */
     if(session.exec&&flyt_cuda_exec_destroy(&session.exec,&error))exitcode=1;
     if(!session.exec)flyt_cuda_runtime_close(runtime);

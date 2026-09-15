@@ -1,0 +1,8 @@
+{
+  "stage": "10-08",
+  "parentCommit": "4a11e04b93dac0c1852f91bc876933a4d8b70e58",
+  "implementation": "partial-compatibility-source-authored",
+  "validation": "NOT_RUN",
+  "fullPyTorchCompatibility": "NOT_IMPLEMENTED",
+  "fullGraphLibraryMigration": "NOT_IMPLEMENTED"
+}

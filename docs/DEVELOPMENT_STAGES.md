@@ -216,3 +216,7 @@ configure·compile·link·정적 검사·테스트·프로세스 간 실행·배
 ## 10-07 SHM async
 
 `stage/10-07-shm-async`: [stream/event/staging/PTX kernel](../experiments/shm-async/README.md) 소스 작성. 검증 NOT_RUN; 명시적 ABI kernel만 지원.
+
+## 10-08 SHM compatibility
+
+`stage/10-08-shm-compatibility`: [Graph/SGEMM/cuDNN lifecycle 部分 지원](../experiments/shm-compatibility/README.md). 전체 PyTorch/Graph/library 이관 미완료, 검증 NOT_RUN.

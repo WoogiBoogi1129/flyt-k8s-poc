@@ -1,0 +1,10 @@
+#ifndef FLYT_COMPAT_H
+#define FLYT_COMPAT_H
+#include "flyt_async.h"
+enum {FLYT_GRAPH_CREATE=0x3001,FLYT_GRAPH_DESTROY,FLYT_GRAPH_EMPTY_NODE,FLYT_GRAPH_INSTANTIATE,FLYT_GRAPH_EXEC_DESTROY,FLYT_GRAPH_LAUNCH,
+FLYT_BLAS_CREATE=0x3101,FLYT_BLAS_DESTROY,FLYT_BLAS_SGEMM,FLYT_BLAS_STREAM,
+FLYT_DNN_CREATE=0x3201,FLYT_DNN_DESTROY,FLYT_DNN_VERSION};
+int flyt_async_stream(uint64_t,void **);
+int flyt_compat_dispatch(struct flyt_cuda_session *,const struct flyt_shm_request *,struct flyt_shm_response *);
+int flyt_compat_close(void);
+#endif
