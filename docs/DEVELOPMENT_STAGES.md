@@ -26,6 +26,8 @@ ignored config, 원본 로그는 별도 보관해야 하며 브랜치 생성만�
 | 5: HAMi 자원 제어 backend 분리 | `stage/05-hami-backend` | 소스 구현 완료 | NOT_RUN |
 | 6: FLYT+HAMi End-to-End 실험 도구 | `stage/06-hami-e2e` | 도구 소스 구현 완료 | NOT_RUN; 실제 검증 단계 미완료 |
 | 7: Manager 자원 관리 역할 축소 | `stage/07-session-control-plane` | 소스 구현 완료 | NOT_RUN |
+| 8·9: 호환성·Multi-VM 검증 | 별도 개발 없음 | 사용자 요청으로 보류 | NOT_RUN |
+| 10-01: SHM 전환 계약 | `stage/10-01-shm-contract` | 계약·인터페이스 작성 완료 | NOT_RUN; runtime 미연결 |
 
 첨부 계획의 요약표와 본문은 후반 단계 번호가 서로 다르므로, 후속 작업은 번호와
 기능명을 함께 기록한다. 1단계의 범위는 독립 HAMi quota 실험으로 명확히 제한한다.
@@ -158,3 +160,16 @@ Worker generation, Guest instance와 GID로 연결을 식별한다. 지연 정�
 
 패치 적용·의존성 해결·빌드·정적 검사·프로토콜 시험·GPU 실행·배포는 모두 NOT_RUN이다.
 `[skip ci]`로 커밋하며 실제 GPU나 외부 플랫폼 설정은 변경하지 않는다.
+
+## 10-01단계 구현
+
+7단계 `c3d381f312b32012738d0c105517b789b5b72f5d`에서 분기한다. 사용자 요청에 따라 8·9단계
+검증과 CPU 배포 실험을 보류하고 SHM 전용 data path를 목표로 개발한다. RPC 자동 fallback은 없다.
+
+[SHM 전환 계약](../experiments/shm-contract/README.md)에 descriptor ABI, Queue/dispatcher
+함수 선언, channel/session JSON Schema, VM 시작 전 allocation과 VMI 생성 후 binding,
+동일 노드 배치·mapping ACK·회수 절차를 작성했다. 설치용 CRD·Queue 함수 본체·장치 adapter는
+후속 10-03~05 범위다. 기존 runtime과 패치에는 아직 연결하지 않는다.
+
+10-02~10-10은 별도 후속 브랜치로 진행한다. 헤더 compile·Schema 검증·정적 검사·build·test·
+배포·GPU 실행은 모두 NOT_RUN이며 `[skip ci]`로 커밋한다. GPU/노드 설정은 변경하지 않는다.

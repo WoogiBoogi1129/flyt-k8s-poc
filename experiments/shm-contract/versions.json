@@ -1,0 +1,21 @@
+{
+  "stage": "10-01-shm-contract",
+  "parent_branch": "stage/07-session-control-plane",
+  "parent_commit": "c3d381f312b32012738d0c105517b789b5b72f5d",
+  "implementation": "contract-and-interface-authored",
+  "runtime_integration": "NOT_IMPLEMENTED",
+  "queue_and_vm_mapping": "NOT_IMPLEMENTED",
+  "dispatcher": "DECLARATIONS_ONLY",
+  "rpc_fallback_in_target_architecture": false,
+  "deferred_stages": ["08-compatibility-validation", "09-multi-vm-validation"],
+  "validation": {
+    "header_compilation": "NOT_RUN",
+    "schema_validation": "NOT_RUN",
+    "static_checks": "NOT_RUN",
+    "build": "NOT_RUN",
+    "tests": "NOT_RUN",
+    "kubernetes_apply": "NOT_RUN",
+    "vm_channel": "NOT_RUN",
+    "gpu_execution": "NOT_RUN"
+  }
+}

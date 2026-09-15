@@ -15,6 +15,8 @@ HAMi 경로를 분리하고, 미지원 제어 명령 차단·메모리 조회 �
 CUDA probe·HAMi 함수 진입 추적·합산 memory quota·compute 비교를 구현했다. **검증은 NOT_RUN**이다.
 이 브랜치의 [7단계 세션 Control Plane](experiments/session-control-plane/README.md)은 HAMi용
 Manager·Guest 제어 경로와 세션 ID·JSON 조회를 분리했다. **소스 구현 완료·NOT_RUN** 상태다.
+이 브랜치의 [10-01 SHM 전환 계약](experiments/shm-contract/README.md)은 채널·세션 ABI와
+배치·회수 절차를 정의한다. **인터페이스 작성 완료·runtime 미연결·NOT_RUN** 상태다.
 브랜치와 기준 버전 보존 방식은 [단계별 개발 문서](docs/DEVELOPMENT_STAGES.md)를 참고한다.
 
 이 저장소는 Flyt를 Kubernetes와 KubeVirt 위에서 실행하고, NVIDIA DRA가

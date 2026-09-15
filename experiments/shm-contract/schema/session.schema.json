@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:flyt:shm:session-endpoint:1",
+  "title": "Proposed SHM session endpoint; no RPC address or fallback field",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "allocationId", "channelGeneration", "sessionId", "managerEpoch", "vmiUID", "workerUID", "podUID", "workerGeneration", "slot", "regionBytes", "requestRing", "responseRing", "requestPayload", "responsePayload", "notification"],
+  "properties": {
+    "protocol": {"const": "flyt-shm-control-v1"},
+    "allocationId": {"$ref": "#/$defs/id"},
+    "channelGeneration": {"$ref": "#/$defs/id"},
+    "sessionId": {"$ref": "#/$defs/id"},
+    "managerEpoch": {"$ref": "#/$defs/id"},
+    "vmiUID": {"$ref": "#/$defs/uid"},
+    "workerUID": {"$ref": "#/$defs/uid"},
+    "podUID": {"$ref": "#/$defs/uid"},
+    "workerGeneration": {"$ref": "#/$defs/id"},
+    "slot": {"type": "integer", "minimum": 0, "maximum": 31},
+    "regionBytes": {"type": "integer", "minimum": 1048576, "maximum": 4294967296, "multipleOf": 4096},
+    "requestRing": {"$ref": "#/$defs/ring"},
+    "responseRing": {"$ref": "#/$defs/ring"},
+    "requestPayload": {"$ref": "#/$defs/arena"},
+    "responsePayload": {"$ref": "#/$defs/arena"},
+    "notification": {"const": "polling-v1"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "uid": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9-]+$"},
+    "arena": {
+      "type": "object", "additionalProperties": false, "required": ["offset", "bytes"],
+      "properties": {"offset": {"type": "integer", "minimum": 4096, "multipleOf": 64}, "bytes": {"type": "integer", "minimum": 64, "maximum": 4294967296, "multipleOf": 64}}
+    },
+    "ring": {
+      "type": "object", "additionalProperties": false, "required": ["offset", "entries", "descriptorBytes"],
+      "properties": {
+        "offset": {"type": "integer", "minimum": 4096, "multipleOf": 64},
+        "entries": {"enum": [64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]},
+        "descriptorBytes": {"const": 128}
+      }
+    }
+  }
+}
