@@ -2,7 +2,8 @@
 
 CPU 기반 Kubernetes 배포는 [Stage 1 설치·운영 안내](docs/CONTROL_PLANE_STAGE1.md)를 참고하세요. `review` 모드의 실클러스터 검증과 GPU 런타임 검증 범위는 별개입니다.
 
-현재 브랜치는 `stage/10-10-rpc-removal`이다. **SHM 경로 소스 작성·모든 검증 NOT_RUN** 상태이며,
+현재 브랜치는 `feat/k8s-native-control-plane`이다. **CPU review control plane은 실클러스터 검증 완료**,
+SHM GPU 실행 경로는 소스 작성 후 실기 검증이 남아 있으며,
 전체 CUDA/PyTorch 호환성은 미완료다. 이전 RPC 구현은 `legacy/rpc`와 1~7단계 브랜치에 보존했다.
 기본 Makefile, 이미지, 배포 진입점은 RPC 서버·Manager·rpcbind·libtirpc를 사용하지 않는다.
 
@@ -21,17 +22,17 @@ Runtime fatbinary 등록·전체 Graph 연산·cuDNN 연산·기타 라이브러
 [지원 표](experiments/shm-compatibility/README.md)와 [남은 작업](experiments/rpc-removal/README.md)을 확인한다.
 과거 MPS의 PyTorch 결과를 SHM 검증 결과로 사용할 수 없다.
 
-## 향후 빌드·배포 준비
+## GPU PoC 후속 빌드·배포 준비
 
-아래는 실행하지 않은 후속 절차다. GPU 설정과 기존 Kubernetes 설치를 이 작업에서 변경하지 않았다.
+아래 GPU 런타임 절차는 후속 작업이다. CPU 배포 결과는 [Stage 1 검증 기록](docs/CONTROL_PLANE_VALIDATION.md)을 참고한다.
 
 1. 개발물 검증을 재개할 때 CMake/이미지 빌드와 CPU Queue 시험부터 수행한다.
-2. `images/flyt/Containerfile`의 `control-plane`, `worker`, `guest-artifacts`를 각각 빌드한다.
+2. control plane은 `images/flyt/ControlPlane.Containerfile`, `worker`와 `guest-artifacts`는 기존 `images/flyt/Containerfile`로 빌드한다.
    hook은 별도 `Hook.Containerfile`과 실제 설치 버전의 digest-pinned Sidecar-shim image가 필요하다.
 3. 별도 SHM 실험 클러스터/namespace에 Profile/Request 및 Channel/Attachment CRD를 설치한다.
    `deploy/shm`의 CRD는 SHM 전용이며 기존 RPC 클러스터 CRD를 무조건 덮어쓰면 안 된다.
-4. admission TLS Secret과 CA를 준비하고 `scripts/render-shm.py`로 manifests를 만든다.
-   이 renderer는 출력만 하며 apply하지 않는다. webhook과 전용 namespace가 함께 있어야 시작 gate가 작동한다.
+4. admission TLS Secret과 CA를 준비하고 Helm chart를 별도 PoC namespace에 설치한다.
+   GPU 실행에는 experimental active 모드 설정과 확대된 권한 검토가 필요하다.
 5. 승인 GPU Profile, 정지 VM, 같은 노드 local filesystem PVC, Request와 Channel을 준비한다.
    BackingReady 이후 VM을 수동 시작한다. Guest에 layout.bin을 전달하고 명시적 ivshmem BDF/slot을 지정한다.
 6. 양쪽 mapping ACK와 Ready를 확인한 뒤 지원 API를 실행·검증한다. 종료는 Channel drain 절차를 따른다.
