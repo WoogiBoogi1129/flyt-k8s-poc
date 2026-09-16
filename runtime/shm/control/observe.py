@@ -13,8 +13,8 @@ def report(api,role,phase):
     if role=='guest' and phase!='Mapped':raise ValueError('Worker cannot attest QEMU detach')
     old=a.get('status',{}).get('phase')
     if old=='Detached':raise ValueError('terminal attachment')
-    a['status']={'phase':phase,'observedGeneration':a['metadata']['generation'],
-        'reporterPodUID':os.environ['FLYT_POD_UID'],'evidence':'ChildProcessesReaped' if phase=='Detached' else 'QueueOpenAndGuard' if role=='worker' else 'GuestHELLOReceived'}
+    a.setdefault('status',{}).update({'phase':phase,'observedGeneration':a['metadata']['generation'],
+        'reporterPodUID':os.environ['FLYT_POD_UID'],'evidence':'ChildProcessesReaped' if phase=='Detached' else 'QueueOpenAndGuard' if role=='worker' else 'GuestHELLOReceived'})
     api.replace('attachments',a,True)
 
 def observe_guest(api,c):

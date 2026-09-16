@@ -1,0 +1,8 @@
+mode: review
+controller:
+  tolerations:
+    - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
+webhook:
+  tolerations:
+    - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
+# Set image.digest, tls.existingSecret and tls.caBundle for the target cluster.

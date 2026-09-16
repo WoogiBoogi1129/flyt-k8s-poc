@@ -1,0 +1,36 @@
+mode: review
+activeModeAcknowledged: false
+image:
+  repository: ghcr.io/woogiboogi1129/flyt-control-plane
+  digest: ''
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+controller:
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources:
+    requests: {cpu: 100m, memory: 64Mi}
+    limits: {memory: 256Mi}
+webhook:
+  registrationEnabled: true
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {memory: 256Mi}
+tls:
+  existingSecret: flyt-admission-tls
+  caBundle: ''
+  certManager:
+    enabled: false
+    issuerRef: {name: '', kind: Issuer}
+api:
+  timeoutSeconds: 10
+  reconcileSeconds: 2
+  maxBackoffSeconds: 30
+  readyStaleSeconds: 60
+workloads:
+  tolerations: []
+logLevel: INFO

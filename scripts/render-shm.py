@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline manifest authoring. Does not contact a cluster or build an image."""
+"""Historical experimental active layout; use charts/flyt-control-plane for review deployments."""
 import argparse
 import base64
 import json
@@ -27,7 +27,7 @@ def render(namespace,image,ca):
         'rules':[{'apiGroups':[''],'resources':['nodes','persistentvolumes'],'verbs':['get']}]}
     clusterbinding={'apiVersion':'rbac.authorization.k8s.io/v1','kind':'ClusterRoleBinding','metadata':{'name':namespace+'-node-reader'},
         'roleRef':{'apiGroup':'rbac.authorization.k8s.io','kind':'ClusterRole','name':namespace+'-node-reader'},'subjects':binding['subjects']}
-    env=[{'name':'FLYT_NAMESPACE','value':namespace}]
+    env=[{'name':'FLYT_NAMESPACE','value':namespace},{'name':'FLYT_MODE','value':'active'}]
     deployment={'apiVersion':'apps/v1','kind':'Deployment','metadata':meta('flyt-shm-controller'),'spec':{'replicas':1,'strategy':{'type':'Recreate'},
         'selector':{'matchLabels':{'app':'flyt-shm-controller'}},'template':{'metadata':{'labels':{'app':'flyt-shm-controller'}},'spec':{
             'serviceAccountName':'flyt-shm-controller','securityContext':{'runAsNonRoot':True,'runAsUser':65532,'runAsGroup':65532},

@@ -1,0 +1,79 @@
+{{- range $component := list "controller" "webhook" }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "flyt.name" $ }}-{{ $component }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "flyt.name" $ }}-{{ $component }}
+rules:
+  - apiGroups: [flyt.dev]
+    resources: [flytsharedmemorychannels, flytchannelattachments, flytgpuprofiles, flytgpurequests]
+    verbs: [get, list]
+  - apiGroups: [kubevirt.io]
+    resources: [virtualmachines, virtualmachineinstances]
+    verbs: [get, list]
+  - apiGroups: ['']
+    resources: [pods, persistentvolumeclaims]
+    verbs: [get, list]
+  {{- if eq $component "controller" }}
+  - apiGroups: [flyt.dev]
+    resources: [flytsharedmemorychannels/status]
+    verbs: [get, patch, update]
+  - apiGroups: ['']
+    resources: [events]
+    verbs: [create]
+  {{- if eq $.Values.mode "active" }}
+  - apiGroups: [flyt.dev]
+    resources: [flytsharedmemorychannels, flytsharedmemorychannels/status, flytchannelattachments, flytchannelattachments/status]
+    verbs: [get, list, create, update, delete]
+  - apiGroups: [kubevirt.io]
+    resources: [virtualmachines]
+    verbs: [update]
+  - apiGroups: ['']
+    resources: [pods, serviceaccounts]
+    verbs: [get, list, create, delete]
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [roles, rolebindings]
+    verbs: [get, create]
+  {{- end }}
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "flyt.name" $ }}-{{ $component }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "flyt.name" $ }}-{{ $component }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "flyt.name" $ }}-{{ $component }}
+    namespace: {{ $.Release.Namespace }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "flyt.clusterName" . }}-reader
+rules:
+  - apiGroups: ['']
+    resources: [nodes, persistentvolumes]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "flyt.clusterName" . }}-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "flyt.clusterName" . }}-reader
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "flyt.name" . }}-controller
+    namespace: {{ .Release.Namespace }}

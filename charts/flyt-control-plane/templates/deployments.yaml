@@ -1,0 +1,78 @@
+{{- if and (eq .Values.mode "active") (not .Values.activeModeAcknowledged) }}
+{{- fail "active mode is experimental: set activeModeAcknowledged=true after reviewing the GPU handoff" }}
+{{- end }}
+{{- range $component := list "controller" "webhook" }}
+{{- $settings := index $.Values $component }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flyt.name" $ }}-{{ $component }}
+  labels: {app.kubernetes.io/part-of: flyt, app.kubernetes.io/component: {{ $component }}}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: {{ include "flyt.name" $ }}-{{ $component }}}
+  template:
+    metadata:
+      labels: {app: {{ include "flyt.name" $ }}-{{ $component }}, app.kubernetes.io/part-of: flyt}
+    spec:
+      serviceAccountName: {{ include "flyt.name" $ }}-{{ $component }}
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile: {type: RuntimeDefault}
+      imagePullSecrets: {{ $.Values.imagePullSecrets | toJson }}
+      nodeSelector: {{ $settings.nodeSelector | toJson }}
+      tolerations: {{ $settings.tolerations | toJson }}
+      affinity: {{ $settings.affinity | toJson }}
+      containers:
+        - name: {{ $component }}
+          image: {{ include "flyt.image" $ | quote }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: [python3, /opt/flyt/control/{{ if eq $component "controller" }}control_plane.py{{ else }}admission.py{{ end }}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources: {{ $settings.resources | toJson }}
+          env:
+            - {name: FLYT_LOG_LEVEL, value: {{ $.Values.logLevel | quote }}}
+            - {name: FLYT_NAMESPACE, value: {{ $.Release.Namespace | quote }}}
+            - {name: FLYT_MODE, value: {{ $.Values.mode | quote }}}
+            - {name: FLYT_CONTROLLER_SERVICE_ACCOUNT, value: {{ printf "%s-controller" (include "flyt.name" $) | quote }}}
+            - {name: FLYT_API_TIMEOUT_SECONDS, value: {{ $.Values.api.timeoutSeconds | quote }}}
+            - {name: FLYT_RECONCILE_SECONDS, value: {{ $.Values.api.reconcileSeconds | quote }}}
+            - {name: FLYT_MAX_BACKOFF_SECONDS, value: {{ $.Values.api.maxBackoffSeconds | quote }}}
+            - {name: FLYT_READY_STALE_SECONDS, value: {{ $.Values.api.readyStaleSeconds | quote }}}
+            - {name: FLYT_WORKLOAD_TOLERATIONS, value: {{ $.Values.workloads.tolerations | toJson | quote }}}
+          ports:
+            - {name: health, containerPort: 8080}
+            {{- if eq $component "webhook" }}
+            - {name: https, containerPort: 8443}
+            {{- end }}
+          startupProbe:
+            httpGet: {path: /livez, port: health}
+            failureThreshold: 30
+            periodSeconds: 2
+          livenessProbe:
+            httpGet: {path: /livez, port: health}
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /readyz, port: health}
+            periodSeconds: 5
+          {{- if eq $component "webhook" }}
+          volumeMounts:
+            - {name: tls, mountPath: /tls, readOnly: true}
+          {{- end }}
+      {{- if eq $component "webhook" }}
+      volumes:
+        - name: tls
+          secret:
+            secretName: {{ include "flyt.tlsSecret" $ }}
+            defaultMode: 0444
+      {{- end }}
+{{- end }}

@@ -1,0 +1,9 @@
+# Stage two ONLY. Actual CUDA/SHM lifecycle remains experimental.
+mode: active
+activeModeAcknowledged: true
+# Place the controller independently of GPU workloads.
+controller:
+  nodeSelector: {}
+workloads:
+  tolerations: []
+# GPU node, UUID, approved worker/hook images and local PVC are CR/Profile inputs.

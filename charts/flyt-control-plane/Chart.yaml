@@ -1,0 +1,7 @@
+apiVersion: v2
+name: flyt-control-plane
+description: CPU-only FLYT controller and admission webhook; review by default
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+kubeVersion: '>=1.29.0-0'

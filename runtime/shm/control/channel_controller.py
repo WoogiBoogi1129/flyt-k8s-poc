@@ -23,6 +23,7 @@ def ensure(api,kind,obj,c):
 def pod(c,name,image,command):
     return {'apiVersion':'v1','kind':'Pod','metadata':meta(c,name),'spec':{
         'restartPolicy':'Never','automountServiceAccountToken':False,
+        'tolerations':json.loads(os.getenv('FLYT_WORKLOAD_TOLERATIONS','[]')),
         'nodeSelector':{'kubernetes.io/hostname':c['status']['nodeName']},
         'securityContext':{'runAsUser':c['spec']['uid'],'runAsGroup':c['spec']['gid'],'fsGroup':c['spec']['gid']},
         'containers':[{'name':'main','image':image,'command':command,
@@ -160,13 +161,5 @@ def reconcile(api,c):
     update(api,c,phase='Ready' if ready else 'Bound',workerPodUID=w['metadata']['uid'],reason='MappingACK' if ready else 'AwaitingMappingACK')
 
 if __name__=='__main__':
-    api=API()
-    while True:
-        for channel in api.items('channels'):
-            try:reconcile(api,channel)
-            except Exception as e:
-                # Do not continue unsafe execution after dependency or identity failures.
-                print(channel['metadata']['name'],type(e).__name__,str(e),flush=True)
-                try:update(api,channel,phase='Failed',reason=type(e).__name__)
-                except Exception:pass
-        time.sleep(2)
+    from control_plane import main
+    main()

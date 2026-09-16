@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flyt.name" . }}-webhook
+spec:
+  selector: {app: {{ include "flyt.name" . }}-webhook}
+  ports:
+    - {name: https, port: 443, targetPort: https}
+{{- if .Values.webhook.registrationEnabled }}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "flyt.clusterName" . }}
+  {{- if .Values.tls.certManager.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-tls" .Release.Namespace (include "flyt.name" .) | quote }}
+  {{- end }}
+webhooks:
+  - name: channel.shm.flyt.dev
+    admissionReviewVersions: [v1]
+    sideEffects: None
+    failurePolicy: Fail
+    timeoutSeconds: 10
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: {{ .Release.Namespace | quote }}
+    clientConfig:
+      service:
+        namespace: {{ .Release.Namespace }}
+        name: {{ include "flyt.name" . }}-webhook
+        path: /
+      {{- if not .Values.tls.certManager.enabled }}
+      caBundle: {{ required "tls.caBundle required when webhook registration is enabled" .Values.tls.caBundle | quote }}
+      {{- end }}
+    rules:
+      - apiGroups: [flyt.dev]
+        apiVersions: [v1alpha1]
+        operations: [CREATE, UPDATE]
+        resources: [flytsharedmemorychannels]
+        scope: Namespaced
+      {{- if eq .Values.mode "active" }}
+      - apiGroups: [flyt.dev]
+        apiVersions: [v1alpha1]
+        operations: [UPDATE]
+        resources: [flytchannelattachments/status]
+        scope: Namespaced
+      - apiGroups: [kubevirt.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [virtualmachineinstances, virtualmachineinstancemigrations]
+        scope: Namespaced
+      {{- end }}
+{{- end }}
+{{- if .Values.tls.certManager.enabled }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "flyt.name" . }}-tls
+spec:
+  secretName: {{ include "flyt.tlsSecret" . }}
+  dnsNames:
+    - {{ include "flyt.name" . }}-webhook.{{ .Release.Namespace }}.svc
+  issuerRef:
+    name: {{ required "tls.certManager.issuerRef.name required" .Values.tls.certManager.issuerRef.name }}
+    kind: {{ .Values.tls.certManager.issuerRef.kind }}
+{{- end }}

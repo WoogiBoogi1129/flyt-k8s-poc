@@ -1,0 +1,21 @@
+name: CPU control plane
+on:
+  push:
+    branches: [main, 'feat/k8s-native-control-plane']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: azure/setup-helm@v4.3.0
+        with:
+          version: v3.17.3
+      - run: python3 -m unittest discover -s tests/control -v
+      - run: helm lint charts/flyt-control-plane --set image.digest=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --set tls.caBundle=dGVzdA==
+      - run: docker build -f images/flyt/ControlPlane.Containerfile -t flyt-control-plane:test .

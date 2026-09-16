@@ -1,5 +1,7 @@
 # FLYT SHM-only Kubernetes / KubeVirt development
 
+CPU 기반 Kubernetes 배포는 [Stage 1 설치·운영 안내](docs/CONTROL_PLANE_STAGE1.md)를 참고하세요. `review` 모드의 실클러스터 검증과 GPU 런타임 검증 범위는 별개입니다.
+
 현재 브랜치는 `stage/10-10-rpc-removal`이다. **SHM 경로 소스 작성·모든 검증 NOT_RUN** 상태이며,
 전체 CUDA/PyTorch 호환성은 미완료다. 이전 RPC 구현은 `legacy/rpc`와 1~7단계 브랜치에 보존했다.
 기본 Makefile, 이미지, 배포 진입점은 RPC 서버·Manager·rpcbind·libtirpc를 사용하지 않는다.
