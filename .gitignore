@@ -5,7 +5,7 @@ deploy/rendered/
 legacy/rpc/deploy/rendered/
 artifacts/*
 !artifacts/README.md
-evidence/
+/evidence/
 results/*
 !results/reference/
 !results/reference/README.md

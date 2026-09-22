@@ -1,0 +1,13 @@
+scheduler:
+  kubeScheduler:
+    image:
+      registry: registry.k8s.io
+      repository: kube-scheduler
+      tag: v1.37.0
+devicePlugin:
+  runtimeClassName: nvidia
+  createRuntimeClass: false
+  deviceListStrategy: cdi-annotations
+  nvidiaDriverRoot: /
+  nvidiaHookPath: /usr/local/nvidia/toolkit/nvidia-ctk
+  migStrategy: none

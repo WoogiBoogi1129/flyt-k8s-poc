@@ -14,7 +14,12 @@ static uint64_t le(const unsigned char *p, int n) {
 int flyt_layout_read(const char *path, struct flyt_shm_layout *l) {
     unsigned char b[64+80*32]; struct stat st; size_t got=0; ssize_t n;
     int fd=open(path,O_RDONLY|O_CLOEXEC|O_NOFOLLOW); if(fd<0)return -1;
-    if(fstat(fd,&st)||!S_ISREG(st.st_mode)||(st.st_mode&0022)||st.st_size<64||st.st_size>(off_t)sizeof(b)){close(fd);return -1;}
+    /* Kubelet fsGroup makes a local PVC's 0640 metadata files 0660. Trust
+     * group writes only for the same UID/GID that owns this process and the
+     * allocation. Other-writable files and foreign group writers stay invalid. */
+    if(fstat(fd,&st)||!S_ISREG(st.st_mode)||(st.st_mode&0002)||
+       ((st.st_mode&0020)&&(st.st_uid!=geteuid()||st.st_gid!=getegid()))||
+       st.st_size<64||st.st_size>(off_t)sizeof(b)){close(fd);return -1;}
     while(got<(size_t)st.st_size){n=read(fd,b+got,(size_t)st.st_size-got);if(n<=0){close(fd);return -1;}got+=(size_t)n;}
     close(fd); memset(l,0,sizeof(*l));
     memcpy(l->allocation_id,b,16);memcpy(l->channel_generation,b+16,16);

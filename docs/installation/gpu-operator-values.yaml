@@ -1,0 +1,13 @@
+# HAMi generates its own per-GPU CDI specifications (cdi-annotations strategy).
+cdi:
+  enabled: true
+driver:
+  enabled: false
+toolkit:
+  enabled: true
+devicePlugin:
+  enabled: false
+migManager:
+  enabled: false
+sandboxWorkloads:
+  enabled: false
