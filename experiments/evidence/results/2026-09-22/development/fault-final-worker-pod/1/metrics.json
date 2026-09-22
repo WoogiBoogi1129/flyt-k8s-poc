@@ -1,0 +1,9 @@
+{
+  "phase": "development",
+  "status": "FAIL",
+  "scope": "final image deployment before workload start",
+  "reason": "build digest differs from imported OCI manifest digest",
+  "build_digest": "sha256:03df4d2b98590dcd26f95ed28dad09cf855371b97d9c6ccbb3e1e445b134cf4b",
+  "runtime_digest": "sha256:a60f76638461c0fb15c11d89779c482e44621ab52119e682b279de0dd2a4859d",
+  "action": "stop orchestration before VM start, correct pending prepare Pod and Channel image, then ordinary smoke/release before fresh fault trials"
+}

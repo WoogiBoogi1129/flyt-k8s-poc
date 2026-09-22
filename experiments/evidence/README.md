@@ -5,6 +5,7 @@
 PyTorch 학습 및 baseline 진입 조건은 미완료이므로 E1~E5 본 실험 전체를 완료한 상태는 아니다. 개발 중 수치는
 `development/`에 보관하고 본 실험 성능으로 재사용하지 않는다.
 실제 후속 구현·실패·조치는 [구현·검증 보고서](IMPLEMENTATION_AND_VALIDATION_2026-09-22.md)에 기록한다.
+빌드·배포·VM 개발 검증의 [재현 절차](REPRODUCE_VM_DEVELOPMENT.md)를 별도로 제공한다.
 
 ## 구성과 실행 범위
 
@@ -161,8 +162,10 @@ comparison 결과를 검토한 후에만 설정한다. 분석기는 입력 prove
 자동 입증하지 않는다. CPU 비용은 cgroup 증거와 별도 결합한다.
 
 최종 측정 전 snapshot/이미지/설정을 동결하고 5개 교차 블록을 수행한다. 미완료 배포
-어댑터, E2 명세, E5 장애 fixture 때문에 현재 단계에서 전체 실증이 완료됐다고
-표현해서는 안 된다. 실제 실행·검증 결과는 `EXECUTION_2026-09-22.md`를 참고한다.
+어댑터, E2 명세, E5의 남은 장애 시나리오 때문에 현재 단계에서 전체 실증이 완료됐다고
+표현해서는 안 된다. 실제 후속 VM 실행·실패·조치는
+[구현·검증 보고서](IMPLEMENTATION_AND_VALIDATION_2026-09-22.md)를 참고한다.
+`EXECUTION_2026-09-22.md`는 그 이전 사전 점검과 차단 장부다.
 
 측정 구현 참고: [PyTorch 재현성](https://docs.pytorch.org/docs/stable/notes/randomness.html),
 [CUDA 비동기 측정](https://docs.pytorch.org/docs/stable/notes/cuda.html).

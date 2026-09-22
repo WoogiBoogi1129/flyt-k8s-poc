@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "formal_training_result": false,
+  "scope": "VM SHM gpu smoke and lifecycle",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "probe_results": [],
+  "error": "Guest smoke failed with 255",
+  "released": true,
+  "elapsed_seconds": 90.44390924098843
+}

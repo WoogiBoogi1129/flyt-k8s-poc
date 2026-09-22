@@ -1,0 +1,29 @@
+[
+  {
+    "elapsed_seconds": 0.24928234200342558,
+    "state": "VMStartRequested"
+  },
+  {
+    "elapsed_seconds": 35.975626265993924,
+    "state": "GuestSSHReady",
+    "ip": "10.85.0.56"
+  },
+  {
+    "elapsed_seconds": 41.895553242997266,
+    "state": "ChannelReady",
+    "bdf": "0000:00:1e.0"
+  },
+  {
+    "elapsed_seconds": 58.46119497799373,
+    "state": "Failed",
+    "error": "Diagnostic prerequisites inconclusive; see probe results"
+  },
+  {
+    "elapsed_seconds": 59.45676898599777,
+    "state": "DrainRequested"
+  },
+  {
+    "elapsed_seconds": 80.71932199699222,
+    "state": "Released"
+  }
+]

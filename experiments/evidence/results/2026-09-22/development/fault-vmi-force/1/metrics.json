@@ -1,0 +1,67 @@
+{
+  "mode": "vmi-force",
+  "repeat": 1,
+  "status": "FAIL",
+  "phase": "development",
+  "bindings": [
+    {
+      "channel_uid": "7e618948-e608-44cd-96b0-ed64078eec67",
+      "vm_uid": "b2e18a9d-1391-415c-92e2-a55cbdc7b532",
+      "allocation": "5d23417978b1d17ae6f73899b8cc22c6",
+      "generation": "98d7bd76ea910763ca6ebe4e4c524ceb",
+      "vmiUID": "0b218e03-1b4d-4cc2-aa59-2d991003faa4",
+      "workerPodUID": "7226f5c4-70b7-468c-beb5-5c844e0aaacd"
+    },
+    {
+      "channel_uid": "dc63230f-a9ed-43a6-9d17-524d0e70114a",
+      "vm_uid": "96b3a0e3-ecfe-4a17-8370-64b442f88928",
+      "allocation": "e0a24350dccf5aa248e5dce6553ea2e0",
+      "generation": "81c52452dccf6361588f17056d4fe8df",
+      "vmiUID": "60c72208-4998-4e75-b440-c8c02fb8e3f0",
+      "workerPodUID": "91ea0157-f5ca-4f75-bc99-7be74289b67d"
+    }
+  ],
+  "injection_begin_monotonic_seconds": 82086.898908251,
+  "injection_return_monotonic_seconds": 82087.167211771,
+  "injected": true,
+  "seconds_after_injection": 32.395224452004186,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 82.62787783901149
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2324,
+        "copy_bytes": 4096,
+        "active_seconds": 10.001568
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 73.73724544599827
+  },
+  "host_error_observation_seconds_bounds": [
+    0.4293598640069831,
+    0.6976633840095019
+  ],
+  "stale_vmi_admission_rejected": false,
+  "error": "old allocation was not rejected by channel admission"
+}

@@ -1,0 +1,66 @@
+{
+  "mode": "worker-process",
+  "repeat": 1,
+  "status": "PASS",
+  "phase": "development",
+  "bindings": [
+    {
+      "channel_uid": "b5e9016d-2cb0-44ba-a6ec-084965bc0414",
+      "vm_uid": "a96554ca-c9d6-4081-aede-ef5f5ffdd37f",
+      "allocation": "0537e815f580410958b28e2564890d18",
+      "generation": "90cfcbe096082bed310719283063f23d",
+      "vmiUID": "16b6774e-a181-4cf3-a478-53ec82a7c228",
+      "workerPodUID": "8e111956-757f-4443-a034-d7983678e0ae"
+    },
+    {
+      "channel_uid": "6283c74b-45b6-469e-b830-bcbc73e56681",
+      "vm_uid": "a0ba652b-5ce8-4eb0-bb2f-6359165b0cf7",
+      "allocation": "2d93c98091646f0f06daa73b7941ce90",
+      "generation": "f19c409c349035c3e63df9abcbb218e6",
+      "vmiUID": "1a28f38b-f48b-4173-9b62-6281a81af95f",
+      "workerPodUID": "63c472c7-76d6-441e-b915-3102fe0df485"
+    }
+  ],
+  "injection_begin_monotonic_seconds": 84675.837481461,
+  "injection_return_monotonic_seconds": 84676.147120073,
+  "injected": true,
+  "seconds_after_injection": 26.972846599004697,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 77.01359809700807
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2368,
+        "copy_bytes": 4096,
+        "active_seconds": 10.001834
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 68.17562043500948
+  },
+  "host_error_observation_seconds_bounds": [
+    6.056702446003328,
+    6.366341058004764
+  ],
+  "fixture_cleanup": true
+}

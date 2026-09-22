@@ -1,0 +1,23 @@
+{
+  "status": "FAIL",
+  "formal_training_result": false,
+  "scope": "VM SHM memory smoke and lifecycle",
+  "probe": "memory",
+  "scenario": "aggregate_race",
+  "bytes": 4294967296,
+  "probe_results": [
+    {
+      "scenario": "aggregate_race",
+      "quota_bytes": 4294967296,
+      "request_per_process": 2576980377,
+      "cuda_status": [
+        2,
+        0
+      ],
+      "status": "PASS"
+    }
+  ],
+  "error": "Guest smoke failed with 255",
+  "released": true,
+  "elapsed_seconds": 70.58871286199428
+}

@@ -1,0 +1,13 @@
+{
+  "case_id": "run-evidence-mem-1024",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "afc97a23-840e-4135-99d5-2eeb4ea8ac8f",
+  "git_commit": "6bc0332ecfba2d2f7f8a646b63435e59d5a94bf8",
+  "probe": "memory",
+  "scenario": "suite",
+  "bytes": 1073741824,
+  "seed": 23,
+  "timeout_seconds": 300
+}

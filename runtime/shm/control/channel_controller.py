@@ -20,6 +20,13 @@ def ensure(api,kind,obj,c):
         if not owned(old,c):raise ValueError('same-name foreign object')
         return old
     return api.create(kind,obj)
+def ensure_worker(api,worker,c):
+    uid=c.get('status',{}).get('workerPodUID')
+    if not uid:return ensure(api,'pods',worker,c)
+    existing=api.get('pods',worker['metadata']['name'])
+    if existing and (existing['metadata']['uid']!=uid or not owned(existing,c)):
+        raise ValueError('worker generation changed')
+    return existing
 def pod(c,name,image,command):
     return {'apiVersion':'v1','kind':'Pod','metadata':meta(c,name),'spec':{
         'restartPolicy':'Never','automountServiceAccountToken':False,
@@ -147,7 +154,11 @@ def reconcile(api,c):
         'FLYT_NAMESPACE':c['metadata']['namespace']}.items()]
     container['env'].append({'name':'FLYT_POD_UID','valueFrom':{'fieldRef':{'fieldPath':'metadata.uid'}}})
     container['readinessProbe']={'exec':{'command':['test','-f','/tmp/flyt-worker-ready']},'periodSeconds':2}
-    w=ensure(api,'pods',worker,c)
+    # Observation may remove the terminal Pod's finalizer above. Once bound,
+    # its disappearance ends this allocation; never create a replacement.
+    w=ensure_worker(api,worker,c)
+    if not w:
+        update(api,c,phase='Draining',reason='WorkerEnded');return
     # Bound identities are immutable; a restarted/removed Worker requires a new channel.
     if s.get('workerPodUID') and s['workerPodUID']!=w['metadata']['uid']:raise ValueError('worker generation changed')
     for role,holder in [('worker',w['metadata']['uid']),('guest',vmi['metadata']['uid'])]:

@@ -1,0 +1,11 @@
+{
+  "status": "FAIL",
+  "formal_training_result": false,
+  "scope": "VM SHM memory smoke and lifecycle",
+  "probe": "memory",
+  "scenario": "suite",
+  "bytes": 4294967296,
+  "error": "Guest smoke failed with 1",
+  "released": true,
+  "elapsed_seconds": 66.39113417999761
+}

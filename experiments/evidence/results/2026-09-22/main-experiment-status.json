@@ -1,0 +1,42 @@
+{
+  "scope": "main experiment entry status; development VM results are separate",
+  "all_requested_implementation_and_experiments_completed": false,
+  "main_experiments_started": false,
+  "experiments": [
+    {
+      "id": "E1",
+      "status": "BLOCKED",
+      "reason": "PyTorch CUDA Runtime registration/general kernel launch unsupported; no passthrough tensor reference"
+    },
+    {
+      "id": "E2",
+      "status": "BLOCKED",
+      "reason": "Development memory/lifecycle results exist; compute limiting contract and saturated 25/50/100 measurement unresolved; 1 GiB two-session suitability unresolved"
+    },
+    {
+      "id": "E3",
+      "status": "BLOCKED",
+      "reason": "E1 incomplete; passthrough and RPC/MPS training baselines, CPU placement and calibration incomplete"
+    },
+    {
+      "id": "E4",
+      "status": "BLOCKED",
+      "reason": "Two-VM PTX validated; no two-VM PyTorch training, slowdown or common-window throughput results"
+    },
+    {
+      "id": "E5",
+      "status": "BLOCKED",
+      "reason": "Scoped PTX faults performed; remaining scenarios and concurrent training correctness incomplete"
+    },
+    {
+      "id": "E5-node-disconnection",
+      "status": "NOT_RUN",
+      "reason": "Conditional follow-up; scoped process faults do not validate node disconnection"
+    },
+    {
+      "id": "E6",
+      "status": "NOT_RUN",
+      "reason": "Conditional multi-GPU implementation; this execution used one explicitly selected GPU"
+    }
+  ]
+}

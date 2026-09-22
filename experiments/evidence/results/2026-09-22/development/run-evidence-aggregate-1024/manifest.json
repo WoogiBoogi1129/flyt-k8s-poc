@@ -1,0 +1,13 @@
+{
+  "case_id": "run-evidence-aggregate-1024",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "c1b2f20f-100d-46f7-8c23-d24114e0e1ca",
+  "git_commit": "1c07d1ce001acb9a91414a06881d43534f5a92a6",
+  "probe": "memory",
+  "scenario": "aggregate_race",
+  "bytes": 1073741824,
+  "seed": 23,
+  "timeout_seconds": 300
+}

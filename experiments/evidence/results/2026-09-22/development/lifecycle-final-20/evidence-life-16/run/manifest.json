@@ -1,0 +1,14 @@
+{
+  "case_id": "lifecycle-final-20/evidence-life-16/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "41098950-4a90-4e99-936a-bb1f43006bc4",
+  "monotonic_origin_seconds": 85485.713907864,
+  "git_commit": "1c07d1ce001acb9a91414a06881d43534f5a92a6",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 2041,
+  "timeout_seconds": 300
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "elapsed_seconds": 0.28178664299775846,
+    "state": "VMStartRequested"
+  },
+  {
+    "elapsed_seconds": 38.038961590995314,
+    "state": "GuestSSHReady",
+    "ip": "10.85.0.5"
+  },
+  {
+    "elapsed_seconds": 39.63812811700336,
+    "state": "BarrierReady"
+  },
+  {
+    "elapsed_seconds": 48.0781321819959,
+    "state": "ChannelReady",
+    "bdf": "0000:00:1e.0"
+  },
+  {
+    "elapsed_seconds": 52.40596930400352,
+    "state": "ProbePassed"
+  },
+  {
+    "elapsed_seconds": 53.26444000500487,
+    "state": "DrainRequested"
+  },
+  {
+    "elapsed_seconds": 74.53103192499839,
+    "state": "Released"
+  }
+]

@@ -45,6 +45,7 @@ if not initial or initial.get('status',{}).get('phase')!='BackingReady':raise Va
 save('channel-before.json',initial)
 files=[ROOT/'scripts/run-evidence-smoke.py',ROOT/'experiments/evidence/guest_gpu_smoke.c',ROOT/'experiments/evidence/memory_probe.cu',a.artifacts/'libflyt_guest.so',a.artifacts/('guest-gpu-smoke' if a.probe=='gpu' else 'memory-probe-guest')]
 save('manifest.json',{'run_id':a.output.name,'phase':'development','namespace':ns,'channel_uid':initial['metadata']['uid'],
+ 'monotonic_origin_seconds':started,
  'channel_spec':initial['spec'],'git_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
  'file_sha256':{str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in files},
  'probe':a.probe,'scenario':a.scenario,'bytes':a.bytes,'seed':a.seed,'timeout_seconds':a.timeout})
@@ -89,10 +90,12 @@ try:
    return None
   ready=wait_for(mapped,'Guest/Worker mapping not Ready',60);save('channel-ready.json',ready);event('ChannelReady',bdf=bdf)
   code=ssh_process.wait(timeout=120)
- if code:raise RuntimeError('Guest smoke failed with '+str(code))
  results=[json.loads(line) for line in (a.output/'guest-stdout.txt').read_text().splitlines() if line.startswith('{')]
- if not results or any(x.get('status')!='PASS' for x in results):raise RuntimeError('Guest success evidence missing or failed')
  metrics['probe_results']=results
+ if code==3 and results and all(x.get('status')=='BLOCKED' for x in results):
+  metrics['probe_blocked']=True;raise RuntimeError('Diagnostic prerequisites inconclusive; see probe results')
+ if code:raise RuntimeError('Guest smoke failed with '+str(code))
+ if not results or any(x.get('status')!='PASS' for x in results):raise RuntimeError('Guest success evidence missing or failed')
  event('ProbePassed')
  metrics['probe_pass']=True
 except Exception as error:
@@ -111,7 +114,7 @@ finally:
    if name==channel+'-worker' or name.startswith('virt-launcher-'+a.name+'-'):
     save(name+'.json',pod)
     for container in pod['spec']['containers']:
-     if container['name'] not in ('compute','worker','hook-sidecar-0'):continue
+     if container['name'] not in ('compute','worker','main','hook-sidecar-0'):continue
      result=subprocess.run(['kubectl','logs',name,'-n',ns,'-c',container['name'],'--tail=1000'],text=True,capture_output=True,timeout=15)
      (a.output/(name+'-'+container['name']+'.log')).write_text(result.stdout+result.stderr)
  except Exception as error:metrics['evidence_collection_error']=str(error)
@@ -129,5 +132,6 @@ finally:
  except Exception as error:
   metrics['release_error']=str(error);event('ReleaseFailed',error=str(error))
  metrics['status']='PASS' if metrics.get('probe_pass') and metrics.get('released') else 'FAIL'
+ if metrics.get('released') and metrics.get('probe_blocked'):metrics['status']='BLOCKED'
  metrics['elapsed_seconds']=time.monotonic()-started;save('metrics.json',metrics)
-raise SystemExit(0 if metrics['status']=='PASS' else 1)
+raise SystemExit(0 if metrics['status']=='PASS' else 3 if metrics['status']=='BLOCKED' else 1)

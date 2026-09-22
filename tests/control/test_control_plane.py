@@ -36,6 +36,23 @@ class ReviewAPI:
 
 
 class ReviewTests(unittest.TestCase):
+    def test_removed_bound_worker_is_not_recreated(self):
+        api, obj = ReviewAPI(), channel()
+        obj['status'] = {'workerPodUID': 'original-worker'}
+        worker = {'metadata': {'name': 'example-worker'}}
+        self.assertIsNone(channel_controller.ensure_worker(api, worker, obj))
+        self.assertEqual(api.writes, [])
+
+    def test_same_name_replacement_cannot_enter_old_allocation(self):
+        api, obj = ReviewAPI(), channel()
+        obj['status'] = {'workerPodUID': 'original-worker'}
+        worker = {'metadata': {'name': 'example-worker', 'uid': 'replacement',
+                  'ownerReferences': [{'uid': obj['metadata']['uid']}]}}
+        with patch.object(api, 'get', return_value=worker):
+            with self.assertRaisesRegex(ValueError, 'worker generation changed'):
+                channel_controller.ensure_worker(api, worker, obj)
+        self.assertEqual(api.writes, [])
+
     def test_missing_dependency_reports_wait_without_finalizer_or_workload(self):
         api, obj = ReviewAPI(), channel()
         cp.process(api, obj, 'review')

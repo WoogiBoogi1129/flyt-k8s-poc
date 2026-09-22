@@ -5,9 +5,11 @@ This is a node-administration operation: a temporary privileged Pod executes onl
 the host podman image import. It does not restart CRI-O or modify GPU bindings.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import subprocess
+import tarfile
 import time
 import uuid
 
@@ -17,6 +19,17 @@ p.add_argument('archive',type=Path);p.add_argument('--output',type=Path,required
 a=p.parse_args();archive=a.archive.resolve(strict=True)
 if ROOT/'.local' not in archive.parents or archive.suffix!='.oci':p.error('expected this repository .local/*.oci archive')
 a.output.mkdir(parents=True,exist_ok=False)
+with tarfile.open(archive) as bundle:
+ index=json.load(bundle.extractfile('index.json'))
+ manifests=index.get('manifests',[])
+ if len(manifests)!=1:raise ValueError('expected a single-image OCI archive')
+ digest=manifests[0]['digest']
+ if not digest.startswith('sha256:') or len(digest)!=71:raise ValueError('invalid OCI digest')
+ manifest=bundle.extractfile('blobs/sha256/'+digest.split(':')[1]).read()
+ if 'sha256:'+hashlib.sha256(manifest).hexdigest()!=digest:raise ValueError('OCI manifest digest mismatch')
+(a.output/'archive-identity.json').write_text(json.dumps({'manifest_digest':digest,
+ 'reference':manifests[0].get('annotations',{}).get('org.opencontainers.image.ref.name')},indent=2))
+print('OCI archive manifest digest:',digest,flush=True)
 name='image-import-'+uuid.uuid4().hex[:10]
 pod={'apiVersion':'v1','kind':'Pod','metadata':{'name':name,'namespace':'flyt-evidence','labels':{'app.kubernetes.io/part-of':'flyt-evidence'}},
  'spec':{'nodeName':'gpu-4','restartPolicy':'Never','activeDeadlineSeconds':600,'automountServiceAccountToken':False,

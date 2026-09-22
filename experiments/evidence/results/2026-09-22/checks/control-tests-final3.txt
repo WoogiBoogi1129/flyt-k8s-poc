@@ -1,0 +1,37 @@
+test_active_allocation_is_not_relabelled_or_cleared (test_control_plane.ReviewTests.test_active_allocation_is_not_relabelled_or_cleared) ... {"event": "channel_review", "level": "INFO", "message": "vms vm is unavailable", "name": "example", "namespace": "review", "reason": "DependencyNotReady", "uid": "channel-uid"}
+ok
+test_active_api_errors_do_not_trigger_failed_status (test_control_plane.ReviewTests.test_active_api_errors_do_not_trigger_failed_status) ... ok
+test_active_missing_dependency_does_not_fail_session (test_control_plane.ReviewTests.test_active_missing_dependency_does_not_fail_session) ... {"event": "dependency_wait", "level": "INFO", "message": "PVC pending", "name": "example"}
+ok
+test_api_conflict_is_not_reported_as_invalid_configuration (test_control_plane.ReviewTests.test_api_conflict_is_not_reported_as_invalid_configuration) ... ok
+test_guest_report_preserves_controller_evidence (test_control_plane.ReviewTests.test_guest_report_preserves_controller_evidence) ... ok
+test_health_api_failure_affects_readiness_not_process_liveness (test_control_plane.ReviewTests.test_health_api_failure_affects_readiness_not_process_liveness) ... ok
+test_missing_dependency_reports_wait_without_finalizer_or_workload (test_control_plane.ReviewTests.test_missing_dependency_reports_wait_without_finalizer_or_workload) ... {"event": "channel_review", "level": "INFO", "message": "vms vm is unavailable", "name": "example", "namespace": "review", "reason": "DependencyNotReady", "uid": "channel-uid"}
+ok
+test_no_repeated_status_or_events_when_nothing_changes (test_control_plane.ReviewTests.test_no_repeated_status_or_events_when_nothing_changes) ... {"event": "channel_review", "level": "INFO", "message": "vms vm is unavailable", "name": "example", "namespace": "review", "reason": "DependencyNotReady", "uid": "channel-uid"}
+ok
+test_ready_is_false_even_with_dependencies (test_control_plane.ReviewTests.test_ready_is_false_even_with_dependencies) ... {"event": "channel_review", "level": "INFO", "message": "Declared dependencies are present; execution remains disabled", "name": "example", "namespace": "review", "reason": "DependenciesPresent", "uid": "channel-uid"}
+ok
+test_removed_bound_worker_is_not_recreated (test_control_plane.ReviewTests.test_removed_bound_worker_is_not_recreated) ... ok
+test_same_name_replacement_cannot_enter_old_allocation (test_control_plane.ReviewTests.test_same_name_replacement_cannot_enter_old_allocation) ... ok
+test_webhook_rejects_request_vm_mismatch (test_control_plane.ReviewTests.test_webhook_rejects_request_vm_mismatch) ... ok
+test_api_failure_preserves_protection (test_detach_observation.DetachTests.test_api_failure_preserves_protection) ... ok
+test_cannot_protect_already_deleting_pod (test_detach_observation.DetachTests.test_cannot_protect_already_deleting_pod) ... ok
+test_incomplete_container_status_not_detached (test_detach_observation.DetachTests.test_incomplete_container_status_not_detached) ... ok
+test_missing_pod_not_detached (test_detach_observation.DetachTests.test_missing_pod_not_detached) ... ok
+test_node_unreachable_not_detached (test_detach_observation.DetachTests.test_node_unreachable_not_detached) ... ok
+test_protect_before_ready_then_persist_evidence_before_unpin (test_detach_observation.DetachTests.test_protect_before_ready_then_persist_evidence_before_unpin) ... ok
+test_restart_after_evidence_write_retries_finalizer_removal (test_detach_observation.DetachTests.test_restart_after_evidence_write_retries_finalizer_removal) ... ok
+test_stale_generation_is_not_mutated (test_detach_observation.DetachTests.test_stale_generation_is_not_mutated) ... ok
+test_worker_report_releases_only_its_pod (test_detach_observation.DetachTests.test_worker_report_releases_only_its_pod) ... ok
+test_avoids_vga_and_all_declared_root_devices (test_domain_pci.PCITests.test_avoids_vga_and_all_declared_root_devices) ... ok
+test_child_bus_slot_does_not_conflict (test_domain_pci.PCITests.test_child_bus_slot_does_not_conflict) ... ok
+test_full_bus_is_rejected (test_domain_pci.PCITests.test_full_bus_is_rejected) ... ok
+test_kubevirt_pre_libvirt_implicit_root (test_domain_pci.PCITests.test_kubevirt_pre_libvirt_implicit_root) ... ok
+test_unknown_implicit_root_rejected (test_domain_pci.PCITests.test_unknown_implicit_root_rejected) ... ok
+test_unsupported_root_is_rejected (test_domain_pci.PCITests.test_unsupported_root_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 0.008s
+
+OK

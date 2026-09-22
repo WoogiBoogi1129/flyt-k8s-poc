@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "formal_training_result": false,
+  "scope": "VM SHM gpu smoke and lifecycle",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "probe_pass": true,
+  "released": true,
+  "elapsed_seconds": 68.2938754909992
+}

@@ -9,6 +9,8 @@ int flyt_cuda_dispatch(struct flyt_cuda_session *s,const struct flyt_shm_request
     c.api_id=q->api_id;
     if(c.api_id==FLYT_API_RUNTIME_MEM_GET_INFO){
         if(!s->exec||q->input_bytes||r->output_capacity<16||!r->output)goto invalid;
+        int state=flyt_cuda_exec_check(s->exec);
+        if(state){r->transport_status=(uint32_t)state;return 0;}
         size_t free_bytes=0,total_bytes=0;
         r->result_domain=FLYT_RESULT_CUDA_RUNTIME;
         r->api_result=(uint32_t)cudaMemGetInfo(&free_bytes,&total_bytes);

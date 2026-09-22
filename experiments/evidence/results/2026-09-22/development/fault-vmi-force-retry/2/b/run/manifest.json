@@ -1,0 +1,14 @@
+{
+  "case_id": "fault-vmi-force-retry/2/b/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "6d5f264e-1674-4639-80c8-02aab8ee5f85",
+  "monotonic_origin_seconds": 83191.899107282,
+  "git_commit": "1c07d1ce001acb9a91414a06881d43534f5a92a6",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 2027,
+  "timeout_seconds": 300
+}

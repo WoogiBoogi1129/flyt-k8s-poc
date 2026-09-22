@@ -1,0 +1,18 @@
+{
+  "controller_v2b": "localhost/flyt-control-plane@sha256:a60f76638461c0fb15c11d89779c482e44621ab52119e682b279de0dd2a4859d",
+  "worker_v3b": "localhost/flyt-worker@sha256:9e40677fadaecc3d0544349dc2da196dd81883aa3081e5944ebb86f1f57bf0e8",
+  "control_tests": {
+    "tests": 27,
+    "skipped": 0,
+    "status": "PASS"
+  },
+  "evidence_tests": {
+    "tests": 16,
+    "skipped": 0,
+    "status": "PASS"
+  },
+  "c_tests": [
+    "OOM recoverable; non-OOM fatal",
+    "memory-info encoding and owner/closed guards"
+  ]
+}

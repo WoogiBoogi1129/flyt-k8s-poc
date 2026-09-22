@@ -1,0 +1,21 @@
+test_cli_checkpoint_weights_only_roundtrip_and_timing_modes (test_evidence.ComparatorTests.test_cli_checkpoint_weights_only_roundtrip_and_timing_modes) ... ok
+test_exact_match (test_evidence.ComparatorTests.test_exact_match) ... ok
+test_missing_checkpoint_and_different_fixture_rejected (test_evidence.ComparatorTests.test_missing_checkpoint_and_different_fixture_rejected) ... ok
+test_missing_gradient_fails (test_evidence.ComparatorTests.test_missing_gradient_fails) ... ok
+test_nan_and_gradient_corruption_fail (test_evidence.ComparatorTests.test_nan_and_gradient_corruption_fail) ... ok
+test_nonfinite_tolerance_cannot_hide_failure (test_evidence.ComparatorTests.test_nonfinite_tolerance_cannot_hide_failure) ... ok
+test_calibration_fastest_gets_thirty_seconds (test_evidence.EvidenceTests.test_calibration_fastest_gets_thirty_seconds) ... ok
+test_calibration_rejects_incomplete_duplicate_and_nan (test_evidence.EvidenceTests.test_calibration_rejects_incomplete_duplicate_and_nan) ... ok
+test_inventory_excludes_env_and_cloud_init (test_evidence.EvidenceTests.test_inventory_excludes_env_and_cloud_init) ... ok
+test_matrix_complete_blocks_unique_and_reproducible (test_evidence.EvidenceTests.test_matrix_complete_blocks_unique_and_reproducible) ... ok
+test_no_wrong_calculation_or_mixed_revision_performance (test_evidence.EvidenceTests.test_no_wrong_calculation_or_mixed_revision_performance) ... ok
+test_performance_ratios (test_evidence.EvidenceTests.test_performance_ratios) ... ok
+test_shared_window_handles_clock_uncertainty (test_evidence.EvidenceTests.test_shared_window_handles_clock_uncertainty) ... ok
+test_slowdown_is_normalized_per_vm (test_evidence.EvidenceTests.test_slowdown_is_normalized_per_vm) ... ok
+test_barrier_clock_bounds_and_failure_cancellation (test_evidence.PairTests.test_barrier_clock_bounds_and_failure_cancellation) ... ok
+test_credentials_pod_env_and_symlink_are_not_exported (test_export.ExportTests.test_credentials_pod_env_and_symlink_are_not_exported) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 17.795s
+
+OK

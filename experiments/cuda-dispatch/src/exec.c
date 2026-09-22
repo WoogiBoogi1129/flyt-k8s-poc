@@ -27,6 +27,12 @@ static int status(struct flyt_cuda_result *r, uint32_t code)
     return (int)code;
 }
 
+int flyt_cuda_exec_check(struct flyt_cuda_exec *s)
+{
+    if (!s || !pthread_equal(s->owner, pthread_self())) return FLYT_SHM_BAD_DESCRIPTOR;
+    return s->closing ? FLYT_SHM_CHANNEL_CLOSED : FLYT_SHM_OK;
+}
+
 int flyt_cuda_exec_create(const struct flyt_cuda_backend *b, void *context,
                           struct flyt_cuda_exec **out)
 {

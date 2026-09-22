@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "formal_training_result": false,
+  "scope": "VM SHM gpu smoke and lifecycle",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "probe_results": [
+    {
+      "status": "PASS",
+      "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+      "seed": 2032,
+      "kernel_repeats": 2371,
+      "copy_bytes": 4096,
+      "active_seconds": 10.001096
+    }
+  ],
+  "probe_pass": true,
+  "released": true,
+  "elapsed_seconds": 74.86908568299259
+}

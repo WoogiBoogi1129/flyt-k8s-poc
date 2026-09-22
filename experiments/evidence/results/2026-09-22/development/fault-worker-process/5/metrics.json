@@ -1,0 +1,48 @@
+{
+  "mode": "worker-process",
+  "repeat": 5,
+  "status": "PASS",
+  "phase": "development",
+  "injection_begin_monotonic_seconds": 81325.201841894,
+  "injection_return_monotonic_seconds": 81325.536896476,
+  "injected": true,
+  "seconds_after_injection": 25.99373784000636,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 94.93552597099915
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2339,
+        "copy_bytes": 4096,
+        "active_seconds": 10.003528
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 71.50873441199656
+  },
+  "host_error_observation_seconds_bounds": [
+    9.228027375997044,
+    9.563081957996474
+  ],
+  "fixture_cleanup": true
+}

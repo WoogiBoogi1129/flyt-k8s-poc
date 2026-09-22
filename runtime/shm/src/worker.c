@@ -26,6 +26,7 @@ int main(int argc,char **argv){
     snprintf(ready,sizeof(ready),"/tmp/flyt-slot-%u-mapped",slot);FILE *f=fopen(ready,"wx");if(!f){free(output);goto done;}fclose(f);
     struct timespec last,now;clock_gettime(CLOCK_MONOTONIC,&last);
     while(!stopping){
+        if(flyt_cuda_exec_check(session.exec)!=FLYT_SHM_OK)break;
         clock_gettime(CLOCK_MONOTONIC,&now);
         if(now.tv_sec-last.tv_sec>(hello?60:600))break;
         if(flyt_async_reap())break;
@@ -39,6 +40,7 @@ int main(int argc,char **argv){
         else if((q.api_id==FLYT_HEARTBEAT||q.api_id==FLYT_GOODBYE)&&q.payload_schema==1&&!q.input_bytes){
             if(q.api_id==FLYT_GOODBYE){stopping=1;exitcode=0;}
         }else if(q.api_id==FLYT_HELLO){r.transport_status=FLYT_SHM_BAD_DESCRIPTOR;stopping=1;}
+        else if((rc=flyt_cuda_exec_check(session.exec))!=FLYT_SHM_OK){r.transport_status=(uint32_t)rc;}
         else if(q.api_id>=0x3000){if(flyt_compat_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
         else if(q.api_id>=0x2000){if(flyt_async_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
         else if(flyt_cuda_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}
@@ -47,6 +49,11 @@ int main(int argc,char **argv){
     }
     unlink(ready);char guest_marker[128];snprintf(guest_marker,sizeof(guest_marker),"/tmp/flyt-slot-%u-guest",slot);unlink(guest_marker);free(output);
 done:
+    /* A poisoned execution context must not enter CUDA again through async
+     * polling or resource destructors. Process exit owns uncertain GPU state. */
+    if(session.exec&&flyt_cuda_exec_check(session.exec)==FLYT_SHM_CHANNEL_CLOSED){
+        flyt_shm_close(channel);flyt_unmap(&mapping);return 1;
+    }
     if(session.exec&&flyt_compat_close())return 1;
     if(session.exec&&flyt_async_close())return 1; /* process exit releases uncertain CUDA state */
     if(session.exec&&flyt_cuda_exec_destroy(&session.exec,&error))exitcode=1;

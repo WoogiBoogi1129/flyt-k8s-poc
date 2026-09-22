@@ -1,0 +1,66 @@
+{
+  "mode": "worker-pod",
+  "repeat": 2,
+  "status": "PASS",
+  "phase": "development",
+  "bindings": [
+    {
+      "channel_uid": "b7e85798-18c5-4f21-90d2-92c5f0b373c4",
+      "vm_uid": "ca9271dd-c31e-4c2f-a5dd-a03707eda089",
+      "allocation": "be988a6c057bb3b4fea649a01dc5fbf8",
+      "generation": "1efc0a112ed0e72476309a564dce0f87",
+      "vmiUID": "1078dd19-e614-4b50-b2e6-18f8eecefb53",
+      "workerPodUID": "446395ba-c4f6-4af8-9565-8d5d1dbf0d03"
+    },
+    {
+      "channel_uid": "8fcb2cb3-2581-413f-a867-345d3b86565f",
+      "vm_uid": "740ca93f-3fe0-46bf-b587-7407db2604b3",
+      "allocation": "79a66c656a6091850977b51aaf2dfe04",
+      "generation": "9b383e8873d78579bc046b567842ef9f",
+      "vmiUID": "e579d9aa-7634-4ce4-8c29-4cc1c000dcee",
+      "workerPodUID": "09bacb9a-1c93-4610-a7cb-a2d02ce6f93e"
+    }
+  ],
+  "injection_begin_monotonic_seconds": 81574.51115322,
+  "injection_return_monotonic_seconds": 81574.7361113,
+  "injected": true,
+  "seconds_after_injection": 32.03818487400713,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 101.33252084399282
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2398,
+        "copy_bytes": 4096,
+        "active_seconds": 10.003471
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 73.87196930500795
+  },
+  "host_error_observation_seconds_bounds": [
+    9.474096714009647,
+    9.69905479400768
+  ],
+  "fixture_cleanup": true
+}

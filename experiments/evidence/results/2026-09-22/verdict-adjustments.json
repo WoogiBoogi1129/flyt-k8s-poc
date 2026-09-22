@@ -1,0 +1,77 @@
+[
+  {
+    "repeat": 1,
+    "status": "FAIL",
+    "scope": "residual-resource audit after initially passing Worker Pod fault",
+    "channel_uid": "63e0419e-c9d9-4214-bf60-95266a707ad1",
+    "bound_worker_uid": "e79c2bd8-c76e-434e-a85e-3698f5a400d0",
+    "residual_worker_uid": "12276dff-4c1b-4387-8da4-65d1c45a281c",
+    "terminal": true,
+    "node_ready": true,
+    "finalizers_before": [
+      "flyt.dev/detach-observation"
+    ],
+    "action": "remove only owned detach-observation finalizer after terminal evidence; administrative repair excluded from successful trials",
+    "action_result": "pod/evidence-fault-worker-pod-1-a-channel-worker replaced"
+  },
+  {
+    "repeat": 2,
+    "status": "FAIL",
+    "scope": "residual-resource audit after initially passing Worker Pod fault",
+    "channel_uid": "b7e85798-18c5-4f21-90d2-92c5f0b373c4",
+    "bound_worker_uid": "446395ba-c4f6-4af8-9565-8d5d1dbf0d03",
+    "residual_worker_uid": "9ecb22a7-581d-4cb7-b0d2-c4abb8a26e3f",
+    "terminal": true,
+    "node_ready": true,
+    "finalizers_before": [
+      "flyt.dev/detach-observation"
+    ],
+    "action": "remove only owned detach-observation finalizer after terminal evidence; administrative repair excluded from successful trials",
+    "action_result": "pod/evidence-fault-worker-pod-2-a-channel-worker replaced"
+  },
+  {
+    "repeat": 3,
+    "status": "FAIL",
+    "scope": "residual-resource audit after initially passing Worker Pod fault",
+    "channel_uid": "1f5add78-b8c6-4d96-949f-2f703f052ba8",
+    "bound_worker_uid": "20c806c7-54e6-4d08-a75d-f5d110776e91",
+    "residual_worker_uid": "0753a6c6-34cc-41b8-bd0e-8a2fdfdd6b8a",
+    "terminal": true,
+    "node_ready": true,
+    "finalizers_before": [
+      "flyt.dev/detach-observation"
+    ],
+    "action": "remove only owned detach-observation finalizer after terminal evidence; administrative repair excluded from successful trials",
+    "action_result": "pod/evidence-fault-worker-pod-3-a-channel-worker replaced"
+  },
+  {
+    "repeat": 4,
+    "status": "FAIL",
+    "scope": "residual-resource audit after initially passing Worker Pod fault",
+    "channel_uid": "3ef3c220-4cc7-40f2-bc3a-893a7e87464b",
+    "bound_worker_uid": "1439199c-92dc-4076-b2fb-85242d75b197",
+    "residual_worker_uid": "b386884d-1a18-48b4-a577-fbfacd8d31ae",
+    "terminal": true,
+    "node_ready": true,
+    "finalizers_before": [
+      "flyt.dev/detach-observation"
+    ],
+    "action": "remove only owned detach-observation finalizer after terminal evidence; administrative repair excluded from successful trials",
+    "action_result": "pod/evidence-fault-worker-pod-4-a-channel-worker replaced"
+  },
+  {
+    "repeat": 5,
+    "status": "FAIL",
+    "scope": "residual-resource audit after initially passing Worker Pod fault",
+    "channel_uid": "ed50bbc9-d313-4545-8120-3f8406329885",
+    "bound_worker_uid": "19d61451-31c0-4f2b-bc7b-e07d33112696",
+    "residual_worker_uid": "5f5c9530-dbc0-48ad-bb60-d9d491ca0ffa",
+    "terminal": true,
+    "node_ready": true,
+    "finalizers_before": [
+      "flyt.dev/detach-observation"
+    ],
+    "action": "remove only owned detach-observation finalizer after terminal evidence; administrative repair excluded from successful trials",
+    "action_result": "pod/evidence-fault-worker-pod-5-a-channel-worker replaced"
+  }
+]

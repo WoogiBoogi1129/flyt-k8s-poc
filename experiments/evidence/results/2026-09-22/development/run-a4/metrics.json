@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "formal_training_result": false,
+  "scope": "VM SHM memory/PTX smoke and lifecycle",
+  "error": "Command '['ssh', '-i', '/home/ubuntu/taeuk/flyt-k8s-poc-github/.local/implementation-20260922/guest-key', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'UserKnownHostsFile=/home/ubuntu/taeuk/flyt-k8s-poc-github/.local/implementation-20260922/run-a4/known-hosts', 'ubuntu@10.85.0.182', 'python3 -c \\'from pathlib import Path; print(\\'\"\\'\"\\'\\n\\'\"\\'\"\\'.join(p.name for p in Path(\\'\"\\'\"\\'/sys/bus/pci/devices\\'\"\\'\"\\').iterdir() if (p/\\'\"\\'\"\\'vendor\\'\"\\'\"\\').read_text().strip()==\\'\"\\'\"\\'0x1af4\\'\"\\'\"\\' and (p/\\'\"\\'\"\\'device\\'\"\\'\"\\').read_text().strip()==\\'\"\\'\"\\'0x1110\\'\"\\'\"\\'))\\'']' returned non-zero exit status 1.",
+  "released": true,
+  "elapsed_seconds": 55.94866633399215
+}

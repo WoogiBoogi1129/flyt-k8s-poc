@@ -1,0 +1,55 @@
+{
+  "mode": "controller",
+  "repeat": 5,
+  "status": "PASS",
+  "phase": "development",
+  "old_controller_uid": "7fb0f8ec-4c8f-4270-bea2-67b1c9e4e14d",
+  "injected": true,
+  "seconds_after_injection": 26.8827316310053,
+  "victim": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2026,
+        "kernel_repeats": 2383,
+        "copy_bytes": 4096,
+        "active_seconds": 10.002657
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 95.5170605119929
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2375,
+        "copy_bytes": 4096,
+        "active_seconds": 10.001256
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 68.82148271199549
+  },
+  "new_controller_uids": [
+    "9ef0bde9-a830-4c96-a588-5beb1eeecda8"
+  ],
+  "fixture_cleanup": true
+}

@@ -44,6 +44,19 @@ for offset in range(0,a.count,2):
         code=proc.wait();log.close()
         metrics=dest/'run/metrics.json'
         row={'name':name,'exit_code':code,'metrics':json.loads(metrics.read_text()) if metrics.exists() else None}
+        if code==0:
+            pods=json.loads(subprocess.check_output(['kubectl','get','pods','-n','flyt-evidence','-l',
+                'flyt.dev/shm-channel='+name+'-channel','-o','json'],text=True))['items']
+            row['worker_absent']=not any(p['metadata']['name'].endswith('-worker') for p in pods)
+            if not row['worker_absent']:code=1;row['exit_code']=1
+        if code==0:
+            # Save runtime evidence before removing completed fixtures. This
+            # also prevents historical polling from accumulating across rounds.
+            for kind,suffix in [('flytsharedmemorychannel','-channel'),('vm',''),
+                                ('flytgpurequest','-request'),('flytgpuprofile','-profile')]:
+                subprocess.run(['kubectl','delete',kind,name+suffix,'-n','flyt-evidence',
+                    '--wait=true','--timeout=60s'],check=True,stdout=subprocess.DEVNULL)
+            row['fixture_cleanup']=True
         results.append(row);print(json.dumps(row),flush=True)
         (a.output/'summary.json').write_text(json.dumps(results,indent=2))
         failed|=code!=0

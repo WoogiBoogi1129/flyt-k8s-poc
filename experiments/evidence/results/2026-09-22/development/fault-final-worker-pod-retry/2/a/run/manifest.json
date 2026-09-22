@@ -1,0 +1,14 @@
+{
+  "case_id": "fault-final-worker-pod-retry/2/a/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "c62dbeda-b64c-436b-a3e6-4e4e3e114fc5",
+  "monotonic_origin_seconds": 84020.419073279,
+  "git_commit": "1c07d1ce001acb9a91414a06881d43534f5a92a6",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 2026,
+  "timeout_seconds": 300
+}

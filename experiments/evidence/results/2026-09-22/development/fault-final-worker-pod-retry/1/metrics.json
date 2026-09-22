@@ -1,0 +1,66 @@
+{
+  "mode": "worker-pod",
+  "repeat": 1,
+  "status": "PASS",
+  "phase": "development",
+  "bindings": [
+    {
+      "channel_uid": "2132395b-f146-4e9a-8495-4beaf1081181",
+      "vm_uid": "7a70e3b1-706d-4b6e-b29d-ed812d37e4c0",
+      "allocation": "7f44ba3f2b964609d646633c0aecfa79",
+      "generation": "567b1ebb3c7f47f0c36c2fe9eb25be35",
+      "vmiUID": "4b1cd904-3955-4a7d-995f-deefceb6ce77",
+      "workerPodUID": "6c7635bb-8dc2-48ed-80b0-b89e124e5ecb"
+    },
+    {
+      "channel_uid": "0e8288d3-0952-471a-92f4-6c2bc666ed50",
+      "vm_uid": "859dd6fe-f3a9-423d-97bd-9e81e45c5ca1",
+      "allocation": "8aaf4b3dae3fa83c622ac445a72275f2",
+      "generation": "86d218eb1c3414b0221245bc7e538db8",
+      "vmiUID": "d07201f3-8a54-49f2-a111-017156dfc5b5",
+      "workerPodUID": "1c782006-9279-4938-98cc-ee53b2b04f4c"
+    }
+  ],
+  "injection_begin_monotonic_seconds": 83974.165369238,
+  "injection_return_monotonic_seconds": 83974.399778964,
+  "injected": true,
+  "seconds_after_injection": 29.157319745994755,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 73.63011648401152
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2356,
+        "copy_bytes": 4096,
+        "active_seconds": 10.000704
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 67.32059365599707
+  },
+  "host_error_observation_seconds_bounds": [
+    4.405944441008614,
+    4.640354167000623
+  ],
+  "fixture_cleanup": true
+}

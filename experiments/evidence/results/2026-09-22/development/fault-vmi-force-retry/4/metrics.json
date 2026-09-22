@@ -1,0 +1,67 @@
+{
+  "mode": "vmi-force",
+  "repeat": 4,
+  "status": "PASS",
+  "phase": "development",
+  "bindings": [
+    {
+      "channel_uid": "2b314eba-2b5d-4eb0-8084-4a191435496a",
+      "vm_uid": "c032a8d6-d488-43d3-8416-02db5d163e74",
+      "allocation": "3bf44276d716dc6977953251dbd9494c",
+      "generation": "407b2c716e2d62e27b9bd1609050d4ae",
+      "vmiUID": "f86df222-2e71-4aa4-b39f-ce34235ae6b0",
+      "workerPodUID": "9d296a70-411f-4e23-a9ae-a91002369246"
+    },
+    {
+      "channel_uid": "6953acb5-fa1d-4372-b424-52a448185aa8",
+      "vm_uid": "e5af5e5c-7c1c-41c8-803c-77628a717852",
+      "allocation": "4c88ff88e01fa6f0c05b7ef1c848b76c",
+      "generation": "b48936a16afb16f6f5997e0e32011afc",
+      "vmiUID": "da9a2cb1-aa7e-4b90-9905-0b50fa3d1b2c",
+      "workerPodUID": "26614b7c-b9ac-451e-8808-0ac929a4c927"
+    }
+  ],
+  "injection_begin_monotonic_seconds": 83488.674753464,
+  "injection_return_monotonic_seconds": 83488.898350175,
+  "injected": true,
+  "seconds_after_injection": 27.73866511299275,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 91.77007597099873
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2386,
+        "copy_bytes": 4096,
+        "active_seconds": 10.001479
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 74.65592310200736
+  },
+  "host_error_observation_seconds_bounds": [
+    0.11153665398887824,
+    0.33513336499163415
+  ],
+  "stale_vmi_admission_rejected": true,
+  "fixture_cleanup": true
+}

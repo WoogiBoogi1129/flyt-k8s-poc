@@ -55,6 +55,8 @@ struct flyt_cuda_backend {
     uint32_t (*synchronize)(void *);
 };
 struct flyt_cuda_exec;
+/* Extension handlers must check thread ownership and terminal state before CUDA. */
+int flyt_cuda_exec_check(struct flyt_cuda_exec *);
 /* Host-only extension handler lookup; never expose returned pointer to Guest. */
 int flyt_cuda_exec_resolve(struct flyt_cuda_exec *, struct flyt_device_ref, size_t, void **);
 /* One execution session per process lifetime, including non-CUDA backends.

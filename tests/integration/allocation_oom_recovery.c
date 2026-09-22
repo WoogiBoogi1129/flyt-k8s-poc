@@ -3,23 +3,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 static uint32_t count(void *c,int32_t *v){(void)c;*v=1;return 0;}
 static uint32_t device(void *c,int32_t *v){(void)c;*v=0;return 0;}
 static uint32_t set(void *c,int32_t v){(void)c;return v?1:0;}
-static uint32_t alloc(void *c,void **p,size_t n){(void)c;*p=NULL;if(n>1024)return 2;*p=malloc(n);return *p?0:2;}
+static uint32_t alloc(void *c,void **p,size_t n){(void)c;*p=NULL;if(n==4097)return 700;if(n>1024)return 2;*p=malloc(n);return *p?0:2;}
 static uint32_t release(void *c,void *p){(void)c;free(p);return 0;}
 static uint32_t copy(void *c,void *d,const void *s,size_t n,uint32_t k){(void)c;(void)k;memcpy(d,s,n);return 0;}
 static uint32_t sync_gpu(void *c){(void)c;return 0;}
-int main(void){
+static void *wrong_thread(void *session){assert(flyt_cuda_exec_check(session)==FLYT_SHM_BAD_DESCRIPTOR);return NULL;}
+int main(int argc,char **argv){
+    (void)argv;
     struct flyt_cuda_backend backend={count,device,set,alloc,release,copy,sync_gpu};
     struct flyt_cuda_exec *s=NULL;struct flyt_cuda_result result;
     assert(!flyt_cuda_exec_create(&backend,NULL,&s));
+    assert(flyt_cuda_exec_check(s)==FLYT_SHM_OK);
+    pthread_t thread;assert(!pthread_create(&thread,NULL,wrong_thread,s));assert(!pthread_join(thread,NULL));
     struct flyt_cuda_call call={.api_id=FLYT_API_RUNTIME_MALLOC,.args.allocation_bytes=16};
     assert(!flyt_cuda_exec_call(s,&call,&result)&&!result.api_result);
     uint64_t retained=result.handle;flyt_cuda_result_release(&result);
     call.args.allocation_bytes=2048;
     assert(!flyt_cuda_exec_call(s,&call,&result)&&result.api_result==2&&!result.handle);
+    assert(flyt_cuda_exec_check(s)==FLYT_SHM_OK);
     flyt_cuda_result_release(&result);
     void *pointer=NULL;
     assert(flyt_cuda_exec_resolve(s,(struct flyt_device_ref){retained,0},16,&pointer));
@@ -30,6 +36,16 @@ int main(void){
     call.api_id=FLYT_API_RUNTIME_MALLOC;call.args.allocation_bytes=1024;
     assert(!flyt_cuda_exec_call(s,&call,&result)&&!result.api_result&&result.handle!=retained);
     flyt_cuda_result_release(&result);
+    if(argc>1){
+        call.args.allocation_bytes=4097;
+        assert(!flyt_cuda_exec_call(s,&call,&result)&&result.api_result==700);
+        flyt_cuda_result_release(&result);
+        assert(flyt_cuda_exec_check(s)==FLYT_SHM_CHANNEL_CLOSED);
+        uint32_t fatal=0;assert(flyt_cuda_exec_destroy(&s,&fatal)==FLYT_SHM_INTERNAL_ERROR&&fatal==700&&s);
+        puts("PASS: non-OOM failure remains terminal and extensions reject the session");
+        return 0; /* Supervisor process exit owns poisoned-context cleanup. */
+    }
     uint32_t error=0;assert(!flyt_cuda_exec_destroy(&s,&error)&&!error&&!s);
+    assert(flyt_cuda_exec_check(s)==FLYT_SHM_BAD_DESCRIPTOR);
     puts("PASS: OOM preserves existing allocation, free, retry and clean shutdown");
 }

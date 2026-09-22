@@ -1,0 +1,60 @@
+{
+  "observed_utc": "2026-09-22T10:43:46.371446+00:00",
+  "experiment_namespace": "flyt-evidence",
+  "vmi_count": 0,
+  "channel_count": 0,
+  "worker_pod_count": 0,
+  "retained_pods": [
+    {
+      "name": "evidence-flyt-controller-5df7fc77f-qhfzf",
+      "phase": "Running"
+    },
+    {
+      "name": "evidence-flyt-webhook-786bb9565c-mrb4c",
+      "phase": "Running"
+    }
+  ],
+  "backing_listing": {
+    "a": [],
+    "b": []
+  },
+  "retained_pvcs": [
+    {
+      "name": "evidence-pair-b-backing",
+      "uid": "58624081-64ec-42e0-91cf-b46b3aabb898",
+      "phase": "Bound"
+    },
+    {
+      "name": "evidence-vm-a-backing",
+      "uid": "3266e644-f00e-4b86-9ba0-de154e13d1f1",
+      "phase": "Bound"
+    }
+  ],
+  "original_resources": [
+    {
+      "kind": "flytsharedmemorychannel",
+      "name": "shm-channel-a",
+      "namespace": "flyt-gpu-validation",
+      "uid": "f69f0409-4d2f-4940-9a5c-342602d804e9",
+      "phase": "Draining",
+      "created": "2026-09-21T15:13:47Z"
+    },
+    {
+      "kind": "flytsharedmemorychannel",
+      "name": "shm-channel-b",
+      "namespace": "flyt-gpu-validation",
+      "uid": "b1239701-0bd4-4982-933b-d92ca8dbd705",
+      "phase": "Released",
+      "created": "2026-09-21T15:32:08Z"
+    },
+    {
+      "kind": "vmi",
+      "name": "basic-vm",
+      "namespace": "flyt-infra-validation",
+      "uid": "7d79ad6c-9a38-4242-b7a1-31c5a59f128b",
+      "phase": "Running",
+      "created": "2026-09-21T15:02:36Z"
+    }
+  ],
+  "gpu_driver_binding": "nvidia"
+}

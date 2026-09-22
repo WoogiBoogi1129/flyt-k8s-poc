@@ -1,0 +1,66 @@
+{
+  "mode": "worker-pod",
+  "repeat": 1,
+  "status": "PASS",
+  "phase": "development",
+  "bindings": [
+    {
+      "channel_uid": "63e0419e-c9d9-4214-bf60-95266a707ad1",
+      "vm_uid": "48bc5080-c8c9-44bc-be48-41129acb9955",
+      "allocation": "56ff687f4213ef5123c0dce09cffcd82",
+      "generation": "e38ab12c9c49aa5ce45d83ac49e0fb02",
+      "vmiUID": "812ce8cc-7236-4137-9bcf-a98113afe89e",
+      "workerPodUID": "e79c2bd8-c76e-434e-a85e-3698f5a400d0"
+    },
+    {
+      "channel_uid": "960989f1-61f7-4a16-973e-ff0cd39902cf",
+      "vm_uid": "89414636-02c3-4dd8-8983-f6c3cbb7202e",
+      "allocation": "9a372c71152ad33f87a7af7942d40907",
+      "generation": "d93714629ad8e848fdf510e68134d2b7",
+      "vmiUID": "4533fd5b-cd38-4196-a862-c6d28f3e863b",
+      "workerPodUID": "4811ee3c-da2a-480d-a95b-27ea0058b828"
+    }
+  ],
+  "injection_begin_monotonic_seconds": 81449.91677244,
+  "injection_return_monotonic_seconds": 81450.137144004,
+  "injected": true,
+  "seconds_after_injection": 25.514986107998993,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 94.79100156998902
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2379,
+        "copy_bytes": 4096,
+        "active_seconds": 10.003917
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 69.75910896800633
+  },
+  "host_error_observation_seconds_bounds": [
+    9.304813123002532,
+    9.52518468699418
+  ],
+  "fixture_cleanup": true
+}

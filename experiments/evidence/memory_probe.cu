@@ -146,6 +146,9 @@ int main(int argc,char **argv){
     int result=run_probe(argc,argv);
     /* Keep successful child sessions observable before GOODBYE. */
     const char *hold=getenv("FLYT_PROBE_HOLD");
-    if(hold){unsigned seconds=(unsigned)strtoul(hold,NULL,10);fflush(stdout);if(seconds<=30)sleep(seconds);}
+    /* The aggregate parent owns no GPU session. After both children exit the
+     * controller may stop the VM, so do not delay its final result/exit again. */
+    const int aggregate_parent=argc==3&&!strcmp(argv[1],"aggregate_race");
+    if(hold&&!aggregate_parent){unsigned seconds=(unsigned)strtoul(hold,NULL,10);fflush(stdout);if(seconds<=30)sleep(seconds);}
     return result;
 }

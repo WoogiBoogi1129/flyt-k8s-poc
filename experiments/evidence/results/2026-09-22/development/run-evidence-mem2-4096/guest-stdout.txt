@@ -1,0 +1,5 @@
+{"scenario":"below","requested_bytes":1859125248,"info_status":0,"free_bytes":3718250496,"total_bytes":4294967296,"cuda_status":0,"release_status":0,"reallocate_status":0,"status":"PASS"}
+{"scenario":"boundary","requested_bytes":3718250496,"info_status":0,"free_bytes":3718250496,"total_bytes":4294967296,"cuda_status":0,"release_status":0,"reallocate_status":0,"status":"PASS"}
+{"scenario":"over","requested_bytes":3718250497,"info_status":0,"free_bytes":3718250496,"total_bytes":4294967296,"cuda_status":2,"release_status":0,"reallocate_status":0,"status":"PASS"}
+{"scenario":"free_reallocate","requested_bytes":1859125248,"info_status":0,"free_bytes":3718250496,"total_bytes":4294967296,"cuda_status":0,"release_status":0,"reallocate_status":0,"status":"PASS"}
+{"scenario":"accounting_restored","status":"PASS","before_free":3718250496,"after_free":3718250496}

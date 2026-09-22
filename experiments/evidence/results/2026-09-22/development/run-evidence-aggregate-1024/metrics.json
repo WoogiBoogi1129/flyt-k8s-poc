@@ -1,0 +1,24 @@
+{
+  "status": "BLOCKED",
+  "formal_training_result": false,
+  "scope": "VM SHM memory smoke and lifecycle",
+  "probe": "memory",
+  "scenario": "aggregate_race",
+  "bytes": 1073741824,
+  "probe_results": [
+    {
+      "scenario": "aggregate_race",
+      "quota_bytes": 1073741824,
+      "request_per_process": 644245092,
+      "cuda_status": [
+        2,
+        2
+      ],
+      "status": "BLOCKED"
+    }
+  ],
+  "probe_blocked": true,
+  "error": "Diagnostic prerequisites inconclusive; see probe results",
+  "released": true,
+  "elapsed_seconds": 80.86186219500087
+}

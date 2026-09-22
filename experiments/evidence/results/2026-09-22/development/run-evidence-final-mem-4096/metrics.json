@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "formal_training_result": false,
+  "scope": "VM SHM memory smoke and lifecycle",
+  "probe": "memory",
+  "scenario": "suite",
+  "bytes": 4294967296,
+  "probe_results": [
+    {
+      "scenario": "below",
+      "requested_bytes": 1859125248,
+      "info_status": 0,
+      "free_bytes": 3718250496,
+      "total_bytes": 4294967296,
+      "cuda_status": 0,
+      "release_status": 0,
+      "reallocate_status": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "boundary",
+      "requested_bytes": 3718250496,
+      "info_status": 0,
+      "free_bytes": 3718250496,
+      "total_bytes": 4294967296,
+      "cuda_status": 0,
+      "release_status": 0,
+      "reallocate_status": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "over",
+      "requested_bytes": 3718250497,
+      "info_status": 0,
+      "free_bytes": 3718250496,
+      "total_bytes": 4294967296,
+      "cuda_status": 2,
+      "release_status": 0,
+      "reallocate_status": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "free_reallocate",
+      "requested_bytes": 1859125248,
+      "info_status": 0,
+      "free_bytes": 3718250496,
+      "total_bytes": 4294967296,
+      "cuda_status": 0,
+      "release_status": 0,
+      "reallocate_status": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "accounting_restored",
+      "status": "PASS",
+      "before_free": 3718250496,
+      "after_free": 3718250496
+    }
+  ],
+  "probe_pass": true,
+  "released": true,
+  "elapsed_seconds": 67.58271639600571
+}

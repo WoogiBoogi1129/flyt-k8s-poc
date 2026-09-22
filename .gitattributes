@@ -1,0 +1,5 @@
+# Evidence hashes must survive checkout without EOL normalization. Captured
+# probe streams additionally preserve SSH's CRLF as originally observed.
+experiments/evidence/results/** -text
+experiments/evidence/results/**/guest-stdout.txt -whitespace
+experiments/evidence/results/**/guest-stderr.txt -whitespace

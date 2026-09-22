@@ -1,0 +1,2 @@
+PASS: OOM preserves existing allocation, free, retry and clean shutdown
+PASS: non-OOM failure remains terminal and extensions reject the session

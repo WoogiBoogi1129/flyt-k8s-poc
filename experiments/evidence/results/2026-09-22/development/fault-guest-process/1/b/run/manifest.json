@@ -1,0 +1,13 @@
+{
+  "case_id": "fault-guest-process/1/b/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "47106f25-14ab-43cf-8962-17f76edfffe4",
+  "git_commit": "1c07d1ce001acb9a91414a06881d43534f5a92a6",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 2027,
+  "timeout_seconds": 300
+}

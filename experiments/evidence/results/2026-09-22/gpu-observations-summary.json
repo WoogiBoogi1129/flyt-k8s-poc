@@ -1,0 +1,19 @@
+{
+  "scope": "one selected physical GPU; not per-VM compute-limit validation",
+  "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+  "source_sha256": "ec751924a3af36b61358ad9330d3b8fadcb90fe9cf32322f8afdce77f498a48c",
+  "samples": 6042,
+  "observation_errors": 0,
+  "first_utc": "2026-09-22T09:01:59.729795+00:00",
+  "last_utc": "2026-09-22T10:42:42.094576+00:00",
+  "last_gpu": [
+    {
+      "uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "memory.used": "0",
+      "memory.total": "97887",
+      "utilization.gpu": "0",
+      "temperature.gpu": "29"
+    }
+  ],
+  "last_compute_process_count": 0
+}

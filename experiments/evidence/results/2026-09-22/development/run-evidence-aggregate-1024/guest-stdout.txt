@@ -1,0 +1,1 @@
+{"scenario":"aggregate_race","quota_bytes":1073741824,"request_per_process":644245092,"cuda_status":[2,2],"status":"BLOCKED"}

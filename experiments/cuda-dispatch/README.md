@@ -1,5 +1,8 @@
 # 10-02: 전송 계층과 분리된 CUDA 실행 모듈
 
+아래 개발 단계 설명과 NOT_RUN은 당시 기록이다. 후속 SHM 연결·VM GPU 실행 및
+OOM 복구 검증의 현재 상태는 [2026-09-22 보고서](../evidence/IMPLEMENTATION_AND_VALIDATION_2026-09-22.md)를 따른다.
+
 **기본 Runtime 실행 모듈 소스 작성 완료, 검증 NOT_RUN, runtime 미연결.**
 `stage/10-01-shm-contract`의 `1a35dce6e01539a4078429cb951f9ea517598301`에서
 `stage/10-02-cuda-dispatch`를 분기했다. 이전 단계와 RPC 배포 경로는 보존한다.
@@ -60,8 +63,10 @@ HAMi 메모리 quota를 별도 allocation 합계로 다시 제한하지 않으�
   결과 구조체 재사용 전에도 release가 필요하다. 공유 영역 포인터를 직접 넘기면 안 된다.
 - transport 성공과 CUDA 성공은 다르다. `status == FLYT_SHM_OK`일 때만 Runtime domain의
   `api_result`를 해석한다. CUDA 오류에는 결과 payload/handle을 반환하지 않는다.
-- allocation/copy/free/sync의 CUDA 오류는 원래 오류를 반환하고 세션을 종료 상태로 바꾼다.
-  보수적으로 OOM도 세션 종료 대상이다. 이후 호출은 CLOSED, destroy는 원래 오류와
+- allocation의 OOM(CUDA Runtime error 2)은 원래 오류를 반환하고 기존 할당의 해제·작은 요청
+  재시도를 허용한다. 2026-09-22 실제 VM 시험에서 OOM 후 세션 종료가 잘못된 동작임을
+  확인해 수정했다. 그 외 allocation/copy/free/sync 오류는 세션을 종료 상태로 바꾼다.
+  이후 호출은 CLOSED, destroy는 원래 오류와
   INTERNAL_ERROR를 반환하며 CUDA를 재호출하지 않는다. 불확실한 free를 재시도하지 않는다.
   supervisor가 해당 세션 프로세스를 종료해야 한다. 이 supervisor 연결은 후속 단계다.
 - 정상 종료는 새 호출 차단 → synchronize → tracked allocation free 순서다.

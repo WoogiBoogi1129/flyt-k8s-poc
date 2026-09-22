@@ -1,0 +1,33 @@
+[
+  {
+    "elapsed_seconds": 0.2572755509900162,
+    "state": "VMStartRequested"
+  },
+  {
+    "elapsed_seconds": 34.83894622299704,
+    "state": "GuestSSHReady",
+    "ip": "10.85.0.101"
+  },
+  {
+    "elapsed_seconds": 36.406349043987575,
+    "state": "BarrierReady"
+  },
+  {
+    "elapsed_seconds": 64.61786751699401,
+    "state": "ChannelReady",
+    "bdf": "0000:00:1e.0"
+  },
+  {
+    "elapsed_seconds": 65.73582331599027,
+    "state": "Failed",
+    "error": "Guest smoke failed with 255"
+  },
+  {
+    "elapsed_seconds": 66.64006272499682,
+    "state": "DrainRequested"
+  },
+  {
+    "elapsed_seconds": 87.86647046299186,
+    "state": "Released"
+  }
+]

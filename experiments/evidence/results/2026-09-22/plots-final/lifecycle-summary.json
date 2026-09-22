@@ -1,0 +1,115 @@
+{
+  "completed": 20,
+  "rows": [
+    {
+      "name": "evidence-life-01",
+      "ready_seconds": 40.75639781099744,
+      "release_seconds": 14.91914992198872
+    },
+    {
+      "name": "evidence-life-02",
+      "ready_seconds": 40.62823081400711,
+      "release_seconds": 21.2848922139965
+    },
+    {
+      "name": "evidence-life-03",
+      "ready_seconds": 39.969476329992176,
+      "release_seconds": 19.138481174013577
+    },
+    {
+      "name": "evidence-life-04",
+      "ready_seconds": 39.93667815400113,
+      "release_seconds": 17.023261581998668
+    },
+    {
+      "name": "evidence-life-05",
+      "ready_seconds": 42.621036337994155,
+      "release_seconds": 17.027185920000193
+    },
+    {
+      "name": "evidence-life-06",
+      "ready_seconds": 44.04914844800078,
+      "release_seconds": 14.93226028700883
+    },
+    {
+      "name": "evidence-life-07",
+      "ready_seconds": 40.78635029299767,
+      "release_seconds": 14.930071216993383
+    },
+    {
+      "name": "evidence-life-08",
+      "ready_seconds": 41.60530516899598,
+      "release_seconds": 19.155322872989927
+    },
+    {
+      "name": "evidence-life-09",
+      "ready_seconds": 39.443485515992506,
+      "release_seconds": 17.030377478993614
+    },
+    {
+      "name": "evidence-life-10",
+      "ready_seconds": 41.92310064799676,
+      "release_seconds": 19.128822073995252
+    },
+    {
+      "name": "evidence-life-11",
+      "ready_seconds": 39.765483886993024,
+      "release_seconds": 19.162115825994988
+    },
+    {
+      "name": "evidence-life-12",
+      "ready_seconds": 40.69876978598768,
+      "release_seconds": 23.37534898199374
+    },
+    {
+      "name": "evidence-life-13",
+      "ready_seconds": 36.436276848005946,
+      "release_seconds": 19.183614491994376
+    },
+    {
+      "name": "evidence-life-14",
+      "ready_seconds": 39.59938686499663,
+      "release_seconds": 21.274492885000654
+    },
+    {
+      "name": "evidence-life-15",
+      "ready_seconds": 39.44557610400079,
+      "release_seconds": 17.05921346299874
+    },
+    {
+      "name": "evidence-life-16",
+      "ready_seconds": 43.963015989007545,
+      "release_seconds": 14.92504876300518
+    },
+    {
+      "name": "evidence-life-17",
+      "ready_seconds": 39.542867141994066,
+      "release_seconds": 19.139032046005013
+    },
+    {
+      "name": "evidence-life-18",
+      "ready_seconds": 39.59266155300429,
+      "release_seconds": 17.04186041399953
+    },
+    {
+      "name": "evidence-life-19",
+      "ready_seconds": 43.76144481499796,
+      "release_seconds": 14.89942864299519
+    },
+    {
+      "name": "evidence-life-20",
+      "ready_seconds": 37.46842228899186,
+      "release_seconds": 14.936049513999023
+    }
+  ],
+  "ready_seconds": {
+    "median": 40.29885357199964,
+    "min": 36.436276848005946,
+    "max": 44.04914844800078
+  },
+  "release_seconds": {
+    "median": 17.050536938499135,
+    "min": 14.89942864299519,
+    "max": 23.37534898199374
+  }
+}

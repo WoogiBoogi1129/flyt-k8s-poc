@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "formal_training_result": false,
+  "scope": "VM SHM memory/PTX smoke and lifecycle",
+  "error": "VM did not reach Running",
+  "released": true,
+  "elapsed_seconds": 313.843257207991
+}

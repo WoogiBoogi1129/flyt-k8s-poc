@@ -9,6 +9,7 @@ p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--source',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False);rows=[]
 for path in sorted(a.source.rglob('metrics.json')):
+    if path.is_symlink():continue
     # Restrict to the current VM development runners, including fault parents.
     if not (path.parent/'timeline.json').exists() and not path.parent.parent.name.startswith('fault-'):continue
     metrics=json.loads(path.read_text());relative=path.parent.relative_to(a.source)
@@ -34,6 +35,10 @@ for path in sorted(a.source.rglob('metrics.json')):
         manifest=json.loads(original.read_text())
         hashes['private_manifest.json']=hashlib.sha256(original.read_bytes()).hexdigest()
         (target/'program-hashes.json').write_text(json.dumps(manifest.get('file_sha256',{}),indent=2))
+        public={'case_id':str(relative),'formal_training_result':False}
+        public.update({key:manifest[key] for key in ['phase','namespace','channel_uid',
+            'monotonic_origin_seconds','git_commit','probe','scenario','bytes','seed','timeout_seconds'] if key in manifest})
+        (target/'manifest.json').write_text(json.dumps(public,indent=2))
     rows.append({'case':str(relative),'status':metrics.get('status'),'scope':metrics.get('scope',metrics.get('mode')),'sha256':hashes})
 (a.output/'index.json').write_text(json.dumps({'phase':'development','formal_training_completed':False,'cases':rows},indent=2))
 print('Exported',len(rows),'case records; only allowlisted files copied')

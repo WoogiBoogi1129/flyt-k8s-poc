@@ -1,0 +1,46 @@
+{
+  "observed_utc": "2026-09-22T10:22:38.443729+00:00",
+  "namespace": "flyt-evidence",
+  "phase": "development",
+  "deployments": {
+    "evidence-flyt-controller": {
+      "uid": "4abf21f4-a9d1-41fb-aa74-2264a9a6cccc",
+      "images": [
+        "localhost/flyt-control-plane@sha256:a60f76638461c0fb15c11d89779c482e44621ab52119e682b279de0dd2a4859d"
+      ],
+      "ready_replicas": 1
+    },
+    "evidence-flyt-webhook": {
+      "uid": "5394d14b-a509-4541-9e5d-ba2fe3215cf6",
+      "images": [
+        "localhost/flyt-control-plane@sha256:a60f76638461c0fb15c11d89779c482e44621ab52119e682b279de0dd2a4859d"
+      ],
+      "ready_replicas": 1
+    }
+  },
+  "launcher_image": "localhost/flyt-virt-launcher@sha256:3a63c98b5a178af7f58f8979e09cbd11182f7220e5826f5048efb22a2d7b7935",
+  "node_info": {
+    "architecture": "amd64",
+    "containerRuntimeVersion": "cri-o://1.37.0",
+    "kernelVersion": "6.8.0-138-generic",
+    "kubeProxyVersion": "",
+    "kubeletVersion": "v1.37.0",
+    "operatingSystem": "linux",
+    "osImage": "Ubuntu 24.04.4 LTS"
+  },
+  "kubevirt_version": "v1.9.0",
+  "gpu": {
+    "uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+    "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "driver_version": "580.173.02",
+    "memory.total": "97887",
+    "pci.bus_id": "00000000:41:00.0"
+  },
+  "guest": {
+    "image": "quay.io/containerdisks/ubuntu@sha256:27d3bbe1374521aa43fc50b647d712c9c90693f1e8ce9516aa25aeb73f17681d",
+    "vcpu": 8,
+    "memory_gib": 16,
+    "cpu_pinning_verified": false
+  },
+  "gpu_passthrough_performed": false
+}

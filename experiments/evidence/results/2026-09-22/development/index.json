@@ -1,0 +1,1725 @@
+{
+  "phase": "development",
+  "formal_training_completed": false,
+  "cases": [
+    {
+      "case": "fault-controller/1/a/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "17f50f950e1d00f455f101f4cc8ba8d2b0b7fcd5d2cfedd9762dacd20ede8aa3",
+        "timeline.json": "d59fdbc891bcb63c41b3c7f8dcd1ff6d208f199d4abe961fc2d9b5066e872cf6",
+        "guest-stdout.txt": "064f13a17831802f042586c285456f2c9353e244cab1da5fefea688cc911a535",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "aefe3a9fb74ab9542ad0393e55391bf83eea572ca1e128fb0a930113ce973fac"
+      }
+    },
+    {
+      "case": "fault-controller/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "cadc540d1c054403c62c16246053af8a2490f057f808504a4b68ad3bfcde21df",
+        "timeline.json": "ea853fb2f0a64818463a742ce21b663fb23e18ee509bee90af8defa33f396576",
+        "guest-stdout.txt": "0a7a5b9e2ed9e8907c5c5f3a698857fb61140840e030028534604b142ef196ff",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "057f09afb05326ede3ab3e743c4c7a552c2fef051df78988436ca1e3daf2665a"
+      }
+    },
+    {
+      "case": "fault-controller/1",
+      "status": "PASS",
+      "scope": "controller",
+      "sha256": {
+        "metrics.json": "d2aad5bc6b20a31486b04bcb848e7a1526ffc2835dfe6575e6371f1790701a44"
+      }
+    },
+    {
+      "case": "fault-controller/2/a/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "013ad110dcea5d3559b0b47e19f140f801ac46804463353581782772d6e9d84a",
+        "timeline.json": "a899d7663d5fab2c19be04df3e95cee022b2c0bc03d7ed5464e32a66e4578cc7",
+        "guest-stdout.txt": "592a4ad8bed1d3a30fbe5e0e3a9bd211a4c1f8d1e76be22262f043147a4690ac",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c417a7753c9bc278f98472d28ddad50e610f070bd6a8d66bb3ff391c9ea7bd68"
+      }
+    },
+    {
+      "case": "fault-controller/2/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "43966ecd6a62b18d6b6f40a524c486715d59edfcd29bba094f643e2844610d5e",
+        "timeline.json": "abad38ceedb6e4628bbba4d474f22f560857cef0b761a6da143456a3858c9be4",
+        "guest-stdout.txt": "bb648a2aa69c8ca908008b1d99287601e32ac474b9d940a7eb187e4ddc24117c",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "423fe113832fb153727a44a14f0e94fd1cb176a9e453e9476f80456e5d9a6f3c"
+      }
+    },
+    {
+      "case": "fault-controller/2",
+      "status": "PASS",
+      "scope": "controller",
+      "sha256": {
+        "metrics.json": "14efc790a75d7b9c2a13eb89faed395c2caa65cdb0a4594cdfbf60def973f1d9"
+      }
+    },
+    {
+      "case": "fault-controller/3/a/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "6b6cf67cfabab7bd2ee8ca1e03d849a7973f162861ec50d24ff2b2a1c3a4ac76",
+        "timeline.json": "1159e496e59d7c194326eef1c9e78e71b57a2b41dbbb428b3752664468e39cb7",
+        "guest-stdout.txt": "85773c3ec12aaf5c5ae621135551fbea244296297164b127530d90c5b95c4aad",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "ab3449fbd07c352e0505135b2029e946dfcdc1c4fb1e4cc4511235f10258d48d"
+      }
+    },
+    {
+      "case": "fault-controller/3/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d0a0d1676090e4b99d0fd3f872844942119daf63befd5f89e8581f615a15657e",
+        "timeline.json": "449b274c87b78fef75888c165e42e6c2f86d98b49f0a04747af59b0c9825a74e",
+        "guest-stdout.txt": "f10080330e3fcb30927bd9e76526ae13cac7016964b0c6a9faa93cc47b8f7056",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "2f4478c52b6e62c5c245c07e3b736c6cfaf3e5f2fd2891ce03b338d273b7b4bf"
+      }
+    },
+    {
+      "case": "fault-controller/3",
+      "status": "PASS",
+      "scope": "controller",
+      "sha256": {
+        "metrics.json": "209e09426cc64a20850652ac65f12fe386a1726e9f48643f53d769f62c57e1cc"
+      }
+    },
+    {
+      "case": "fault-controller/4/a/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d3541771329327894c4757205a25d656eaed671af89e6b5bd4484649436cd3a2",
+        "timeline.json": "03b4772745a1435f494869add91ac9abfdea51eaf7ea6234cc315184d0578c42",
+        "guest-stdout.txt": "3735ed004752e1795b040031fe1cd11efbc9928e9c060d11bd4593b91062e8dc",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "f4067ddab4f418341c8459a4ee52f9f8ec45acf79157ed1d4d75f751971df16a"
+      }
+    },
+    {
+      "case": "fault-controller/4/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "8860a9ec97a5c0f1ac6d77f1eaaab5eb74ed2917e2922c7fec067cb66f931d51",
+        "timeline.json": "a35fb08dd19268c4f114b6f5028a9e14f350b065e955ae7b36cb4a2e44deb76e",
+        "guest-stdout.txt": "9f59eaa4b3347061d02f6bab735358c8e40ece6848c2df8ffd42158215ccb2a6",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "a9c3489999613c57d81164e8d8143ce902b270bfeaf1e0ea6ccc001083af1b67"
+      }
+    },
+    {
+      "case": "fault-controller/4",
+      "status": "PASS",
+      "scope": "controller",
+      "sha256": {
+        "metrics.json": "5acb7df0c2b02211fd2489875a35b887fab78c2fefb2ee21d5445a3cabf52432"
+      }
+    },
+    {
+      "case": "fault-controller/5/a/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "266b8dc7e2b36767a6e862bbd94b1643c991ed124f8e82206957d30034c512a8",
+        "timeline.json": "b5157e04a082447f5608ffc962a8f9654d8e1b69390a712bebcd8c067715d7cb",
+        "guest-stdout.txt": "838414f821369d7bbc7cdd1c0720c02d96d96cbce6c9a74a5706c4e57de746f1",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "7ba60687c286483d21dcbcb0240de56e7167619e5a18a2e9224aaefb529f2d53"
+      }
+    },
+    {
+      "case": "fault-controller/5/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "defe38ff83e2a2130b942f7f3c9629559f7bdcec5c600e6fd7bbb38390e28070",
+        "timeline.json": "cfa95601c1606b24926fb0d85d898bd0f18dffbea1211f701df8200ba0ddbc03",
+        "guest-stdout.txt": "4f152e47739805338e52999d985f7d83d93f4bf1d359df9bc35841d320c58605",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "720914e328baccf189dfae1504ea7ee96a4ecb82056b77b90e84446bacd61ad2"
+      }
+    },
+    {
+      "case": "fault-controller/5",
+      "status": "PASS",
+      "scope": "controller",
+      "sha256": {
+        "metrics.json": "c603ff18ec7eaa063f9852025f7a593a4f2235684d8f584e258dc685373271af"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod/1",
+      "status": "FAIL",
+      "scope": "final image deployment before workload start",
+      "sha256": {
+        "metrics.json": "6323157ff3362f4ee4b8c5c8890d61866ee2869603a8c339c8794273a4407e68"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/1/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "765b678c13377d0038b4392b0fcd09487ae41a19b99330e175426c04fc55b878",
+        "timeline.json": "5be12a923cede0a885f0926828343a0d0ad5ffbda958a4df4ab016cdf4465de4",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "3cc7cc132a88fc19da68e8dadd6de4bf5b049696d92f7f6675d33483811f7ed8",
+        "private_manifest.json": "5845306bfa0c77bc6485be73f3752cc4994bc4f71bca686f164a4bb94e943d6f"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "c3035dad82919813e6c1729e7a486e9b434df3c8dec1baea541d6757b5075585",
+        "timeline.json": "47320d3bc348d922443a81612996d0bd667dc7b55db6f9def1897779230d9096",
+        "guest-stdout.txt": "84de5bb6cdb9daf6987fa406fdde2da0c119ef8944019e388a83751c7876ea75",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "86b5e3ac56563ae8e2a37545bbbf060c1627a0a7074f9782a286dfde506458f8"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/1",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "17fd878228436b39c2418b87d3c8f2ea4775d8a10bc7c7c6b478f746766f3375"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/2/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "751683ca5f668bf1e3c9ed69091a42be574219beaf56d372f9b00b3fcdbf240b",
+        "timeline.json": "30f1b4e9525bb0edbf0a317a6a6ae3a2f9b858e99285e28f293e43a14b127a71",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "2a75b10279129e287976b304df0b5c7b512196b3bcf4055e282b406548f613b9",
+        "private_manifest.json": "6f32bd755535879b8e8b2a1ee26fd35e609aa092772f460d579f97aefd2399d2"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/2/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "5f5c7d5d0929dcea17c4a5e8edadf5d9c456fb6d0fcdac3997d1b37223b1fdeb",
+        "timeline.json": "80306ea3d264794f9139f0452a96a86a264fb9a8b8f3d4854a9cea0c9484ae04",
+        "guest-stdout.txt": "e56a4798d0e632b2f2957d5c13992364df55d42d4cb1addea1b303bcdf1bf50f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "24d679746cc6fed50794eb02e3a9d8f1b1e666f252f4e2acf3b7eb77323a4015"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/2",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "d629fff2c40ac7f012303af9a572bc724643a0ef15848eba427e142c4794fe82"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/3/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "43c29fbf7d2ad98b0277ec1eb59f48af9caa1eb4e71312ccfa065639bfe86d16",
+        "timeline.json": "ceb9790be61751bf6c3f7edc1c9004c39c6f30a540808ce7982168d0491ad063",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "97b3e37b457f73add8c29dbaf8e18b4b206b154bbfff628745947a8b58d5a3d7",
+        "private_manifest.json": "db05911bd3c4a705ceb3bf0c1ec1c0c01d594e5d4ca1f535aa905ad75fe4ce9f"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/3/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "c72168e9c42955bcacf8c5328b15c0cd891218b26d7db3199da63ccf0cc3cf16",
+        "timeline.json": "a30a0ef317a1e4473b600cd9a5ace32a62a83d8dad28210342a3df66292120c2",
+        "guest-stdout.txt": "0d4cc004624147f506bb5d3971a3590693300ac161e0b9396c97090586fae810",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "bf85265dcb982eb5919ec521aaec8b743559e02f48a082229f022edb22e02bed"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/3",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "0d107037fdfc37cabfbe99c8e51ccf15ca186e820e0936338d889c7249621d6c"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/4/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3dfa266104765b02565045317bef6ec0126ed517b939a123cb37fa0fefe7003d",
+        "timeline.json": "d21ed4508b8594aae827cc0ca3a8e8e405d2df3a47a82f282ab2199d59506838",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "dc1b1014e0b793eb9c08d00d8d0b6f8fe1dc48743db724b214d50db974ebc3d5",
+        "private_manifest.json": "1fa21c20c062ee73e31c51ce341c1bfc56bc989d6b7b29e36678944a746b2f96"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/4/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "00e323b1e11a6bbadb145b27211eb86c8c08746892ac36150a0c0e5845c63ccd",
+        "timeline.json": "a6d66b4e71fcc41ac7395eb652157a364c23da74219e93d2119ef8f4a1b92ae8",
+        "guest-stdout.txt": "fb893d90bf89c673ad9e1778f8c34f1f10f6a2c9a34a33c9f4688d442c7e0860",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "5217768a408c9abb782f56c91b7a47e621cf10b9e4ad8259afda823c0d0cd945"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/4",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "617db373cb106e4041c231165d60cf1768b6841c470c508e9483b5485d0b9f5d"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/5/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "41e53381bf4303fa2d320f0e269528b5c9d602ac6d0dc2f9ba17dbdead523da5",
+        "timeline.json": "b35ebd16618b47faa55c601e68b6e4e613b9db5c0e0273f41b087d21aa8d3cf8",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "e0d3b1cc1df861138592bb24ff9aa5dbd7a152508490497081fda3baee2c7c8f",
+        "private_manifest.json": "92e9a392d4964e34bd634b8dd943ff7f1bcc29d423d0e78a3e7400a0e7ad09ff"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/5/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "261ae3952f2745f27a3e461e101776d0dcef3fd827ef758bcee2c2e8ed1a78ac",
+        "timeline.json": "2232fecdc26a5433f30bc3d313ef8710eefc94b103d241ebee4109126cf4df5c",
+        "guest-stdout.txt": "591032e714c6f8985efc31eb8191e93788a080ec43974f751fea3a1436101519",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "2b2cad9856bccb91d26e06b119a1bb932215af069e92399e90f134124497e2c7"
+      }
+    },
+    {
+      "case": "fault-final-worker-pod-retry/5",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "6e7d4720f902bed00b9489307f7b95d4a5062470500a997e8a681c3ed9381556"
+      }
+    },
+    {
+      "case": "fault-final-worker-process/1/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d0fa3524c155ca264db9bd73b0be493e4bdafad4deec926901ca780ffaa5012b",
+        "timeline.json": "dab0c2ea483bc9696a7d210e8b50271ef69c0317cb4575b17f7a5a346084d705",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "0aa8ed56464e7903516e8b86f78bc172b95c676639dd10a039c89a0496c41dbe",
+        "private_manifest.json": "27d9731f91f3d302ca731c9b97c1881b8aef946c9f6b161ecd1d0b170b2b1da4"
+      }
+    },
+    {
+      "case": "fault-final-worker-process/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "af211a634a3fd27131aa1a206d7d821b5b58ccb9706c3eedb2ce0fbfd73896d4",
+        "timeline.json": "2ba96a304925541c438d0119cd23d3c9cc814d3c57d06cf356e45326ad5afb19",
+        "guest-stdout.txt": "232a5c89ec2c0fd5b510c3a1f53264e413b92b4b9fc0ce691ce7e08b10a21bfd",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "2799897ea864292d649cb9626d738634aaf096ae5aeab9d869ba54f507d94c76"
+      }
+    },
+    {
+      "case": "fault-final-worker-process/1",
+      "status": "PASS",
+      "scope": "worker-process",
+      "sha256": {
+        "metrics.json": "14ce09c210caddffa46fdb6a083281da1ad82a0be3411d6f09e9825a66805d5c"
+      }
+    },
+    {
+      "case": "fault-guest-process/1/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "4514b972e5abab15a12b4f21376f55a96750f0de9b163a92dda2a9e80c74dfa6",
+        "timeline.json": "5ec8dda00945ad074f9727382935d9c15215e053dfc9e0f205ec156184e4ec38",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "510e9acbc0956159b6d1c31687edf69658b1879ebfa992682a5f52698d34390e"
+      }
+    },
+    {
+      "case": "fault-guest-process/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "2d95acd50716e713eb19b67ed5aa64b8f456d124183f328a66b7028dfa48f97d",
+        "timeline.json": "04b4611c9e9f64185c1f56f512710a422e06e663c7c86db52fb60ddc9c40e768",
+        "guest-stdout.txt": "25ddd1f25da185560ecfcb88c1770bb8a230991771f2c636a8e269d1ce6d4d8f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c85a1bd1f1a6e5e30e2d8a09012d860e41ad0b40d3281adb5851b37ac01916d5"
+      }
+    },
+    {
+      "case": "fault-guest-process/1",
+      "status": "PASS",
+      "scope": "guest-process",
+      "sha256": {
+        "metrics.json": "0037c4564cec29c6b39fafc97581f8fe8d673962f02ccec66bf1b59567c99e88"
+      }
+    },
+    {
+      "case": "fault-guest-process/2/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "da938e10d7652785f69db1a73c10ced77d013c018cdb4d8b5d79462a151db018",
+        "timeline.json": "9af1bf02ad0359a9fa9597ef6ac7ab8d46e624654027832cc162f05b2e818b38",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "baf312174591cad3ca149058443fcbff80f12c228a86b04fa5250a688a3f7115"
+      }
+    },
+    {
+      "case": "fault-guest-process/2/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "fe6abf54d8d533e88f3b375b779a1bd030d58635ddffe3c91cd1896e90d99969",
+        "timeline.json": "466cb494e45d1693c21f2be35db33487479c643ef47640075ff2e4192ea4db1e",
+        "guest-stdout.txt": "5ef35ed296f78401c7a9f5b1236722245fcb48a55b76f5b9e51349a8c17a8d99",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "37a26902e390f6e8e9acd43cd710ba48d475eb71d9b0038447a5009c32462fea"
+      }
+    },
+    {
+      "case": "fault-guest-process/2",
+      "status": "PASS",
+      "scope": "guest-process",
+      "sha256": {
+        "metrics.json": "816728b18efeb01198a654bf926195a51445386f6d8412a575fc07a096a9665e"
+      }
+    },
+    {
+      "case": "fault-guest-process/3/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "f8994e8cbcc4dfff138049e8fbe62dce019d9f3b154fdf25e29be08444ae46da",
+        "timeline.json": "08f9d64863cfaec2e1cb17a82c979023560b7d31a1edd4f23d8de9b65e6c38b0",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "ce6f781a41955648fbc04e987640c3868ffe58094da37651c5388eb725d64369"
+      }
+    },
+    {
+      "case": "fault-guest-process/3/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "efea1c388cbe250900ca1ad46542b802719aa81c83e90ae55aaefe14a69c990f",
+        "timeline.json": "76dd3dd0073c4e09b2af81f85d51d1596024e1973f737574814ee00d04cc395b",
+        "guest-stdout.txt": "8ecabe54ed01a9d5e6e0a3a1f4ad32d19b8ebc85e14008a3ee97d1c523bd3963",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "1a6d1e7daed812a9c7f11428e7fb3f21ad4a3469d561f035184fbcb5fc9ebf50"
+      }
+    },
+    {
+      "case": "fault-guest-process/3",
+      "status": "PASS",
+      "scope": "guest-process",
+      "sha256": {
+        "metrics.json": "bc8d3a123fa71d207d51be0e25a3eeba1d84d4d1c86b0c272ef595a008b57b63"
+      }
+    },
+    {
+      "case": "fault-guest-process/4/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "07d885d5743ab5012d17b7f49ad4acf12129d775234e1bc041b290661dde3f0f",
+        "timeline.json": "124f0421ceea094219e969e11b2319773ab6e2dc6d89eedd3758879bafc68260",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "ac25cdf3ec31b08997de4d23f6b7c83349962ba3662d7e37eebb2c39794ffb1a"
+      }
+    },
+    {
+      "case": "fault-guest-process/4/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "1b763482512ed809f1b4ffb0ac68d54d4782f1b4f23fca5b73ba73dc3dc18a18",
+        "timeline.json": "81a3a8c07d800fc92e8130b4c74261be7cfb806d414b69589549cad719db0c98",
+        "guest-stdout.txt": "f445cac260e33f86523781dcbcf54d18c731d0799ed1ee295991f6acbd9af210",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "106a9955ce219e067cee40acc4728237efff61525ab95a14873848631948ce33"
+      }
+    },
+    {
+      "case": "fault-guest-process/4",
+      "status": "PASS",
+      "scope": "guest-process",
+      "sha256": {
+        "metrics.json": "daaea85058481eabaa27132b877abec0e0eb672b1f2eeea370ed9e310e5fbaf8"
+      }
+    },
+    {
+      "case": "fault-guest-process/5/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "0556c076b3f102565e3015f1a9501127d485d21005cf011cd1c52bc51c976d91",
+        "timeline.json": "c2cdd098cc4dea6ba65aab90a03e0f0a530817262db88ab503d615eb65bc0aaa",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "fcf3b2bcb6f8eb2433efbe8af895fc297a5acb7bef84a3830024c0766d950990"
+      }
+    },
+    {
+      "case": "fault-guest-process/5/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "fedf7cc918738a3e10637fd811f07aadc096b93599c7e231ddeb7a9e5b003ad7",
+        "timeline.json": "8fe36a18456064bd8283d34b26b4c62ea0d7828678d172d221b8bc2278020af1",
+        "guest-stdout.txt": "a63e954cbeb5e209aa52569b4a2547d4ce98ef59f8de406dad033032e6a134b1",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "27b1a042291c8f9e16d45617f5f98c501d0f2f3ebf2ea563f73ca2944c30ce8b"
+      }
+    },
+    {
+      "case": "fault-guest-process/5",
+      "status": "PASS",
+      "scope": "guest-process",
+      "sha256": {
+        "metrics.json": "55da6a3f509ea7d270fc9d7921c049764f99def4c3d3190cd713fc9043a5c850"
+      }
+    },
+    {
+      "case": "fault-vmi-force/1/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d4768adba306808706e5a81ad1132eafb00856d6ce0ed9a0fff828d7d5a3f116",
+        "timeline.json": "a6cc47c49de5269deb9784129dc5c53d3d704df5b81d17093d8025456838f84c",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "a7282a9801bdec95cf402d80fc091c6adaf34e669b0a984180b5b7757aca7cd1",
+        "private_manifest.json": "6ee567adcd35d9bf9776bfcbe5e8f76d99b3b4d8ba53b8fd150ad6ff00df7674"
+      }
+    },
+    {
+      "case": "fault-vmi-force/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "8027c4d10e89a20032aeb7de07dc15997c4417a806f37004b2981431a5fa254f",
+        "timeline.json": "981e37e45b18af46e240c03c3d10b96f4f1afe64a2092e2863aadbc3f980b456",
+        "guest-stdout.txt": "655dfb49ba19c269320c356295f5a7c9a344f0035840ba609682d7d499ffd67a",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "4eb36e95894e49cf1716607a3be8b84657343efd5ac473bdc336d1088fa0998a"
+      }
+    },
+    {
+      "case": "fault-vmi-force/1",
+      "status": "FAIL",
+      "scope": "vmi-force",
+      "sha256": {
+        "metrics.json": "dd40c42a7d7df56378a5bd999435101f18bac1c34376884c325fb8bd3bc25523"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/1/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "dbd447f861d41d4e2348e4199dc5dbdc95c3ff2eb255fa1fd47dad6c4bfc133c",
+        "timeline.json": "dfc2891e276519e2a05503a0ca7779d76ad76a30ed2b1ca4869e69eb50ce9655",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "53a6fe1f6d0fa2cc3164d8bc0d6830140cbfa15f0c825d0cfd4358846f03c124",
+        "private_manifest.json": "0693f0a1293992fba40fcd91b48abe8d3ec5530627ffe81c3120c0cca6ce0d36"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "0556d2ac173644b467237bbe84a35eba33ff3cbc9d919cb4ffd56d0e6ab7a233",
+        "timeline.json": "6c0e3728cb9ca5721c5f20ba103880ac95d8d94b6ceab83c3d909b5a4b3cd8a7",
+        "guest-stdout.txt": "794905f00043324c1cc49a6775214e073c55843833f6d062785dff6c1f03b362",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "f599b3d76ca524e4e02988c2fd4ca0cddcfb995ee554c3b0524b51c8c0a67fa2"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/1",
+      "status": "PASS",
+      "scope": "vmi-force",
+      "sha256": {
+        "metrics.json": "caf9c9b736dad3c74f0c84952fc7965ab7ee629d455bac23dc019894ab60abf9"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/2/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "b3741835f652867df676a92ec54df78957a6427333f8cdd4d1b3caa3fa604c6a",
+        "timeline.json": "d05e5dc08e780cff2fb096af6eb3ddf92162311d005a2e91956fe0b5e7d59d33",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "426fbc9766e116a36b5ee03c2f49c9f383c7b5bf92cf91cd67af150ffb07f91c",
+        "private_manifest.json": "3b54bd226e33badcf77e5e0ee633d2d17627dd6292153687979fe4f2f81b9e73"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/2/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "84ad1f0e9b98f84a45987489ed3f922fc39f9780cc8263f9da92596449eff193",
+        "timeline.json": "b372d7249beea36c5ef0f83f9287a1034646aff87a17e124795e9778726ce40c",
+        "guest-stdout.txt": "f511131866b7a3402faa369c2e3b1e4555698adcb80dc39da8d5e8e55d63e3fa",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "bb62a412d7ec2e4570847d194e509ee6bb0d7982d82143474d8bba12987115c7"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/2",
+      "status": "PASS",
+      "scope": "vmi-force",
+      "sha256": {
+        "metrics.json": "b9d86bf391d5a6812a61655405f42fa0b4b54225523083894376fe4e3527bda9"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/3/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "c57d4e6bd97fa606230ecdbf6b3645c697a32ec87fdba160d314e393f6445e52",
+        "timeline.json": "161dbbda1f7b85e87067750be426865100fe8b8c859b51273743775cef07352c",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "37f0114a288824d8f57bb1cf519ff6fc667d928c10edd99256617bc23ceea5ef",
+        "private_manifest.json": "bb79cba9b5d2bd6e35f26912430f2cb67991b3f675290604d9f331f2eecfef76"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/3/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "341c18e1594454626542ef72dd9f0e9d274272996d2dd1a4d3a1e0462c2cb625",
+        "timeline.json": "5214ab0f04e3d9a3236c5ebf01f1c26ffcde25f3cdf9b9742d3ccc5e8a963f9f",
+        "guest-stdout.txt": "30ced8cdac9f50a7a0940c93c9b371b9e58d4019662fe788fbb67347d18f1db4",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "f00fcce9993c77bd0fee7c61f35527db19f5bd9f1aea9bc89cfc64f614db744d"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/3",
+      "status": "PASS",
+      "scope": "vmi-force",
+      "sha256": {
+        "metrics.json": "bc768b350b7f54ec7eb56528940093f9ad05cceb24f72c3f5b1d6c322dea489b"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/4/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "14dd4dd43b2e34c043f250c5942f2c7f476ce556c03d6b03dae4a70a4adca164",
+        "timeline.json": "7b8b43a87450a36747dd6c664d16cc98ed4f6bdc7159c2465c2fd22241930f2d",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "0767098bf7179991387f9e3c43bd6ac999f4669b466e26daecc3d8b0ce93dca2",
+        "private_manifest.json": "6a10fc85685a6f5f86fb92c743b3be97f0ea0e8edf8377e1fbe5a5818bc164a7"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/4/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "dd88f7661f4642f62431b1cf21badc56879e05883b7e1dabf6673e928ba067b7",
+        "timeline.json": "51e5ee1802adfcd1fc942f33b03320395e5755f379ccf0f0a3df4c004e319daf",
+        "guest-stdout.txt": "7c634b8a5e1594e5c3d6601b65872dd00827bd986307192943087ced3c4f0fff",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "88e5f430321208e738ef68966584725ccce390518cb65c46b5127366f9112bf0"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/4",
+      "status": "PASS",
+      "scope": "vmi-force",
+      "sha256": {
+        "metrics.json": "9294bbe8db53f9553fa5190b3c29eb32ecbcadfd90567b09b0b0a1cfac1974d8"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/5/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "4d513a6686107ad59ca4040c8537d589d085de4a891690295a21aed718b2e2d9",
+        "timeline.json": "441891de083f863673e6e0e022c69484ac5969eb941fe53dc4b4b01238b6cbf9",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "bd642ff46a85e45678f69865f6623a17ecbc99f841931e5f91c2ce803f50e20f",
+        "private_manifest.json": "ef5aaab5bbf315925ee2d28a4621f650bb2201434796438ed6326d460a9d0849"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/5/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3631a091a19fcfbbba1eb0b9a62898dc7f18ddc7bf4b6981fa02cb71970fc4bb",
+        "timeline.json": "b267d568ebbdb5e2f9ea99bbe949948bd9a0282b999390961b7272dc25d580b8",
+        "guest-stdout.txt": "43185444ba3c18a834a489146c814918b434ef70fd4a3affd780124bef6a0fb3",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "30fc6864362768e20baddbbcbb96a4f375e7f691c13a8ef4e5f88bfe8b78d661"
+      }
+    },
+    {
+      "case": "fault-vmi-force-retry/5",
+      "status": "PASS",
+      "scope": "vmi-force",
+      "sha256": {
+        "metrics.json": "2f0549a418fad66ef5a1517212491a445c3288d2ea4fc450c9de251e36a2f2dd"
+      }
+    },
+    {
+      "case": "fault-worker-pod/1/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "1817d43ec11b7a5376fe499ad9644be33f306f8d7b6d58f9658c994773eedaa9",
+        "timeline.json": "f1c0c7844de44852adebbc14f7bc743f6cfa307fb42e19a1a5cea181a4a2dad9",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "9e57e62d7319112b439f7175a71dd852415d7f77fdba2a65fd57f868be9ed1dc",
+        "private_manifest.json": "e228e0df9070ddc3e42b391595db00291b802605aae8c2c46343bc45b3ed91da"
+      }
+    },
+    {
+      "case": "fault-worker-pod/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "7a1523be916e0aafcdb347438444c38997397332917fca5a469e921e86c773eb",
+        "timeline.json": "68e56caaefe192b9b0ffdcf4b37e902bb38a18995453f8808611adf6caa28d08",
+        "guest-stdout.txt": "1ed3a7dafe42921f1dff45b98cf6b12b8c7111e47b51d4fe7f819d9529f979e2",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "aa63040ef4140963af3d609ce2324b1144c0fd9dbc3bd00e97efcdaa59849abe"
+      }
+    },
+    {
+      "case": "fault-worker-pod/1",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "c7c83c29fa26ac49cdd7de5149c8f3392aec473c47ff7cea5a667a1b3c56d474"
+      }
+    },
+    {
+      "case": "fault-worker-pod/2/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "670ac96b68a7acc84c7356225b852d228e7d819dd670624b3cf92e71182390e9",
+        "timeline.json": "dec70df8d9179594f4f8d3ec4fba898fbbfb7a49b32a349db644db98ccf904ad",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "db58052433c4061814c3f764633421b30cac721b71db18d219c7d72943458d23",
+        "private_manifest.json": "effbe42fe1c411dff1d4dd70a15f9d05e987ba7bab2e9e7f3a39acd139e024f4"
+      }
+    },
+    {
+      "case": "fault-worker-pod/2/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "1021cc955b1343a51abd22d4a6a6a628e91e99924bc06370202e8a75800b6f0a",
+        "timeline.json": "9fde5927892c9113b4cced93920594b2addf02e2ed2dbaa76276c154b6ffe4b2",
+        "guest-stdout.txt": "39e9a2ee9c753c6a1138cd3523ae407f8db0ab97aa93499fc010b21ad19c88b4",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "7f8dfb14e5a28827912c152bd971f621d57f36dbac067fc42c54ef74cc18abd7"
+      }
+    },
+    {
+      "case": "fault-worker-pod/2",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "9964eb00f9025d6baff000e6e91ee05793f2b75727142b0c8a2fe5cd097f09c1"
+      }
+    },
+    {
+      "case": "fault-worker-pod/3/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "109f5eb1fc57f77696039165dcc65caf22f17e52795f82b551faf3f7d9ca3631",
+        "timeline.json": "0e6c1f42998a361e49d0b66fb91bbe52ae08fee42207f49c0023f1f82dcce97d",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "a887b8344a81636bac23b017e1e2163450e19085799d4e190187d9a67f7d1f77",
+        "private_manifest.json": "4020ca35045486e014be62584fa89cc5984b0415784766005c7944d72c5ad404"
+      }
+    },
+    {
+      "case": "fault-worker-pod/3/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "43e8e2aa28ccf6ccb2f57fbf7147e3cda05cf3f3160ba1193c9e7328b4c3eeb4",
+        "timeline.json": "467aea467be4b21e93bb83fe011872694b4f09ea5f1a85247769b932a02d1ab4",
+        "guest-stdout.txt": "75b656af5ad37885086a3ca8f26c6242585b7cc8cd2b1d59075afb88cc1c625a",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "456e99c5ca7946819fbe5e1871c8b6154154853d22d60a3a2e1e47665a896e9b"
+      }
+    },
+    {
+      "case": "fault-worker-pod/3",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "22a1a91e9403ff0aeb9a333e172bad11a00c1e6637c46c4f77ad057e7d33741a"
+      }
+    },
+    {
+      "case": "fault-worker-pod/4/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "f3bccfcd3e21b3d8b1efc6f8e5fc62320f4381559c5d42ee2a483db9c5afa542",
+        "timeline.json": "fa6a34eaf27b223d97c0e58f9663f9bc9fc0ff6b3908101f5a390fd04ed06db9",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "b415843ba510f0030a79bff6ceed8fc371f75d269e74bf441a681dd87489b86e",
+        "private_manifest.json": "40ffbae03a8d460facbb636d6880f5d9fee02764c40a35703a5ad290b5938c47"
+      }
+    },
+    {
+      "case": "fault-worker-pod/4/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "33864504b4954066e1505ea3ac1cda2ab63250fa1e240ff445c34a39d6212de0",
+        "timeline.json": "6e379043b169e91e48dde46dee9a3c39fd75fca2456eedbb6e31b245f8bb2bf7",
+        "guest-stdout.txt": "b43bb301f5ba9722bbb9342985629691f01cb33dcfdbec45b6bb669b7e846d71",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c1cb238f3425d5a6437099e27c0882d45441802fcfc033e60869f8bab9737fd4"
+      }
+    },
+    {
+      "case": "fault-worker-pod/4",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "b847d33ef3b3f0102486070e9a8c7e0e52a8acd26a4e127d900fd6bc91a8368a"
+      }
+    },
+    {
+      "case": "fault-worker-pod/5/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "0d10e38e9311e531fe9ba7898d745ab655d0c59d7a9e376fd3091228e9a96c27",
+        "timeline.json": "b85f32cb63af86f51c56d7e336f3dbce28aa7b1faf2e6788d3ef86b8792f3324",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "222bf14bcb6e58347827993c3ced8ad3899fb0bced9c5a91a05ce131983728f5",
+        "private_manifest.json": "cbb92bac18795bbc5d04d01b2216b10e90c467b4e87cb60a3b74440a5136988c"
+      }
+    },
+    {
+      "case": "fault-worker-pod/5/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "f575122636b3456dc3fe975f03648b225db8b281ef7808af876840c5cb78b530",
+        "timeline.json": "04b0f0084363cf9857a73381f5e327cb7dc6db7f8e3958a4d684a7239be6e628",
+        "guest-stdout.txt": "0756675bae759861e6a2c55a7c032613e8cea5c602ad98432315f2fd4f4dc384",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "da6ebf0cdf115f48027d882d0f5c42a48e2790a123ca1143ca632eb81bc53db1"
+      }
+    },
+    {
+      "case": "fault-worker-pod/5",
+      "status": "PASS",
+      "scope": "worker-pod",
+      "sha256": {
+        "metrics.json": "f1373cce610c46c57eb6c8cbdce51bb506b7784b6dddbf7af7932cadd2565901"
+      }
+    },
+    {
+      "case": "fault-worker-process/1/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "fdbc251777979be22bc0642b75bc8e8d3d818d440774940a7b791280db318f17",
+        "timeline.json": "0973e7921a62dc9b648ed270b31d73f653a518ed7f167ab6cf1fc61b4922dabc",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "7b964e02d2065eeb920fed91753f5290aa77c828a4a2f0715cead7300d3ac201",
+        "private_manifest.json": "267d7641b86d2f06c74d02d93447cd6e1e46c65d6816758e55035415e8e5ce7e"
+      }
+    },
+    {
+      "case": "fault-worker-process/1/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "202fa567cab21118588110adb036459e67674269240962fecbee1610054fdd89",
+        "timeline.json": "d5809ee6ecc1a683dcf726de028c840e31207fba3c31d83760c172b0471d7492",
+        "guest-stdout.txt": "7050d47f72da2825939bdc9ad47fd98038f7687132ab01397d26c969fd6adfdc",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "46c792bbfd45d1657bba9a3b45b6fe93f658973eb4f7f4704ff74b5f5eeeb8a0"
+      }
+    },
+    {
+      "case": "fault-worker-process/1",
+      "status": "PASS",
+      "scope": "worker-process",
+      "sha256": {
+        "metrics.json": "9207abc32ffde903841822835ebada9c6a1b96aeb9350c2b8f27e959a7346a12"
+      }
+    },
+    {
+      "case": "fault-worker-process/2/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "1cdba6d573b876f74691876c7319c01f9ed6c80adf9017ce21492140f3ae13d1",
+        "timeline.json": "1f11b78c8b65d552b248cad4f77fe8e269f36f28d41e2dc14f8c30cf27114954",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "d7a86de813e7a0cdf64774d3d84313a9ed528de127bbbe789089b92b3859f082",
+        "private_manifest.json": "14ca0f5e5ea7c2fffb88726f4ca2c5f6d4dd361c508c52b450bd7d23d2143f08"
+      }
+    },
+    {
+      "case": "fault-worker-process/2/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3b6f35e2259ad2f74e5fda6df16d09b3334125ed558002bcfc01ebba03481593",
+        "timeline.json": "53c1dfd852b6aeef1313189dc632fa56b8abeb3389fa3a09ccf2b43ae4e1dc72",
+        "guest-stdout.txt": "4a14715d4b76867b52b59bcca604c1e3bb17f42f921c9cf9834456db23e7a929",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "4508cd7c6d5c00827a6e133046045929169939782a50977f842d056222344fa7"
+      }
+    },
+    {
+      "case": "fault-worker-process/2",
+      "status": "PASS",
+      "scope": "worker-process",
+      "sha256": {
+        "metrics.json": "3a4a388b991b9c019d0fd37503d95cc57d0725780c7cb102ce80ac34028e60e5"
+      }
+    },
+    {
+      "case": "fault-worker-process/3/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "eb9b9f46f0c531bd40defcdddd4b6804a313baf7f95e3e5ee8d93e3c5a6a96ae",
+        "timeline.json": "8a7087b460ed667da7bfe751ea61284ece6e515e3782ae70cdce89f5b955d4b4",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "1d1e9232499c19f672604a16632f4785a5afff1b5c74c642c9cc0ffcacad6626",
+        "private_manifest.json": "7d4ceead2ffd6e5c96140d6f92c78f867c856e77d27776e6c347823d35ef313e"
+      }
+    },
+    {
+      "case": "fault-worker-process/3/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3dd5c0aec8f1bc7efae2a94d092a065fb3f58de9862d66284e00cce53014d340",
+        "timeline.json": "41be6d7876b5eb7717aaca84479acc0616b3986752b8ccd5fc5bbf1142607978",
+        "guest-stdout.txt": "3c91e6bcb06819c9573bc1cb3bc003c0826439b878d51db2f040f31f61bc2d29",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "0db603695ddaa6499d1714b1548e027f92b389b303dd4696a93dbb0de327f0e4"
+      }
+    },
+    {
+      "case": "fault-worker-process/3",
+      "status": "PASS",
+      "scope": "worker-process",
+      "sha256": {
+        "metrics.json": "0e65e79575e8bcf2bd5e5adffa4f7888ed92774af4fb4971a986ce35d33e1ec2"
+      }
+    },
+    {
+      "case": "fault-worker-process/4/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "6c7498333a577e165c2454a8c80ddda70d8de145a506007cc04d978947a3b69d",
+        "timeline.json": "284b55235e3b6089dea954ff8ef0136cdd89347cf6e222a4c4698dc85251bf51",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "baebd462da018df953ac5b14d4c0d6920178eab8e710f8b5cfe51de72d2a4f91",
+        "private_manifest.json": "2b56d11a819ed2c88a3e5250ee094b8d50f591ed81e86bd5f453a15de01c949f"
+      }
+    },
+    {
+      "case": "fault-worker-process/4/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "034efa23ecb7b0bf206b197299b1e9133371421003b7c9d4d4e0b9e97c992c3d",
+        "timeline.json": "96c6739d60d2af497a1b87e8bfd03f15d6fda298c53d4933b407f0bb0408bef9",
+        "guest-stdout.txt": "ccae84ae984d30003ac9a915a6de3e344591de3d0e180c102d0b1b8358c06bb7",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "6387629c31357a71941f45d58100da8eddcad12ed2b8da020eb8b00f8ecdacd2"
+      }
+    },
+    {
+      "case": "fault-worker-process/4",
+      "status": "PASS",
+      "scope": "worker-process",
+      "sha256": {
+        "metrics.json": "109a76f9a9f8ecc44dcd2bcedf54b5dfa5c5dc7cc8c74e4c47011f17ba6cc448"
+      }
+    },
+    {
+      "case": "fault-worker-process/5/a/run",
+      "status": "FAIL",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3763ec3b4e198c648b484ec34860bc977b7686a9410fd96539f8a348ad1f42a6",
+        "timeline.json": "149d3cf21fd10c84896c505add1c3bec2a74809ca16f1c9ae94503b3171146d3",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "c912803c4f040195e10cb3f76fdc19daab1d7899433e90ea0ed2bf0d8627798e",
+        "private_manifest.json": "0c63a5d7b152b21bb559e16e1b8e345ecce952e76cc86fa60e3b3d3796f406aa"
+      }
+    },
+    {
+      "case": "fault-worker-process/5/b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "535d8de78ee70e58b2f746be1f39a2d52d752d6b3fadf6ded732f931ce3fd915",
+        "timeline.json": "4d88537999c0f5a448052c1836576c59e18e663f3e9facf42901fc6269ec600d",
+        "guest-stdout.txt": "315b422ba3b72c14916400be6b3ece46e7ed18f64c4276e0057adee96f79724e",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "3e667e57717752804092e3a4c908edbc6ee02b3ad754fcb1a7ca098cc443ac38"
+      }
+    },
+    {
+      "case": "fault-worker-process/5",
+      "status": "PASS",
+      "scope": "worker-process",
+      "sha256": {
+        "metrics.json": "9da2849326c8c39607bdc75ce9a2fc83c0ec839cb31f71af323c6223c1fca950"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-01/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "02e3d32f8465794e0091a4f1da5fb4e28529bea5e45a7cc95d2686a2d726327f",
+        "timeline.json": "c816ae799d0a16c933fad628d1b31849af4f6d595b9c1b3856cb8f34d4b4138f",
+        "guest-stdout.txt": "2946a8f0dd8ccf217f40b96b0ea88e2e1e73315969496e491fa6d5e05c79e80f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "0da69acca7689141607bddce0d59d1438638b98b37cc52be15b15c8785fc1e58"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-02/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "1affab66a557c2c4e13f32758b5624d7514d60577e072795ca76b9b2a813b708",
+        "timeline.json": "6174fb7af8381cd7f3211a38f363d61e60dca7d78966847ada85757881e2dacb",
+        "guest-stdout.txt": "072944991e3e195d0b5a3b6397b7ac053ef8a4a24e9710b0cfd7132ae56c2d90",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "de60409477bb5ea77d5e31f9bf81feca174109f5bd60f6b86f65ee137308f8cd"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-03/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "a58944e21f8559c895af8a5d2ee34f9e239088343f4a081731f3dfb4a64e9d76",
+        "timeline.json": "299c304dd6e746e41753503852a8933b0639eddf768ca6089397addc352e3697",
+        "guest-stdout.txt": "caa028fc7765f1adba65513fe9e100b4c78408a4b7a69028d092175adfaf11e6",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "313d4a0f08d65a8f71d1731851633369542b040f48c716da0b33cb94b35f29cd"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-04/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "de7b8db0406a93d6adbb1ce8d462da6efd2c98cb934f9059333116adfbc153b9",
+        "timeline.json": "1a487d028ab8ef4f51f1909ab08608826cb73176f4d4468f37cd609a6f5fe5cd",
+        "guest-stdout.txt": "68456bb3eafdc684fbdea176f03e72e1a53b3f66a7c2c75f2188629d65e6fc35",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "de74e8fe5f1b44fdfde98fc8b195d396f8bd0a8b68db2da9a6ae0ebd2d9b5844"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-05/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "78d9800216659f24dc9644287148030882f1ce8f5d3a7c727d83b29fa79326cd",
+        "timeline.json": "51d40fe835d7569ea2df0f5b886bbd8b34d072c0508c64c9faa5889016dcc516",
+        "guest-stdout.txt": "bc9251ebf378c44b6efe15852e78cd2c9bb400873d1e477c04bcbe2e82ac8111",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "f8c55802465bb1ca336de76c312479dead8f6b5c8db2d5fbd4afe2d417b30475"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-06/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "89452f3062853825a60c5af6c13ced1fcfd805c543de98b8548f5a398d937cc3",
+        "timeline.json": "88cff782e54ea3d4e4d295da014bd515be06c1542d792bf3963a2eb4397e74a9",
+        "guest-stdout.txt": "eeb8fe24eb32e451803059b550ee0e41877d81b32a4671f15effe79d4b69dec2",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "ed5d12baf3fae8436d623f5099e2eeefb3aca345795c11e4fb6c1e0c53cdd5f8"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-07/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "f10403362d915606a2359d8e1be5de787a6c40a4c5f64b29b0a8cee7c08bfed5",
+        "timeline.json": "23c15b91d4c02673eb8e6d41adcdb3dd80c046053c78b166f12c0f227fba69d5",
+        "guest-stdout.txt": "4ec0a45d6549c4b1629782703d0cf224d7201f76558fb884477e9fa6bc0d2ae7",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "7f78510ce72525d612934699fe14ad35c63ccbd0ea92710ef6a2725b09ed4f89"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-08/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3982401ca5c484f5e7a7942b917e6604c09bf3a6a59f048031594db87fb8ad2b",
+        "timeline.json": "826e3d62edc8d0e20f00e3ecceb761adce64450cfd932eede69c40e4fb8115fd",
+        "guest-stdout.txt": "44d84da82b1cac910bb01f36e4573937be4498f20f01ea5b768a86ced32bf8fe",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "fb0df336cbe5a5e11ac60fe8c9bfdcb9a0da2ebd0909a38f5eee71847c5d7817"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-09/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "a4b523ffe8f4954048ff3eac7d8d1b0aaeca928040a87dd10f3f148e7c7c1c42",
+        "timeline.json": "6cee86fbdf9b4cc4a145654e34f1295e8a1ede1ab31ad131597bba849f5e40fd",
+        "guest-stdout.txt": "76619677d95a2949ce1bba4a20cbe6ac926a4d1e8ccc66742ea25eed9ec5ec06",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "de1d96a55b856a7b91a2e8fb82d2ab3e845d7f3f57f8f5c76edab30b4ac6a384"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-10/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "bac1b10567f2f20e36549a823cce8e4d48f412caa2ff9027980bdcfc16496489",
+        "timeline.json": "a8344217ae11021e5422c710cebfebb9832abd9c15ee137393ec2a7b47fdb649",
+        "guest-stdout.txt": "fb4bad31d71da41b18b59531a5144cba30e5a54e1f7a95d409d7c026d549190b",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "eafc76f1dd0f49548b037469251deca6f21fba6ef7856f373424b38a54a50caf"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-11/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "cb42f8fcb93ded635e15c9d918936454b1ab4053d7ea3fc48ef13c423052bff9",
+        "timeline.json": "4685169aa15f004d03a1a28136fba70bad7dd656c46dab1f7b549cf9090e3a96",
+        "guest-stdout.txt": "074f28b88ff0f58d45b97b7732661795c4974f1e8d962277780393acba9d4a1b",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "61d718de27ffa99a01599a38cd5c984b003beb71b80ebf0f61921b8a2351b49e"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-12/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "85366d7f3f6c1a7921c18397d5facd1dfcf144ececeeeb8734fef9d0e6435d08",
+        "timeline.json": "7ff206eb2ab09540dc94fa6b55b0f94b3e836cc352b898ee53c1fe5e606d9d68",
+        "guest-stdout.txt": "8a35f20fa4c6feb1286f5d036ed26d8e9dcc6dc056c426f1ecfb86fe3ec90232",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "41ec3f351126db3a1a54e9652924c2fa5448aecb63d1a90eae31105470bc1c37"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-13/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "02e2ed77ec67a59c4f8ac07f9f660003752994d61139ce8ef7a25f77a28d6e37",
+        "timeline.json": "fc1550d62a07406ed2cba1da3f25cc25ed6ab8b23354385b23efcb1c2787b8ad",
+        "guest-stdout.txt": "df0a0472d2a96ad92f69a8ee2c7abfc6bf3d946a1116e7d8286575b59759f39b",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "71f427d599a27bb840a5ea5ed5b4e4a7bcf09244b32256f005eabaa6be40850c"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-14/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "548edb6310ce25687cf0c07aca82ce22e0c55255edce3669db9a268ee0af45d9",
+        "timeline.json": "5db5b3db8c3176756eebe8e238dd0c8b16defd4374139a633c5bd1dfebf65bf0",
+        "guest-stdout.txt": "b6ac85342344886cf0b7020d34c210c4073e04ce65d670fd9cd7919e69ade8fa",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "cd5ff631b1d8014ed23d18a019f40c16df0cf631db5916ce3f1858b5dcd26d0c"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-15/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "afd76f8345ad7d75c69e75aa0991eefdc83494ba1970b0a269a589d794d8f8ce",
+        "timeline.json": "11849f24a849a04d87aec388f575eb5a75bcdc0769033de462c8f2c8d5711aae",
+        "guest-stdout.txt": "b5f7362a3f3ab7ac8a4a1f40b74581dd7a23c99a2ee93a6db38184827590cc90",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "ed80b98be786b2cc1059478e6d4c46ad018e05fdfb24953cb42f8865b4016fa8"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-16/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "b662a66ac2b379e6e460d843f8978696d2092b3b2b98d5a8ea18873820e0ee38",
+        "timeline.json": "f39f544e2c5ee8a17cf22e81e2040470f28f8cdd51299eaa3f2877a17d589752",
+        "guest-stdout.txt": "2261a5d2cd5a5f41e83593c2661a78bf7afb2ba89b86b61d6de03ae128859e2f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "21643347728f640c2acb3555b3c0f66dd376f15bcf826faba1622705f0d3dd98"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-17/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d8aa7bcbdac78ef71a027cc02ecec9a095fb4892f48e0eb5c921cc9336d3c7ab",
+        "timeline.json": "2cf95a3503f7386e18beffa8f3bfa749206d3546171e0b5a04be5fabea2bdee8",
+        "guest-stdout.txt": "3bdb09ea0b91c1a192d2664b0c3541a5906175d9734698352aeeaec52d2b81f0",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "8fab08b8b1b04df6120848802836350fbcdecc23b31e0bc7938a836472da3823"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-18/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "a16881c36de0e23055108aefc9deab633dc6fb9d391ccf6f7ec76a949b174f05",
+        "timeline.json": "e7dbdd0cc7e1efeca512637c1d5740cc098534b2ba71385282ee25024f5fc5a0",
+        "guest-stdout.txt": "0e6b4c7fbeaead8267fece2420c419229618b87a488ab8eae19cb02aaff0394d",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "3e6e9be4bd60e0e2ead08186ae2950d3333b165fa9a7b7156001608fccfb480c"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-19/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "553559d19a14a5df281862ef57c2d2c6400f5679ff1ebeeb934b18f04da14146",
+        "timeline.json": "27f11e27844f4ccbbb9b82eb9196d2c0b84c9966b1dc3b9707023c0bb6106a84",
+        "guest-stdout.txt": "a86cce9f9b7069d405096359bf8c2ce9713d12456b0d976a9d93d02898215695",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "a3af907b3b28baed804d69da374c14341d627c7368a34327f36fea340da46890"
+      }
+    },
+    {
+      "case": "lifecycle-20/evidence-life-20/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "c52bdd59ffc69e83cfe5dd7b3bef9ec2b8b96dd08d8e3dce7372388856a457e3",
+        "timeline.json": "f78aa8b2f0b2582cf965c710a543462eb6292a7ce84e4170f36fd9bab43aa14e",
+        "guest-stdout.txt": "230d1f486108d6d590515a88a5b5e42a5f0fb795c84a0ec59ac95f2f93c71446",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "bf918e0404083a0964092689e6ddad53a0399be6fcdb06a9cdb1573866c41b9c"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-01/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "fa672101953eb33b943baa704d1bcfcf24b62a98018dc6fdd172014e35fa0532",
+        "timeline.json": "fc4a168e14d6b2b1b6f25fbc5942b97c4e0557ba1f9c986643d524cd4b79ef2d",
+        "guest-stdout.txt": "0d56ba6116901fb16e5f4a96ba79ba63bc31918d31c128f2b73db46097e555fb",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "3c358e6f3176ba53ff437190560a926c6f83f82a5e85c002d1fac9e550965b79"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-02/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "69b39a5ad5eb90c21218c9b0541f3b76a5c0ee99d7ee844acae4634f0887f778",
+        "timeline.json": "5d5d234eba5c250ed0595f3b09c55188725e0edd2825b833c53ed7790f989d39",
+        "guest-stdout.txt": "247f4d70d9bf302a21c7a49e612e7abbe8dd7117a5cd9cd4ad2b12622cdac5bc",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "086ff14a5366091a6fe1f5269d5970023cc0a9f0b60e3eac32090a158904caaf"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-03/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "eabb842a9454d294dde729ac8a2333babac5962a3a69dd292fe6f16a9e887a87",
+        "timeline.json": "d8ce79e3aa735d8010489f67f0d01e49414a6ed2c90120c8a5b5829ce8efc3a4",
+        "guest-stdout.txt": "f2044a15798b3899bfcef114464aa32b42bf92461b7e199bbd7b9c429a7c4b7f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "9374c6d74ebc31462bf59529a0985778204bde5152c7e6a3de0c312d54546b3f"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-04/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "49fd5653ed77bd78b1a9b6177183b757f5530dd93621963ef665158022bb6f68",
+        "timeline.json": "22998941debb9db012552997be352e9a2b4cf1aa798e98d249c6f4859ca4af08",
+        "guest-stdout.txt": "72f929c3d60d6af69c97e94e62b15e715770f9958c0a98b15a8488d9cddb9944",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c9c1648614516fdbebed0f31a56ad34f9ee634e2fcf0a2b6380b2b6814adf173"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-05/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "30e4c0ebf94ec12e2798e888d4f0d5b3419c715bcce62daa27b38fd22dd17893",
+        "timeline.json": "264c332da696056c74c366f147ea45118a11b47c769babb1bfe067c0c186596c",
+        "guest-stdout.txt": "0fab94165626d9101696f6b714ecf3390d8e8e6b8af4153eb9e78f175fefe18e",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "e5227ac46855b51676e3ecf1b106d144479dbccdf7c78d8eee8a278cd98ef516"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-06/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "2c7e3a847c2262cf00282b5aaf5ec3f7ed30ceb61999e04a82dbc29f629f0671",
+        "timeline.json": "ccc877b1755e459e596de7f5c5f0bac1b2ad28ca7a6bdd0a3a64ab55afcdbffc",
+        "guest-stdout.txt": "b41e5ef4ca565e7c8ac73448cdebe10144b74ae9dcca901ae052827352227cdd",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c7a076fd3e8fbf095d8e953e0a4cff4bc7e52e2ec785f739fa2176e2ff6466c4"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-07/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "ebd1546499796cafe55e73865b50f9611998705765e5ebaea082b0dab09ff028",
+        "timeline.json": "5541506b1ed4f883a8479adc84fdc507de1acec209dbe3b9698eba466ad1246e",
+        "guest-stdout.txt": "b46d82d67c50645b148f357e62eaa8b3c2ca6d2aeb995b242a5d64e11b56f6ad",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "717d262c2db253d48cee290d3f74c799da8d290c63a2a54463df75c2f36b89d3"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-08/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "30c6711b17d485722e72b775e932aeea74e30ce29e0078e84476a7018cd00621",
+        "timeline.json": "ce435d14d9117005b19df3972dc55b7393a1e6828c981c16e482e7cad1096015",
+        "guest-stdout.txt": "7fcf1a45a7062ad58ecfb888c1091d855f3271eb10c6ca6a974fa0285ccf31b0",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "389f1633bad256d5e5c727f1287034cf8304a993297e1a6135004a30c672be49"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-09/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "6656d81d38f82ab2884fc6f92b12e288000dcff19abd54506574c73d34dcb564",
+        "timeline.json": "6b093971bb00635c460985c98ee35ecf763a7bcfc188891fa66f4a5e2d7e6521",
+        "guest-stdout.txt": "213efa255e1c3b30f71361c02ed49c2cc83794df9fc60446a334c121259822ec",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "52fdc468cbd261c74b9c45dbc9b19dd455d101baec2e3b2ec476061297815bf0"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-10/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3ad6bafbec0f163884fd3947c3b53071d603947223693a8399221fc95c92260b",
+        "timeline.json": "be65e48ea8d7db2dce2a0da09d96d53bf5ae9b2cb16381ca4fe23ae84810497a",
+        "guest-stdout.txt": "5433b7c73d7377d9537d63b2661743c54d7a7921e6c0ce127f132b50238e7ef7",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "bf4c63e0d8100073f9abcb42435d57f92149ac20f63d98fbde065aa2b7d2858b"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-11/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "6299c881e09a066193edf7d9b35fe0c74c2ba665f8434db02d251ce16504aa6f",
+        "timeline.json": "d20f0cb85b26f5590bec7545bdc16022c04e3b8db07f12a117eeae299cc388e6",
+        "guest-stdout.txt": "cc6a24e8460a1229dc11dcd58503731ec93eadbd8ab13b71f064d3a893fe1577",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "a555e9d4d216480a295e5f489ce054567f15d7807b22588119edf229deac1392"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-12/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "25874491de9e9c4494ad8b1913091301ca188ddfebbb739cf99a0e0eecf0205b",
+        "timeline.json": "d34a63a37e989beddc7b38f68222b1901cf6e1a3cc7a3b325583e4e39f7c9c0f",
+        "guest-stdout.txt": "1650d9f142c3f30116e67028f288be9dbc32015ac6466900a77032233faa55e5",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "efe840ad962a5c49abd7eed48b5aec3ab9366ae367f3415178dbdf2ec7c8f61d"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-13/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "2a56171ba2e1a9358bafbe9815064513bb8f3218009b1b75e41bd7b23c8ec3a0",
+        "timeline.json": "fb37e428aab089a40416eb91b79bad4409b921427a68446dbee5694df9e1f131",
+        "guest-stdout.txt": "70ea24a15bc756d0b3c66bb9df5f3734d1dc0631a2e68b15015e0d28fe2ef6f8",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "15225bbeadf6466ff7491338640770946a2e840177654122a20ca9b19523fcff"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-14/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "3b48ac9d0abcbd66a04c05a2eb56a28a604f2eaf43ac1ccc791a47d41fc1c3b2",
+        "timeline.json": "47592f4861f9875ac694c63714a6b945582312f8769698caab039d52aad90904",
+        "guest-stdout.txt": "0db819426f74c531fa34ec621fabe126180116d197415bd514fb86babecbe342",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "576fbab4b51f9af0c20131324abec3ed4947218bec469bc56270822c5d7762d0"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-15/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "ddf7d23569cda816ec96fcc8b90c989065a4b72c3d8376834db8dc0472103759",
+        "timeline.json": "82185e1bb435f2234055c7d75d0c153e93c2e2fbc1f94172e25795e6211b0e08",
+        "guest-stdout.txt": "8a3132081f5a0b2dd54c1b7662fda21548bbd37a90319b4fa5cdd42e384204b3",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "9841125f07978ff102b509d58134ce60657dd234865413699c438c1cad306d61"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-16/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "7944b1d807612f7915f0ea5a55049309305dcae414b0f2c780e7f8e4c603498d",
+        "timeline.json": "fbf6b264dbeb4a15efebf64695007749147de690e854a6226adcf9f5890213ae",
+        "guest-stdout.txt": "cabcf3374cb5b4b71242eeca7ec0191bb3783cec7d99662dc6e8d6dfd6be8d8b",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "4f92e4c6876eda8b63e2628fb9ae321f43d845e8c144bdd726e9f8401f34c4d7"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-17/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "0bbc9ff1ee7079c1a91c6dcab5d6de69e144d656a678b9d835037dbd997fa021",
+        "timeline.json": "b7874b5733941d990353e1c99c3980b9e512b089541d9178c35b21aad256e5da",
+        "guest-stdout.txt": "06e6e417e8a956e519bfc0f3b7965574ea6d28264d8a900ff25d8aa2876c370e",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "943691c885bbe9bd53b885edfa7cea95b001ddd6d78da04db915b1aecb21df83"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-18/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "acf0c2bb5b747aa31ccae8b330626987baafb6506a165e8748741ccbd8bf22f9",
+        "timeline.json": "6922594a00c93a1725217c1a7acbdb848a5f0508d992a3322cf4190ebab6d098",
+        "guest-stdout.txt": "1d4aa0efd01defa22ae0d25659b0915e9cc3a7c2878ebd232ab0fba6daa280a9",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "9ff71e9c11e217a1f729820fd4e31eb2c0895d0d52fcf5ad8a0ce4d54241a6d1"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-19/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "a99f5dee1eaa0c4a65ec30dd84888977c54f41312e6516f6b7b71b92001c800d",
+        "timeline.json": "e7451bee92c9b1f64bd65ed97ab8eb79013df9a1ae9a72012231af11b8bb4a4c",
+        "guest-stdout.txt": "f603b612ca01ca76e68410b4387bc69e4d38a7b36bd96d401310316380bd6a3e",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "0373cdfbeadbca65f57a043ee38043a39a153b662fbf096b49b3e3cec4c2fcd4"
+      }
+    },
+    {
+      "case": "lifecycle-final-20/evidence-life-20/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "40a1d18e5c8be113f6f1109589b2dcc367cfe1c830fb2a8d2c360fe560e6149f",
+        "timeline.json": "d8826df9258e2d53fc4d274e27e1f74b30f01b5eb3656537c5053ab73cb81711",
+        "guest-stdout.txt": "2c7c3b076f26fd98d8bb4898d1985642805b52fde46fbaceefe15b7d57915639",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "babd826213d636101c9287c984e95e9b760fc37fe8da78e7d350b252e1fbac1c"
+      }
+    },
+    {
+      "case": "run-a3",
+      "status": "FAIL",
+      "scope": "VM SHM memory/PTX smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "5afb1f62d8ab6a4013bde4b4b38b302d62bf3cfe99d8708694a4f1111bba2594",
+        "timeline.json": "f2559d89c8eea6833af3d4c8245df04a3b55df979c314b8e91bcb8d01b96e071"
+      }
+    },
+    {
+      "case": "run-a4",
+      "status": "FAIL",
+      "scope": "VM SHM memory/PTX smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "44d0a7f3ed0002f607f69effbc08cd4f9658aed9e447402c6b89677ff77e1805",
+        "timeline.json": "a67307660f0b19521ed33aecaeaa76df523bb70e712b29218ea2c7fac5fca9e9"
+      }
+    },
+    {
+      "case": "run-a5",
+      "status": "PASS",
+      "scope": "VM SHM memory/PTX smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "1500dd8fc8f73f4ff6e54aeac71a75f205c914e529575af1b0bc208830a419ab",
+        "timeline.json": "8ce5da70a7c6e527a596a9ab3fac5dbe6e3cbc0749988d4991849100141895d8",
+        "guest-stdout.txt": "bd71f230299b322118549a26e583a4a040b761a2a56dca54fd3f9991e3c17306",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "case": "run-evidence-aggregate-1024",
+      "status": "BLOCKED",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d536c171a39ac1860682942272f7e0f59390edeaea977b7a017de21b91d9980b",
+        "timeline.json": "addf51067b9dd92827058ea8fe84cef2fecbdfb1239fcc077aa297f6c54b186e",
+        "guest-stdout.txt": "577573ef043cd88cd0f8beabd4b14dbfc3dfca5a3adc42a6968e36658f0e7819",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "204964b37f13baad17f4a77f4fa77769805d95891bdc0fa4b7b54190595f9809"
+      }
+    },
+    {
+      "case": "run-evidence-aggregate-4096",
+      "status": "FAIL",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "08afcb3a782481c26d0485c61e21eb6ef5f8720c0435c6ed3aef1b5fa379d1b4",
+        "timeline.json": "4de732552bdf3948e05ff72da4693607659ca0d887d2174b90f55b1eef011ee2",
+        "guest-stdout.txt": "83e3dc06c0c779c4a83a938c2be6a8a25b37c649ee8641794fcdf6b77ad48172",
+        "guest-stderr.txt": "66a9028a86441836c9248b4e763c5e8ac85d55e92c5d0ba5fdc0940dc755b203",
+        "private_manifest.json": "77d72c24e36cc91e18453569a6ac46b6ec35e08577fe4b7baa9cf0c47c29b99d"
+      }
+    },
+    {
+      "case": "run-evidence-final-aggregate",
+      "status": "FAIL",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "ae659d7eea7e1f2fbb2477019163648ccfb8321f6481732f5cf9467f65bf816d",
+        "timeline.json": "720da8035c9d6052e443f2a4a314c7c72b564d5d5cbe990bb37f34c89d3bf47d",
+        "guest-stdout.txt": "83e3dc06c0c779c4a83a938c2be6a8a25b37c649ee8641794fcdf6b77ad48172",
+        "guest-stderr.txt": "6e9cea36cc16aaaff7028f70272625fd56ae0aec49ab4e8e8a4c6ef39a9df443",
+        "private_manifest.json": "2655043d5fd1f3be900eb07ce61e515c14fbed8873b990fee2c141dbe1b962f4"
+      }
+    },
+    {
+      "case": "run-evidence-final-aggregate-v2",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "4f74e8c9f187c790030b08d92e779ec0f02355e6aeab64c84bfd87970c8bc400",
+        "timeline.json": "bd81eeb28e01b449d3dcf9837d674737231c45660a127ee08077b252fca76c4e",
+        "guest-stdout.txt": "84408d4d17e45a94d3ba72fedef6c5109b3590c8597d3a189f7fc8a6744d76f7",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "645c1e8e9deaf1e7cd3088f2c79766a0a9be946564253d18142b015991f61893"
+      }
+    },
+    {
+      "case": "run-evidence-final-gpu-a",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "6d5f0bf1a7226ef3122dcd9f7728ef1b4bd71216e862da5be97501f7edccec3b",
+        "timeline.json": "9b1934dc0679394ea80e2a59a3c87293dfe7b9f03ff8999eecb02d5b4e183bb8",
+        "guest-stdout.txt": "38b6cf6f94bee8885e8add4370fe4580c66fada5d6bc56a336b70c274d278fe7",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c78c8a0f58609a5cfd1b24c3e08817a2cd9a499f2b46231f75f7e94e60eaffdf"
+      }
+    },
+    {
+      "case": "run-evidence-final-gpu-b",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "0c09a4cd2cc43cc658db736d8331258f1cabb93b2f2adfa56b2ea9d789c99fba",
+        "timeline.json": "5cdc6b4eeb62d94b57f7d6626aadff2c56af0fb1ef30435d2c4d5fe32718cea1",
+        "guest-stdout.txt": "2465c0768d7adc80c8229abe23cd4204f6f29d83fa136d3e3816597228215a11",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "767d3f165781cc0f1ba563d01d6244b84c5eb5c9c9de3e13dab5244604b64945"
+      }
+    },
+    {
+      "case": "run-evidence-final-mem-1024",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "8331018dc3d4d4096cca56f58ab7601f6510d1a04084b0f6affb524f3cf909b2",
+        "timeline.json": "c36b6ee12a82267825503e6e258ffaaab484f5dd4a5bd7b90320650c4530d533",
+        "guest-stdout.txt": "1941e2647641bb412ffefcf175f60871d04e15129c532168f5584dbd61e5dbab",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "6cac0762eedf8eb98afa367a058e5deb1873bc0f0413321ea866c448e9cb3b94"
+      }
+    },
+    {
+      "case": "run-evidence-final-mem-4096",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "e33857952de6d0c759ac0b591cae9f05f32fc53bd9fd4abb82f74e85e203f1d3",
+        "timeline.json": "78a1fbad86cba112bf57de0e12df0da6d1d5f932bfe12811142866061cba0d9f",
+        "guest-stdout.txt": "4f93cc8c4e83a348d926c62f2eb4c3cad77dc5b12341140bfb2e9e8b392489d5",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "8216eac6692ea48cf425cec40447388ddd2b1302bc245bb3d5f3f3dd4b6c880f"
+      }
+    },
+    {
+      "case": "run-evidence-mem-1024",
+      "status": "FAIL",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "e8a0618d2c71e711541efaaf4f6ff7f01a8efb8f752841b1a89341dfd44fc58e",
+        "timeline.json": "f9aff56797ab44d13a9d229e1d41bf6f5e4f451c42bfe108d6a1767225e7aec2",
+        "guest-stdout.txt": "77db5493a907161b1abaa7c5ed8f3806b57e1946f6682faefbd88b6d9feabb99",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "a7c952caec4ef7109b1fb82fe50438fac0cef2896a91d5cf7e1aca2fd2e7f0eb"
+      }
+    },
+    {
+      "case": "run-evidence-mem-4096",
+      "status": "FAIL",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "311b2ce6da8824e3bfafc4f489f467efc093f4bbd03875ff5c2f4ad1d3f5d27f",
+        "timeline.json": "c2943612462b747b25c8103ba635d9a887336634279c8fedcea8c1e9a4d5abce",
+        "guest-stdout.txt": "9e2c6b16a939e9a99348b2e05c367465bbf5e846c041af730522d91551f622b5",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c827af96d39b0c04632fbcaf6c74a32259e03a9571752eecc320a755c4c3b2a7"
+      }
+    },
+    {
+      "case": "run-evidence-mem2-1024",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "74df976f4a13c75282d9c5011cc0ffefa25e5fbec6892275258cb670613e76fe",
+        "timeline.json": "4fd006aa3640e54f5c33a3ee42dcff0d07f2d0034ef1030e424fc7dda4a0112f",
+        "guest-stdout.txt": "1941e2647641bb412ffefcf175f60871d04e15129c532168f5584dbd61e5dbab",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "c41920121d8a97ca53ec4326106bbd3d004e66a3b9d30996e1a71a3651d5ac06"
+      }
+    },
+    {
+      "case": "run-evidence-mem2-4096",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "725137a3a8c6b7a26d0e82f9b7f99d8600c3f14c6d5ee3916785656ccfefdfdf",
+        "timeline.json": "fab713accab37da02bbf2b90f1e2a20331a7a13894354d0227e7cd2f6de3c681",
+        "guest-stdout.txt": "4f93cc8c4e83a348d926c62f2eb4c3cad77dc5b12341140bfb2e9e8b392489d5",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "d0989baaacb4faae247c006c284186e8f4f60c3b522b024ee0559f30025a867d"
+      }
+    },
+    {
+      "case": "run-evidence-pair-a",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "6f004b66998cb2927dc1ce7be8b57207d088eaf9f0d49e9af5fc08bcf1eb6583",
+        "timeline.json": "ad1addd4c9af85e9f71de77adb52a79fe2f763c914c603ea1bd2606f7d289be5",
+        "guest-stdout.txt": "56765a292a534dce08a31ac6bf761973417687330de135f0c92cf0d1263f0dfa",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "case": "run-evidence-pair-b",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "a48fa86671536467d44ab4e074e543885b6b1003b7ed6ea9b9c42476bba78de4",
+        "timeline.json": "ce81e63f2c3a3bd731c9157f7751136ac519d5f22a22e4ba9c1b2da9fd34ad45",
+        "guest-stdout.txt": "520dfd15b6cd372de69d60667289c32aabd2b9e3f51a646a86a571f0ff166a06",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "case": "run-image-recovery",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "b67ea645cf14e9e4eafcffacd567a48ab3de59f0fd3bccd3fb1eeebcf8568869",
+        "timeline.json": "589fab481e89a8b4bcdaadd6a555ce639f13185573454a9388e66538f1f3a02f",
+        "guest-stdout.txt": "19cd3988be063dc65ed7af0756d97778a6b48905eb032d1a990bad0b12be381d",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "private_manifest.json": "952e6cff1dbd3ecb42bc1fae5f47e45faa5786f0fdc3125a0d3ceb28187564b7"
+      }
+    }
+  ]
+}

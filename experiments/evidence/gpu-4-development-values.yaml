@@ -1,0 +1,8 @@
+# Development deployment used only with release evidence / namespace flyt-evidence.
+# Images must first be imported into gpu-4's CRI-O store. TLS is supplied separately.
+mode: active
+activeModeAcknowledged: true
+image:
+  repository: localhost/flyt-control-plane
+  digest: sha256:a60f76638461c0fb15c11d89779c482e44621ab52119e682b279de0dd2a4859d
+  pullPolicy: IfNotPresent

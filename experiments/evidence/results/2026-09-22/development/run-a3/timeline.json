@@ -1,0 +1,19 @@
+[
+  {
+    "elapsed_seconds": 0.24709769900073297,
+    "state": "VMStartRequested"
+  },
+  {
+    "elapsed_seconds": 300.768228025001,
+    "state": "Failed",
+    "error": "VM did not reach Running"
+  },
+  {
+    "elapsed_seconds": 300.9367373619898,
+    "state": "DrainRequested"
+  },
+  {
+    "elapsed_seconds": 313.7339963479899,
+    "state": "Released"
+  }
+]

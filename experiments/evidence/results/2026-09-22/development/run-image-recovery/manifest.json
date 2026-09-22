@@ -1,0 +1,14 @@
+{
+  "case_id": "run-image-recovery",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "30c37c13-3f26-46b4-8d18-cace595f0287",
+  "monotonic_origin_seconds": 83802.165645024,
+  "git_commit": "1c07d1ce001acb9a91414a06881d43534f5a92a6",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 23,
+  "timeout_seconds": 300
+}

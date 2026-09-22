@@ -1,0 +1,66 @@
+{
+  "mode": "worker-pod",
+  "repeat": 5,
+  "status": "PASS",
+  "phase": "development",
+  "bindings": [
+    {
+      "channel_uid": "ed50bbc9-d313-4545-8120-3f8406329885",
+      "vm_uid": "cf969506-4d14-44cf-948a-9005ac1badf9",
+      "allocation": "c785c7983791d9855a32928e615799d0",
+      "generation": "78c86557a97ca49641ba7d4beb625bde",
+      "vmiUID": "65165720-e2e9-4ba2-8157-921db6ee0518",
+      "workerPodUID": "19d61451-31c0-4f2b-bc7b-e07d33112696"
+    },
+    {
+      "channel_uid": "19c49b69-6fa9-48d8-afdb-ef681e3a6b21",
+      "vm_uid": "19c079d8-0c9f-424f-be14-7273f1e6d9dd",
+      "allocation": "46bcaf723d82bce494116bcc84878c3e",
+      "generation": "abef92211635c795bfea091edacaacd6",
+      "vmiUID": "98f1dbf3-f8fc-4941-878e-85a48a486ba9",
+      "workerPodUID": "ac7d3c12-b1c8-4a6f-8117-05e4f3de008d"
+    }
+  ],
+  "injection_begin_monotonic_seconds": 81957.493398021,
+  "injection_return_monotonic_seconds": 81957.704921274,
+  "injected": true,
+  "seconds_after_injection": 33.19178494300286,
+  "victim": {
+    "status": "FAIL",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [],
+    "error": "Guest smoke failed with 255",
+    "released": true,
+    "elapsed_seconds": 93.50336027100275
+  },
+  "observer": {
+    "status": "PASS",
+    "formal_training_result": false,
+    "scope": "VM SHM gpu smoke and lifecycle",
+    "probe": "gpu",
+    "scenario": null,
+    "bytes": null,
+    "probe_results": [
+      {
+        "status": "PASS",
+        "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+        "seed": 2027,
+        "kernel_repeats": 2387,
+        "copy_bytes": 4096,
+        "active_seconds": 10.00344
+      }
+    ],
+    "probe_pass": true,
+    "released": true,
+    "elapsed_seconds": 74.73827666099533
+  },
+  "host_error_observation_seconds_bounds": [
+    9.58254439700977,
+    9.794067650000216
+  ],
+  "fixture_cleanup": true
+}
