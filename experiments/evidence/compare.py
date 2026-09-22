@@ -13,6 +13,9 @@ def compare(reference, candidate, atol, rtol):
     for key in ("fixture_sha256", "config_sha256", "batch", "seed", "model", "input_mode", "checkpoints", "device"):
         if reference["metadata"][key] != candidate["metadata"][key]:
             raise ValueError(f"Mismatched comparison input: {key}")
+    for key in ("torch_version", "cuda_version", "source_sha256", "optimizer_execution", "disable_addmm_cuda_lt"):
+        if reference["metadata"].get(key) != candidate["metadata"].get(key):
+            raise ValueError(f"Mismatched execution configuration: {key}")
     expected = {str(x) for x in reference["metadata"]["checkpoints"]}
     if not expected or set(reference["checkpoints"]) != expected or set(candidate["checkpoints"]) != expected:
         raise ValueError("Missing/unexpected checkpoint")

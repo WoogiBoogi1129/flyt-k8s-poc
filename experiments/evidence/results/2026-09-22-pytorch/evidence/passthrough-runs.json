@@ -1,0 +1,54 @@
+{
+  "formal_result": false,
+  "runs": [
+    {
+      "id": "passthrough-2026-32-resident",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-2026-32-transfer",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-2026-1024-resident",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-2026-1024-transfer",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-2027-32-resident",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-2027-32-transfer",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-2027-1024-resident",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-2027-1024-transfer",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-repeat-2026-32-resident",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-repeat-2026-32-transfer",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-repeat-2026-1024-resident",
+      "exit": 0
+    },
+    {
+      "id": "passthrough-repeat-2026-1024-transfer",
+      "exit": 0
+    }
+  ],
+  "wall_seconds": 96.5146957370016
+}

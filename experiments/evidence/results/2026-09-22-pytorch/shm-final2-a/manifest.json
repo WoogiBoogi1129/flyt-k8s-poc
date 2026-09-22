@@ -1,0 +1,39 @@
+{
+  "phase": "development",
+  "formal_result": false,
+  "name": "evidence-torch-final2-a",
+  "channel_uid": "b283ddca-36c4-4c03-b137-c4b10bedf86d",
+  "channel_spec": {
+    "drain": false,
+    "gid": 107,
+    "hookImage": "localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554",
+    "image": "localhost/flyt-control-plane@sha256:a60f76638461c0fb15c11d89779c482e44621ab52119e682b279de0dd2a4859d",
+    "pvcRef": {
+      "name": "evidence-vm-a-backing",
+      "uid": "3266e644-f00e-4b86-9ba0-de154e13d1f1"
+    },
+    "requestRef": {
+      "name": "evidence-torch-final2-a-request",
+      "uid": "624502fb-85b6-4365-9617-89b56efdb3b8"
+    },
+    "sessions": 1,
+    "uid": 107,
+    "vmRef": {
+      "name": "evidence-torch-final2-a",
+      "uid": "c9100468-9ff7-4a38-87dc-bcfe06281b2f"
+    },
+    "workerImage": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+  },
+  "git_commit": "f1e0f86913768c0bda2a98270941ad92c2182c78",
+  "sha256": {
+    "guest-python-cuda.tgz": "46822db16a8f8935ea71e5af652b9937bab5d5897810790e563530c7693e2f16",
+    "fixture-2026.pt": "50f1b32ff631cce6aac0a4a7b4913aeb7883563ebfd1b9c0daef4ec3dae61fe9",
+    "libflyt_guest.so": "a82a3a818b335cbca7ee9d986ae8b1dc7d14915b09f6bdf9351fde1bfd48c401",
+    "libnuma.so.1": "3582bce922d99959ee3eb6b7d686c0b99e14c2135616ad4d9d608b2118a7e78c",
+    "libgomp.so.1": "d46f9225c1883039e8a6853e6d96ca1af11d034ce186a090952e4a7c8a7c2fdc",
+    "train.py": "3fb012a38bfcb1a2840d3eb71347e2cc9410845e88a735ab3c7cd71405c2af56",
+    "guest_training_suite.py": "48eea156e7893e8165db6cd29b56b406c2c7f70253a29d948437dde2173ebb09",
+    "run-evidence-training.py": "0ed98f38d7a976a632de23c4b8ef0308a4f876f4de3170ec73e37276a45c030b"
+  },
+  "development_revision": "torch-runtime-v1-control-v1"
+}

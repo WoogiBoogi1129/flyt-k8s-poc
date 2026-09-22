@@ -1,0 +1,6 @@
+{
+  "status": "FAIL",
+  "formal_result": false,
+  "error": "command() got multiple values for argument 'text'",
+  "released": true
+}

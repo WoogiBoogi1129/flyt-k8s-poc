@@ -36,6 +36,33 @@ def terminal_pod(pod):
         if not all('terminated' in x.get('state',{}) for x in statuses):return False
     return bool(pod['spec'].get('containers'))
 
+def terminal_unstarted_launcher(pod):
+    """A deleted launcher stopped before its regular init barrier completed.
+
+    Kubelet leaves never-created containers in PodInitializing, even in Failed.
+    Require explicit sandbox teardown, full statuses and no main-container
+    history; callers also require a Ready node and an attachment never Mapped.
+    """
+    state=pod.get('status',{});spec=pod['spec']
+    if state.get('phase')!='Failed' or not pod['metadata'].get('deletionTimestamp'):return False
+    conditions={x['type']:x for x in state.get('conditions',[])}
+    if conditions.get('Initialized',{}).get('status')!='False':return False
+    sandbox=conditions.get('PodReadyToStartContainers',{})
+    if sandbox.get('status')!='False' or sandbox.get('reason')!='PodSandboxNotReady':return False
+    if spec.get('ephemeralContainers') or state.get('ephemeralContainerStatuses'):return False
+    def unstarted(x):
+        return (x.get('state')=={'waiting':{'reason':'PodInitializing'}} and
+                not x.get('containerID') and not x.get('imageID') and
+                x.get('restartCount')==0 and x.get('started') is False and
+                x.get('ready') is False and not x.get('lastState'))
+    mains=state.get('containerStatuses',[]);inits=state.get('initContainerStatuses',[])
+    for declared,observed in [(spec.get('containers',[]),mains),(spec.get('initContainers',[]),inits)]:
+        if len(observed)!=len(declared) or {x['name'] for x in observed}!={x['name'] for x in declared}:return False
+    if not mains or not all(unstarted(x) for x in mains):return False
+    regular={x['name'] for x in spec.get('initContainers',[]) if x.get('restartPolicy')!='Always'}
+    if not any(x['name'] in regular and unstarted(x) for x in inits):return False
+    return all('terminated' in x.get('state',{}) or unstarted(x) for x in inits)
+
 def node_ready(api,node):
     obj=api.call('GET','/api/v1/nodes/'+node)
     return bool(obj and any(x['type']=='Ready' and x['status']=='True' for x in obj.get('status',{}).get('conditions',[])))
@@ -73,8 +100,11 @@ def observe_guest(api,c):
         status['launcherPodUID']=pod['metadata']['uid'];api.replace('attachments',a,True);return protected
     # Kubelet terminal phase with all containers terminated, on a Ready node.
     # Missing or force-deleted Pods cannot pass this condition.
-    if not terminal_pod(pod) or not node_ready(api,a['spec']['nodeName']):return protected
-    status.update(phase='Detached',observedGeneration=a['metadata']['generation'],evidence='KubeletTerminalLauncher',launcherPodUID=pod['metadata']['uid'])
+    terminal=terminal_pod(pod)
+    unstarted=status.get('phase') is None and terminal_unstarted_launcher(pod)
+    if not (terminal or unstarted) or not node_ready(api,a['spec']['nodeName']):return protected
+    status.update(phase='Detached',observedGeneration=a['metadata']['generation'],
+        evidence='KubeletTerminalLauncher' if terminal else 'KubeletTerminalUnstartedLauncher',launcherPodUID=pod['metadata']['uid'])
     api.replace('attachments',a,True)
     release_pod(api,pod,c)
     return False

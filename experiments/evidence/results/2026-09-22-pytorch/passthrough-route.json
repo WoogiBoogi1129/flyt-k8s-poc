@@ -1,0 +1,107 @@
+{
+  "formal_result": false,
+  "vmi": {
+    "name": "evidence-passthrough-v2",
+    "namespace": "flyt-evidence-baseline",
+    "uid": "d90d1fed-0644-435e-96c8-e030e121ccb4",
+    "generation": 8
+  },
+  "domain": {
+    "cpu": {
+      "cores": 8,
+      "model": "host-model"
+    },
+    "devices": {
+      "disks": [
+        {
+          "disk": {
+            "bus": "virtio"
+          },
+          "name": "root"
+        },
+        {
+          "disk": {
+            "bus": "virtio"
+          },
+          "name": "cloudinit"
+        }
+      ],
+      "gpus": [
+        {
+          "deviceName": "flyt.dev/evidence-passthrough",
+          "name": "gpu"
+        }
+      ],
+      "interfaces": [
+        {
+          "macAddress": "02:00:00:09:22:01",
+          "masquerade": {},
+          "name": "default"
+        }
+      ]
+    },
+    "features": {
+      "acpi": {
+        "enabled": true
+      }
+    },
+    "firmware": {
+      "bootloader": {
+        "efi": {
+          "secureBoot": false
+        }
+      },
+      "serial": "24c2890a-69ea-47a0-affe-24cb6acdb27a",
+      "uuid": "fe922026-0000-4000-8000-000000000002"
+    },
+    "machine": {
+      "type": "q35"
+    },
+    "memory": {
+      "guest": "16Gi",
+      "maxGuest": "64Gi"
+    },
+    "resources": {
+      "requests": {
+        "memory": "16Gi"
+      }
+    }
+  },
+  "phase": "Running",
+  "node": "gpu-4",
+  "launcher_image": "localhost/flyt-virt-launcher@sha256:3a63c98b5a178af7f58f8979e09cbd11182f7220e5826f5048efb22a2d7b7935",
+  "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+  "host_pci_bdf": "0000:41:00.0",
+  "guest_pci_bdf": "0000:09:00.0",
+  "host_driver_during_run": "vfio-pci",
+  "launcher": {
+    "name": "virt-launcher-evidence-passthrough-v2-hs7l9",
+    "namespace": "flyt-evidence-baseline",
+    "uid": "78f21649-18e6-4cd0-8d70-ac00118036c7",
+    "generation": 1
+  },
+  "launcher_containers": [
+    {
+      "name": "compute",
+      "image": "localhost/flyt-virt-launcher@sha256:3a63c98b5a178af7f58f8979e09cbd11182f7220e5826f5048efb22a2d7b7935",
+      "resources": {
+        "limits": {
+          "devices.kubevirt.io/kvm": "1",
+          "devices.kubevirt.io/tun": "1",
+          "devices.kubevirt.io/vhost-net": "1",
+          "flyt.dev/evidence-passthrough": "1"
+        },
+        "requests": {
+          "cpu": "800m",
+          "devices.kubevirt.io/kvm": "1",
+          "devices.kubevirt.io/tun": "1",
+          "devices.kubevirt.io/vhost-net": "1",
+          "ephemeral-storage": "50M",
+          "flyt.dev/evidence-passthrough": "1",
+          "memory": "18626904065"
+        }
+      }
+    }
+  ],
+  "guest_driver_evidence": "evidence/passthrough-environment.txt"
+}

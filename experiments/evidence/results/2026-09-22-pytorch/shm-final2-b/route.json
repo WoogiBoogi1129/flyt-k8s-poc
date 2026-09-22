@@ -1,0 +1,181 @@
+{
+  "formal_result": false,
+  "channel": {
+    "metadata": {
+      "name": "evidence-torch-final2-b-channel",
+      "namespace": "flyt-evidence",
+      "uid": "bbf1599f-0b8d-4372-8efd-ed9e3cd2c859",
+      "generation": 1
+    },
+    "ready": {
+      "allocation": "f971d4b747854c6886fb1e955db30c36",
+      "compute": 50,
+      "everBound": true,
+      "generation": "60099d281cbcb04c2f38584be8156026",
+      "gpuUUID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "memoryMiB": 4096,
+      "nodeName": "gpu-4",
+      "phase": "Ready",
+      "profileGeneration": 1,
+      "reason": "MappingACK",
+      "requestGeneration": 1,
+      "sessions": [
+        "33f8e3c3a57ceaff82208d6236b67ea4"
+      ],
+      "vmiUID": "3cc5b0a9-3b6a-4e43-83c5-8c786632ceec",
+      "workerPodUID": "d1339f22-19d7-4097-8160-73275691626e"
+    },
+    "released": {
+      "allocation": "f971d4b747854c6886fb1e955db30c36",
+      "compute": 50,
+      "everBound": true,
+      "generation": "60099d281cbcb04c2f38584be8156026",
+      "gpuUUID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "memoryMiB": 4096,
+      "nodeName": "gpu-4",
+      "phase": "Released",
+      "profileGeneration": 1,
+      "reason": "DetachAndReclamationConfirmed",
+      "requestGeneration": 1,
+      "sessions": [
+        "33f8e3c3a57ceaff82208d6236b67ea4"
+      ],
+      "vmiUID": "3cc5b0a9-3b6a-4e43-83c5-8c786632ceec",
+      "workerPodUID": "d1339f22-19d7-4097-8160-73275691626e"
+    }
+  },
+  "worker": {
+    "metadata": {
+      "name": "evidence-torch-final2-b-channel-worker",
+      "namespace": "flyt-evidence",
+      "uid": "d1339f22-19d7-4097-8160-73275691626e",
+      "generation": 1
+    },
+    "annotations": {
+      "flyt.dev/detach-channel-uid": "bbf1599f-0b8d-4372-8efd-ed9e3cd2c859",
+      "hami.io/bind-phase": "success",
+      "hami.io/bind-time": "1790080217",
+      "hami.io/vgpu-devices-allocated": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3,NVIDIA,4096,50:;",
+      "hami.io/vgpu-devices-to-allocate": ";;",
+      "hami.io/vgpu-node": "gpu-4",
+      "hami.io/vgpu-time": "1790080217",
+      "nvidia.com/use-gpuuuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3"
+    },
+    "containers": [
+      {
+        "name": "main",
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        }
+      }
+    ],
+    "container_statuses": [
+      {
+        "allocatedResources": {
+          "nvidia.com/gpu": "1",
+          "nvidia.com/gpucores": "50",
+          "nvidia.com/gpumem": "4096"
+        },
+        "allocatedResourcesStatus": [
+          {
+            "name": "nvidia.com/gpu",
+            "resources": [
+              {
+                "health": "Healthy",
+                "resourceID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3-1"
+              }
+            ]
+          }
+        ],
+        "containerID": "cri-o://c7073f60c987bb83026f6ab1c566e910ed4f7ba2365f9b42a55e8b9618fffbbe",
+        "image": "localhost/flyt-worker:pytorch-final-20260922",
+        "imageID": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d",
+        "lastState": {},
+        "name": "main",
+        "ready": true,
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "restartCount": 0,
+        "started": true,
+        "state": {
+          "running": {
+            "startedAt": "2026-09-22T12:30:18Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 107,
+            "supplementalGroups": [
+              107,
+              44,
+              993
+            ],
+            "uid": 107
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/flyt-channel",
+            "name": "channel"
+          },
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-fkksd",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          }
+        ]
+      }
+    ]
+  },
+  "vmi": {
+    "metadata": {
+      "name": "evidence-torch-final2-b",
+      "namespace": "flyt-evidence",
+      "uid": "3cc5b0a9-3b6a-4e43-83c5-8c786632ceec",
+      "generation": 8
+    },
+    "domain_cpu": {
+      "cores": 8,
+      "model": "host-model"
+    },
+    "domain_memory": {
+      "guest": "16Gi",
+      "maxGuest": "64Gi"
+    },
+    "launcher_image": "localhost/flyt-virt-launcher@sha256:3a63c98b5a178af7f58f8979e09cbd11182f7220e5826f5048efb22a2d7b7935",
+    "phase": "Running",
+    "volumes": [
+      {
+        "name": "root",
+        "containerDisk": {
+          "image": "localhost/flyt-evidence-guest@sha256:47e520785c49e6db93631ef4876dcb40b73b23ffc766327e6b02cdfe3496c052",
+          "imagePullPolicy": "IfNotPresent"
+        }
+      },
+      {
+        "name": "cloudinit"
+      }
+    ]
+  }
+}

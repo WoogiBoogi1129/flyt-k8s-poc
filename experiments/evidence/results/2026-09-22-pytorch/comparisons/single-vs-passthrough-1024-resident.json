@@ -1,0 +1,192 @@
+{
+  "status": "PASS",
+  "atol": 1e-06,
+  "rtol": 0.0001,
+  "cpu_validation_only": false,
+  "tensors": [
+    {
+      "name": "step1/loss",
+      "pass": true,
+      "elements": 1,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/loss",
+      "pass": true,
+      "elements": 1,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    }
+  ],
+  "reference_sha256": "3a9e074bd4eb2ad60519b9d4c8edaf47374d4ca4974884210c0475ba93e252d9",
+  "candidate_sha256": "bbc1074b4cd7e0063de616c23a67f42852dc4035cf2e6296cf8ef53627c9c4e6",
+  "formal_result": false,
+  "scope": "training tensors only; control revisions differ for pair versus single"
+}

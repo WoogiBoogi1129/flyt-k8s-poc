@@ -1,0 +1,44 @@
+[
+  {
+    "reason": "FilteringSucceed",
+    "message": "find fit node(gpu-4), 0 nodes not fit, 1 nodes fit(gpu-4:0.00)",
+    "type": "Normal",
+    "firstTimestamp": "2026-09-22T12:38:05Z",
+    "lastTimestamp": "2026-09-22T12:38:05Z"
+  },
+  {
+    "reason": "BindingSucceed",
+    "message": "Successfully binding node [gpu-4] to flyt-evidence-baseline/evidence-cordon-probe",
+    "type": "Normal",
+    "firstTimestamp": "2026-09-22T12:38:05Z",
+    "lastTimestamp": "2026-09-22T12:38:05Z"
+  },
+  {
+    "reason": "Scheduled",
+    "message": "Successfully assigned flyt-evidence-baseline/evidence-cordon-probe to gpu-4",
+    "type": "Normal",
+    "firstTimestamp": null,
+    "lastTimestamp": null
+  },
+  {
+    "reason": "Pulled",
+    "message": "Container image \"localhost/flyt-control-plane@sha256:a60f76638461c0fb15c11d89779c482e44621ab52119e682b279de0dd2a4859d\" already present on machine and can be accessed by the pod",
+    "type": "Normal",
+    "firstTimestamp": "2026-09-22T12:38:06Z",
+    "lastTimestamp": "2026-09-22T12:38:06Z"
+  },
+  {
+    "reason": "Created",
+    "message": "Container created",
+    "type": "Normal",
+    "firstTimestamp": "2026-09-22T12:38:06Z",
+    "lastTimestamp": "2026-09-22T12:38:06Z"
+  },
+  {
+    "reason": "Started",
+    "message": "Container started",
+    "type": "Normal",
+    "firstTimestamp": "2026-09-22T12:38:06Z",
+    "lastTimestamp": "2026-09-22T12:38:06Z"
+  }
+]

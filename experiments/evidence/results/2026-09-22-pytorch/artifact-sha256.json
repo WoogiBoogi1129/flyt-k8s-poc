@@ -1,0 +1,6 @@
+{
+  ".local/pytorch-path-20260922/libflyt_guest.so": "a82a3a818b335cbca7ee9d986ae8b1dc7d14915b09f6bdf9351fde1bfd48c401",
+  ".local/pytorch-path-20260922/fixture-2026.pt": "50f1b32ff631cce6aac0a4a7b4913aeb7883563ebfd1b9c0daef4ec3dae61fe9",
+  ".local/pytorch-path-20260922/fixture-2027.pt": "39fb22dca59879a45bb1625a2fd8f6c5858135a751105f41f091a9df32e53620",
+  "artifacts/torch-2.11.0+flyt.cu128-cp310-cp310-linux_x86_64.whl": "9b32eeda77979cc571ade2f817a0d2a78c17e079cf3cc5d9c468fc41da70c4ce"
+}

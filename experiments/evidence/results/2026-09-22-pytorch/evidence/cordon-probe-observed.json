@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "name": "evidence-cordon-probe",
+    "namespace": "flyt-evidence-baseline",
+    "uid": "bcf959ef-36b0-41c0-8b6e-de461a8b8c29",
+    "generation": 1
+  },
+  "phase": "Running",
+  "conditions": [
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-22T12:38:06Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "PodReadyToStartContainers"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-22T12:38:05Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "Initialized"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-22T12:38:06Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "Ready"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-22T12:38:06Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "ContainersReady"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-22T12:38:05Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "PodScheduled"
+    }
+  ],
+  "gpu_annotations": {
+    "hami.io/bind-phase": "success",
+    "hami.io/bind-time": "1790080685",
+    "hami.io/vgpu-devices-allocated": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3,NVIDIA,1024,100:;",
+    "hami.io/vgpu-devices-to-allocate": ";;",
+    "hami.io/vgpu-node": "gpu-4",
+    "hami.io/vgpu-time": "1790080685",
+    "nvidia.com/use-gpuuuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3"
+  }
+}

@@ -1,0 +1,46 @@
+Linux evidence-passthrough-v2 5.15.0-191-generic #201-Ubuntu SMP Fri Aug 7 18:39:04 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+network:
+  version: 2
+  ethernets:
+    evidence:
+      match:
+        macaddress: "02:00:00:09:22:01"
+      dhcp4: true
+      set-name: "eth0"
+NVRM version: NVIDIA UNIX Open Kernel Module for x86_64  580.173.02  Release Build  (dvs-builder@U22-I3-AK02-24-4)  Tue Jun 23 08:17:01 UTC 2026
+GCC version:  gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04.3)
+crw-rw-rw- 1 root root 511,   0 Sep 22 12:57 /dev/nvidia-uvm
+crw-rw-rw- 1 root root 511,   1 Sep 22 12:57 /dev/nvidia-uvm-tools
+crw-rw-rw- 1 root root 195,   0 Sep 22 12:57 /dev/nvidia0
+crw-rw-rw- 1 root root 195, 255 Sep 22 12:57 /dev/nvidiactl
+
+/dev/nvidia-caps:
+total 0
+cr-------- 1 root root 236, 1 Sep 22 12:57 nvidia-cap1
+cr--r--r-- 1 root root 236, 2 Sep 22 12:57 nvidia-cap2
+uuid, name, driver_version, memory.total [MiB]
+GPU-7d708c42-8d4a-16d5-0746-474567157aa3, NVIDIA RTX PRO 6000 Blackwell Server Edition, 580.173.02, 97887 MiB
+Module                  Size  Used by
+nvidia_uvm           1794048  0
+nvidia_drm            110592  0
+nvidia_modeset       1806336  1 nvidia_drm
+isofs                  53248  0
+binfmt_misc            24576  1
+nvidia              14290944  2 nvidia_uvm,nvidia_modeset
+nls_iso8859_1          16384  1
+drm_kms_helper        315392  1 nvidia_drm
+cec                    65536  1 drm_kms_helper
+kvm_intel             372736  0
+rc_core                65536  1 cec
+fb_sys_fops            16384  1 drm_kms_helper
+kvm                  1044480  1 kvm_intel
+input_leds             16384  0
+3fb012a38bfcb1a2840d3eb71347e2cc9410845e88a735ab3c7cd71405c2af56  /opt/flyt-evidence/train.py
+266916dac6c5e7e4655526570cf303a6cc017880d2552960abc66017a7c98cf4  /opt/flyt-evidence/driver/libcuda.so.1
+0000:09:00.0
+bind
+module
+new_id
+remove_id
+uevent
+unbind

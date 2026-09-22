@@ -3,7 +3,7 @@
 CPU 기반 Kubernetes 배포는 [Stage 1 설치·운영 안내](docs/CONTROL_PLANE_STAGE1.md)를 참고하세요. `review` 모드의 실클러스터 검증과 GPU 런타임 검증 범위는 별개입니다.
 
 현재 브랜치는 `feat/k8s-native-control-plane`이다. **CPU review control plane은 실클러스터 검증 완료**,
-SHM GPU 실행 경로는 소스 작성 후 실기 검증이 남아 있으며,
+실제 VM의 SHM GPU 실행 및 고정 FP32 eager MLP·SGD를 검증했으며,
 전체 CUDA/PyTorch 호환성은 미완료다. 이전 RPC 구현은 `legacy/rpc`와 1~7단계 브랜치에 보존했다.
 기본 Makefile, 이미지, 배포 진입점은 RPC 서버·Manager·rpcbind·libtirpc를 사용하지 않는다.
 
@@ -18,13 +18,18 @@ HAMi/CUDA 순서다. `runtime/shm`에 mapping, CUDA adapter, Guest library, Work
 
 기본 메모리/device, stream/event, 제한된 async 복사, 명시적 ABI의 PTX Driver launch,
 빈 노드 Graph lifecycle, cuBLAS float SGEMM, cuDNN handle/version 소스를 작성했다.
-Runtime fatbinary 등록·전체 Graph 연산·cuDNN 연산·기타 라이브러리·unmodified PyTorch는 미지원이다.
+Runtime fatbinary 등록·packed kernel 인자 전달을 추가했고, 고정 PyTorch 빌드의 대표 학습을
+passthrough VM과 비교했다. 전체 Graph·cuDNN 연산·기타 라이브러리와 임의 PyTorch 호환성은 미지원이다.
+현재 지원 계약은 [SHM API 범위](runtime/shm/API_SUPPORT.md), 실제 학습 증거는
+[PyTorch 구현·검증 보고서](experiments/evidence/PYTORCH_IMPLEMENTATION_2026-09-22.md)를 따른다.
 [지원 표](experiments/shm-compatibility/README.md)와 [남은 작업](experiments/rpc-removal/README.md)을 확인한다.
 과거 MPS의 PyTorch 결과를 SHM 검증 결과로 사용할 수 없다.
 
 ## GPU PoC 후속 빌드·배포 준비
 
-아래 GPU 런타임 절차는 후속 작업이다. CPU 배포 결과는 [Stage 1 검증 기록](docs/CONTROL_PLANE_VALIDATION.md)을 참고한다.
+아래는 GPU 런타임 준비 순서다. 실제 개발 검증 재현은
+[VM 준비](experiments/evidence/REPRODUCE_VM_DEVELOPMENT.md)와
+[PyTorch 실행](experiments/evidence/REPRODUCE_PYTORCH.md)을 참고한다. CPU 배포 결과는 [Stage 1 검증 기록](docs/CONTROL_PLANE_VALIDATION.md)을 참고한다.
 
 1. 개발물 검증을 재개할 때 CMake/이미지 빌드와 CPU Queue 시험부터 수행한다.
 2. control plane은 `images/flyt/ControlPlane.Containerfile`, `worker`와 `guest-artifacts`는 기존 `images/flyt/Containerfile`로 빌드한다.
@@ -38,7 +43,8 @@ Runtime fatbinary 등록·전체 Graph 연산·cuDNN 연산·기타 라이브러
 6. 양쪽 mapping ACK와 Ready를 확인한 뒤 지원 API를 실행·검증한다. 종료는 Channel drain 절차를 따른다.
 
 일반 GPU 없는 노드에서는 control plane/Queue 검증까지 가능하지만 실제 CUDA Worker 실행은 별개다.
-KubeVirt hook/PVC 공유·Guest BAR mapping 속성과 HAMi 실행은 아직 실제 환경에서 확인하지 않았다.
+KubeVirt hook/PVC 공유·Guest BAR mapping과 HAMi 실행은 gpu-4에서 확인했다.
+RPC·MPS를 포함한 정식 성능 비교와 전체 장애 시험은 아직 완료되지 않았다.
 검증을 생략한 소스 개발만으로 배포 가능/운영 준비 완료라고 판단하지 않는다.
 
 [단계별 기록](docs/DEVELOPMENT_STAGES.md) · [최종 개발 상태](experiments/rpc-removal/README.md)

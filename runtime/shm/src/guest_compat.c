@@ -31,6 +31,25 @@ cudaError_t cudaGraphLaunch(cudaGraphExec_t exec,cudaStream_t stream){uint8_t p[
 cublasStatus_t cublasCreate_v2(cublasHandle_t *h){return h?(cublasStatus_t)call(FLYT_BLAS_CREATE,NULL,0,(void **)h):CUBLAS_STATUS_INVALID_VALUE;}
 cublasStatus_t cublasDestroy_v2(cublasHandle_t h){return (cublasStatus_t)one(FLYT_BLAS_DESTROY,h,NULL);}
 cublasStatus_t cublasSetStream_v2(cublasHandle_t h,cudaStream_t stream){uint8_t p[16];flyt_put(p,(uintptr_t)h,8);flyt_put(p+8,(uintptr_t)stream,8);return (cublasStatus_t)call(FLYT_BLAS_STREAM,p,16,NULL);}
+static cublasStatus_t blas_mode(uint32_t api,cublasHandle_t h,int value,int *out){
+    uint8_t p[12],r[4];size_t got=0;flyt_put(p,(uintptr_t)h,8);flyt_put(p+8,(uint32_t)value,4);
+    pthread_mutex_lock(&flyt_guest_lock);int e=flyt_guest_exchange(api,p,out?8:12,r,4,&got);pthread_mutex_unlock(&flyt_guest_lock);
+    if(!e&&out){if(got!=4)e=999;else *out=(int)flyt_get(r,4);}
+    return e==999?CUBLAS_STATUS_INTERNAL_ERROR:e==801?CUBLAS_STATUS_NOT_SUPPORTED:(cublasStatus_t)e;
+}
+cublasStatus_t cublasSetMathMode(cublasHandle_t h,cublasMath_t mode){return blas_mode(FLYT_BLAS_MATH_SET,h,mode,NULL);}
+cublasStatus_t cublasGetMathMode(cublasHandle_t h,cublasMath_t *mode){return mode?blas_mode(FLYT_BLAS_MATH_GET,h,0,(int*)mode):CUBLAS_STATUS_INVALID_VALUE;}
+cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t h,cublasPointerMode_t mode){return blas_mode(FLYT_BLAS_POINTER_SET,h,mode,NULL);}
+cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t h,cublasPointerMode_t *mode){return mode?blas_mode(FLYT_BLAS_POINTER_GET,h,0,(int*)mode):CUBLAS_STATUS_INVALID_VALUE;}
+cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t h,void *address,size_t bytes){
+    uint8_t p[32];size_t got;struct flyt_device_ref ref={0};int e=CUBLAS_STATUS_INVALID_VALUE;
+    pthread_mutex_lock(&flyt_guest_lock);
+    if((!address&&!bytes)||!flyt_guest_ref(address,bytes,&ref)){
+        flyt_put(p,(uintptr_t)h,8);flyt_put(p+8,ref.handle,8);flyt_put(p+16,ref.offset,8);flyt_put(p+24,bytes,8);
+        e=flyt_guest_exchange(FLYT_BLAS_WORKSPACE,p,32,NULL,0,&got);
+    }
+    pthread_mutex_unlock(&flyt_guest_lock);return e==999?CUBLAS_STATUS_INTERNAL_ERROR:e==801?CUBLAS_STATUS_NOT_SUPPORTED:(cublasStatus_t)e;
+}
 cublasStatus_t cublasSgemm_v2(cublasHandle_t h,cublasOperation_t ta,cublasOperation_t tb,int m,int n,int k,const float *alpha,const float *a,int lda,const float *b,int ldb,const float *beta,float *c,int ldc){
     if(!alpha||!beta)return CUBLAS_STATUS_INVALID_VALUE;
     uint8_t p[96]={0};struct flyt_device_ref ar,br,cr;size_t got;
@@ -50,7 +69,6 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t s,enum cudaStreamCaptureMode mod
 cudaError_t cudaStreamEndCapture(cudaStream_t s,cudaGraph_t *g){(void)s;if(g)*g=NULL;return cudaErrorNotSupported;}
 cudaError_t cudaMallocManaged(void **p,size_t n,unsigned f){(void)n;(void)f;if(p)*p=NULL;return cudaErrorNotSupported;}
 cudaError_t cudaDeviceReset(void){return cudaErrorNotSupported;}
-cudaError_t cudaLaunchKernel(const void *f,struct dim3 grid,struct dim3 block,void **args,size_t shared,cudaStream_t stream){(void)f;(void)grid;(void)block;(void)args;(void)shared;(void)stream;return cudaErrorNotSupported;}
 /* Never return an address from a native CUDA library. Version/flags outside the
  * authored ABI are rejected. Missing symbols stay NULL. */
 #undef cuGetProcAddress
@@ -66,6 +84,8 @@ CUresult cuGetProcAddress(const char *symbol,void **pfn,int version,cuuint64_t f
     }
 #define SYMBOL(name) if(!strcmp(symbol,#name)){*pfn=(void *)&name;return CUDA_SUCCESS;}
     SYMBOL(cuInit) SYMBOL(cuDeviceGet) SYMBOL(cuDeviceGetCount)
+    SYMBOL(cuDevicePrimaryCtxGetState)
+    SYMBOL(cuCtxGetCurrent) SYMBOL(cuCtxSetCurrent) SYMBOL(cuCtxGetDevice) SYMBOL(cuDeviceGetAttribute) SYMBOL(cuGetErrorString)
     SYMBOL(cuMemAlloc_v2) SYMBOL(cuMemFree_v2) SYMBOL(cuMemcpyHtoD_v2) SYMBOL(cuMemcpyDtoH_v2) SYMBOL(cuMemcpyDtoD_v2)
     SYMBOL(cuMemGetInfo_v2)
     SYMBOL(cuCtxSynchronize) SYMBOL(cuModuleLoadData) SYMBOL(cuModuleUnload) SYMBOL(cuModuleGetFunction) SYMBOL(cuLaunchKernel)

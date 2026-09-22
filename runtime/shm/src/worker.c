@@ -2,6 +2,7 @@
 #include "flyt_wire.h"
 #include "flyt_async.h"
 #include "flyt_compat.h"
+#include "flyt_torch.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +43,7 @@ int main(int argc,char **argv){
         }else if(q.api_id==FLYT_HELLO){r.transport_status=FLYT_SHM_BAD_DESCRIPTOR;stopping=1;}
         else if((rc=flyt_cuda_exec_check(session.exec))!=FLYT_SHM_OK){r.transport_status=(uint32_t)rc;}
         else if(q.api_id>=0x3000){if(flyt_compat_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
+        else if(q.api_id>=0x2100&&q.api_id!=FLYT_STREAM_PRIORITY_CREATE){if(flyt_torch_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
         else if(q.api_id>=0x2000){if(flyt_async_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}}
         else if(flyt_cuda_dispatch(&session,&q,&r)){flyt_shm_request_release(&q);break;}
         rc=flyt_shm_worker_respond(channel,&r);flyt_shm_request_release(&q);if(rc)break;

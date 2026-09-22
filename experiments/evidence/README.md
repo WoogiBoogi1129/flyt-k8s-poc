@@ -2,10 +2,13 @@
 
 선행 개발과 본 실험을 분리한 실증 계획의 실행·판정 도구다. ivshmem launcher를
 빌드·배포해 단일 VM과 2개 VM의 실제 SHM GPU 복사·PTX 실행을 확인했다.
-PyTorch 학습 및 baseline 진입 조건은 미완료이므로 E1~E5 본 실험 전체를 완료한 상태는 아니다. 개발 중 수치는
+대표 PyTorch 학습과 실제 passthrough 대비 두 VM 8개 조건의 정확성을 검증했다.
+RPC·MPS·공정 CPU 배치·연산 제한 계약이 남아 E1~E5 본 실험 전체는 미완료다. 개발 중 수치는
 `development/`에 보관하고 본 실험 성능으로 재사용하지 않는다.
 실제 후속 구현·실패·조치는 [구현·검증 보고서](IMPLEMENTATION_AND_VALIDATION_2026-09-22.md)에 기록한다.
-빌드·배포·VM 개발 검증의 [재현 절차](REPRODUCE_VM_DEVELOPMENT.md)를 별도로 제공한다.
+최신 학습 결과는 [PyTorch 구현·검증 보고서](PYTORCH_IMPLEMENTATION_2026-09-22.md),
+[학습 재현 절차](REPRODUCE_PYTORCH.md), [공개 증거](results/2026-09-22-pytorch/)를 따른다.
+초기 GPU smoke의 [재현 절차](REPRODUCE_VM_DEVELOPMENT.md)도 보존한다.
 
 ## 구성과 실행 범위
 
@@ -21,10 +24,13 @@ PyTorch 학습 및 baseline 진입 조건은 미완료이므로 E1~E5 본 실험
 | `hami_smoke.py` | 새 namespace의 HAMi-only 검증, UUID·기존 소유권 확인, 실제 연산·OOM, 생성 자원 정리 |
 | `guest_gpu_smoke.c` | 실제 VM의 SHM 복사·PTX 반복 결과 검사; PyTorch 대체 시험이 아님 |
 | `../../scripts/run-evidence-smoke.py` | 새 VM 부팅·SSH·BAR 탐색·실제 probe 실행·증거 저장·drain·Released 확인 |
+| `../../scripts/run-evidence-training.py` | 고정 Python/CUDA 배포, single-session 네 조건 학습, 실제 Ready·tensor 회수·Released 검사 |
+| `cuda_trace.c`, `summarize_cuda_trace.py` | native Runtime/Driver 호출과 kernel 인자 크기 진단; 성능 계측에는 사용하지 않음 |
 | `../../scripts/repeat-evidence-smoke.py` | 두 독립 PVC에서 새 allocation으로 준비·연산·회수·재사용 반복 |
 
 자동 VM 프로비저닝, ivshmem QEMU 배포, GPU smoke와 회수 실행 도구를 추가했다.
-**VFIO baseline, PyTorch CUDA 호환성, 학습 장애 시험과 본 실험 전체 자동 실행은 미완료다.**
+**고정 MLP·SGD와 VFIO 기준은 기능 검증을 통과했다. RPC·MPS, 학습 장애 전체 반복과
+본 실험 전체 자동 실행은 미완료다. PyTorch 전체 CUDA 호환성을 뜻하지 않는다.**
 필요한 선행 개발과 진입 증거는 `DEVELOPMENT_GATES.md`에 정리했다.
 현재 행렬은 실행 순서와 증거 장부이며 배포 오케스트레이터가 아니다. `gates.json`을
 PASS로 편집하는 것만으로 검증을 완료할 수 없다. 해당 빌드·환경에서 실제 증거가 필요하다.

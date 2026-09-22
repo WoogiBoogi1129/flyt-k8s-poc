@@ -13,6 +13,7 @@ p.add_argument('--reuse-pvc',help='Reuse an existing PVC only after every previo
 p.add_argument('--public-key',type=Path,required=True);p.add_argument('--control-image',required=True)
 p.add_argument('--worker-image',required=True)
 p.add_argument('--hook-image',required=True)
+p.add_argument('--guest-image',default='quay.io/containerdisks/ubuntu@sha256:27d3bbe1374521aa43fc50b647d712c9c90693f1e8ce9516aa25aeb73f17681d',help='Digest-pinned guest disk; training requires enough disk space for Python/CUDA')
 p.add_argument('--gpu-uuid',default='GPU-7d708c42-8d4a-16d5-0746-474567157aa3')
 p.add_argument('--memory-mib',type=int,default=4096);p.add_argument('--compute',type=int,default=100)
 p.add_argument('--sessions',type=int,default=1);p.add_argument('--output',type=Path,required=True)
@@ -20,7 +21,7 @@ a=p.parse_args();name=a.name
 if bool(a.storage_slot)==bool(a.reuse_pvc):p.error('choose storage-slot or reuse-pvc')
 if not re.fullmatch(r'[a-z][a-z0-9-]{0,40}',name):p.error('invalid name')
 if not 1<=a.sessions<=32 or not 1<=a.compute<=100 or a.memory_mib<=0:p.error('invalid quota')
-for image in [a.control_image,a.worker_image,a.hook_image]:
+for image in [a.control_image,a.worker_image,a.hook_image,a.guest_image]:
  if not re.fullmatch(r'.+@sha256:[0-9a-f]{64}',image):p.error('digest-pinned images required')
 key=a.public_key.read_text().strip()
 if not re.fullmatch(r'ssh-ed25519 [A-Za-z0-9+/=]+(?: [^\r\n]+)?',key):p.error('expected public Ed25519 key')
@@ -52,7 +53,7 @@ else:
 vm=create({'apiVersion':'kubevirt.io/v1','kind':'VirtualMachine','metadata':meta(name),'spec':{'runStrategy':'Halted','template':{'metadata':{'labels':{'app.kubernetes.io/part-of':'flyt-evidence'}},'spec':{
  'nodeSelector':{'kubernetes.io/hostname':'gpu-4'},'domain':{'cpu':{'cores':8},'resources':{'requests':{'memory':'16Gi'}},
  'devices':{'disks':[{'name':'root','disk':{'bus':'virtio'}},{'name':'cloudinit','disk':{'bus':'virtio'}}],'interfaces':[{'name':'default','masquerade':{}}]}},
- 'networks':[{'name':'default','pod':{}}],'volumes':[{'name':'root','containerDisk':{'image':'quay.io/containerdisks/ubuntu@sha256:27d3bbe1374521aa43fc50b647d712c9c90693f1e8ce9516aa25aeb73f17681d'}},
+ 'networks':[{'name':'default','pod':{}}],'volumes':[{'name':'root','containerDisk':{'image':a.guest_image}},
  {'name':'cloudinit','cloudInitNoCloud':{'userData':'#cloud-config\nusers:\n  - name: ubuntu\n    sudo: ALL=(ALL) NOPASSWD:ALL\n    shell: /bin/bash\n    ssh_authorized_keys:\n      - '+key+'\nssh_pwauth: false\n'}}]}}}})
 profile=create({'apiVersion':'flyt.dev/v1alpha1','kind':'FlytGPUProfile','metadata':meta(name+'-profile'),'spec':{'approved':True,'nodeName':'gpu-4','gpuUUID':a.gpu_uuid,
  'cores':a.compute,'memoryMiB':a.memory_mib,'maxClients':a.sessions,'workerImage':a.worker_image,'hamiNamespace':'kube-system','schedulerName':'hami-scheduler','runtimeClass':'nvidia'}})

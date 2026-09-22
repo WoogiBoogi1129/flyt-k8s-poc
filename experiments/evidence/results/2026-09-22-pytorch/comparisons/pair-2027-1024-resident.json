@@ -1,0 +1,191 @@
+{
+  "status": "PASS",
+  "atol": 1e-06,
+  "rtol": 0.0001,
+  "cpu_validation_only": false,
+  "tensors": [
+    {
+      "name": "step1/loss",
+      "pass": true,
+      "elements": 1,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/gradients/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step1/parameters/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/loss",
+      "pass": true,
+      "elements": 1,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/gradients/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/0.bias",
+      "pass": true,
+      "elements": 2048,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/0.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/2.bias",
+      "pass": true,
+      "elements": 1024,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    },
+    {
+      "name": "step100/parameters/2.weight",
+      "pass": true,
+      "elements": 2097152,
+      "exceeded": 0,
+      "nonfinite": 0,
+      "max_absolute_error": 0.0,
+      "max_relative_error_nonzero_reference": 0.0,
+      "zero_reference_mismatches": 0
+    }
+  ],
+  "reference_sha256": "b6eb8bd121b0dd0ceb30f509cacaa49e3abf6aab82662ff7d17f552197c33ade",
+  "candidate_sha256": "85c1dff152dfdfc31545f8e9be5baebf8e8e8c15fcf7ab533d1115590ebfcd91",
+  "formal_result": false
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "pair-2026-32-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "repeat-2026-32-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "pair-2026-32-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "repeat-2026-32-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "pair-2026-1024-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "repeat-2026-1024-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "pair-2026-1024-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "repeat-2026-1024-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "pair-2027-32-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "pair-2027-32-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "pair-2027-1024-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "pair-2027-1024-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  }
+]

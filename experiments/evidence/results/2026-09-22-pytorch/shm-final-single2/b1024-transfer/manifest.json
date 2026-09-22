@@ -1,0 +1,50 @@
+{
+  "backend": "shm-hami",
+  "device": "cuda",
+  "mode": "correctness",
+  "batch": 1024,
+  "seed": 2026,
+  "fixture_sha256": "50f1b32ff631cce6aac0a4a7b4913aeb7883563ebfd1b9c0daef4ec3dae61fe9",
+  "config_sha256": "616132478e7999b9d64dc1a9b4bb0c99f23d556a6d5134635f1e82cdd8df7422",
+  "torch_version": "2.11.0+flyt.cu128",
+  "cuda_version": "12.8",
+  "input_mode": "transfer",
+  "model": {
+    "widths": [
+      1024,
+      2048,
+      1024
+    ],
+    "activation": "relu",
+    "loss": "mse",
+    "dtype": "float32",
+    "optimizer": "sgd",
+    "lr": 0.001,
+    "momentum": 0.0,
+    "weight_decay": 0.0,
+    "tf32": false
+  },
+  "checkpoints": [
+    1,
+    100
+  ],
+  "optimizer_execution": {
+    "foreach": false,
+    "fused": false
+  },
+  "disable_addmm_cuda_lt": true,
+  "measurement_start_wall_ns": 1790083148905674874,
+  "measurement_start_monotonic": 211.7973537,
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "source_sha256": "3fb012a38bfcb1a2840d3eb71347e2cc9410845e88a735ab3c7cd71405c2af56",
+  "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+}

@@ -83,5 +83,54 @@ class DetachTests(unittest.TestCase):
         self.assertNotIn(DETACH_FINALIZER,self.api.objects['pods','ch-worker']['metadata']['finalizers'])
         self.assertEqual(self.api.objects['pods','launcher'],self.pod)
 
+    def unstarted_launcher(self):
+        self.api.objects['attachments','ch-guest']['status']={}
+        observe_guest(self.api,self.channel)
+        p=self.api.objects['pods','launcher'];p['metadata']['deletionTimestamp']='now'
+        p['spec']['initContainers']=[{'name':'log','restartPolicy':'Always'},{'name':'disk'}]
+        def waiting(name):return {'name':name,'state':{'waiting':{'reason':'PodInitializing'}},
+            'imageID':'','restartCount':0,'started':False,'ready':False,'lastState':{}}
+        p['status']={'phase':'Failed','conditions':[{'type':'Initialized','status':'False'},
+            {'type':'PodReadyToStartContainers','status':'False','reason':'PodSandboxNotReady'}],
+            'containerStatuses':[waiting('compute'),waiting('hook')],
+            'initContainerStatuses':[{'name':'log','state':{'terminated':{'exitCode':0}}},waiting('disk')]}
+        return p
+
+    def test_cancelled_init_failure_persists_proof_before_release(self):
+        self.unstarted_launcher();self.api.writes.clear()
+        observe_guest(self.api,self.channel)
+        status=self.api.objects['attachments','ch-guest']['status']
+        self.assertEqual(status['phase'],'Detached')
+        self.assertEqual(status['evidence'],'KubeletTerminalUnstartedLauncher')
+        self.assertEqual([x[0] for x in self.api.writes],['attachments','pods'])
+
+    def test_unstarted_rejects_uncertain_or_live_container(self):
+        mutations=[lambda p:p['status'].update(phase='Pending'),
+            lambda p:p['metadata'].pop('deletionTimestamp'),
+            lambda p:p['status'].update(conditions=[]),
+            lambda p:p['status']['containerStatuses'].pop(),
+            lambda p:p['status']['containerStatuses'][0].update(containerID='cri-o://old'),
+            lambda p:p['status']['containerStatuses'][0].update(restartCount=1),
+            lambda p:p['status']['containerStatuses'][0].update(lastState={'terminated':{}}),
+            lambda p:p['status']['containerStatuses'][0].update(state={'waiting':{'reason':'ContainerStatusUnknown'}}),
+            lambda p:p['status']['initContainerStatuses'][0].update(state={'running':{}}),
+            lambda p:p['status']['initContainerStatuses'].pop(),
+            lambda p:p['spec'].update(ephemeralContainers=[{'name':'debug'}])]
+        for mutate in mutations:
+            with self.subTest(mutation=mutate):
+                self.setUp();p=self.unstarted_launcher();mutate(p)
+                observe_guest(self.api,self.channel)
+                self.assertNotEqual(self.api.objects['attachments','ch-guest']['status'].get('phase'),'Detached')
+                self.assertIn(DETACH_FINALIZER,p['metadata']['finalizers'])
+
+    def test_unstarted_does_not_override_prior_mapping_or_unready_node(self):
+        for mapped in [False,True]:
+            with self.subTest(mapped=mapped):
+                self.setUp();self.unstarted_launcher()
+                if mapped:self.api.objects['attachments','ch-guest']['status']['phase']='Mapped'
+                else:self.api.ready=False
+                observe_guest(self.api,self.channel)
+                self.assertNotEqual(self.api.objects['attachments','ch-guest']['status'].get('phase'),'Detached')
+
 
 if __name__=='__main__':unittest.main()

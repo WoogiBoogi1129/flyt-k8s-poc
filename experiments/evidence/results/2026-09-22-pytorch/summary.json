@@ -1,0 +1,176 @@
+{
+  "scope": "development correctness; no formal E3/E4 performance",
+  "formal_result": false,
+  "shm_pair_conditions": 8,
+  "shm_single_conditions": 4,
+  "native_reference_conditions": 8,
+  "native_repeat_conditions": 4,
+  "tensor_comparisons": [
+    {
+      "id": "pair-2026-1024-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "pair-2026-1024-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "pair-2026-32-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "pair-2026-32-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "pair-2027-1024-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "pair-2027-1024-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "pair-2027-32-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "pair-2027-32-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "repeat-2026-1024-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "repeat-2026-1024-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "repeat-2026-32-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "repeat-2026-32-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-pair-1024-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-pair-1024-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-pair-32-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-pair-32-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-passthrough-1024-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-passthrough-1024-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-passthrough-32-resident",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    },
+    {
+      "id": "single-vs-passthrough-32-transfer",
+      "status": "PASS",
+      "tensor_count": 18,
+      "max_absolute_error": 0.0,
+      "exceeded": 0,
+      "nonfinite": 0
+    }
+  ],
+  "control_regression_tests": 30,
+  "evidence_regression_tests": 17,
+  "layout_regression_tests": 6,
+  "c_regression_program_runs": 5,
+  "main_experiments": "BLOCKED: RPC/MPS, CPU/NUMA setup and quota contract remain",
+  "conditional_node_disconnect_multi_gpu": "NOT_RUN"
+}

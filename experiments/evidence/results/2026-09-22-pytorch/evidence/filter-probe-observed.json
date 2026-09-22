@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "name": "evidence-filter-probe",
+    "namespace": "flyt-evidence-baseline",
+    "uid": "55af864b-8c40-4d88-9eac-e21bd4130895",
+    "generation": 1
+  },
+  "phase": "Pending",
+  "conditions": [
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-22T12:41:53Z",
+      "message": "0/1 nodes are available: 1 3/3 CardUuidMismatch. preemption: 0/1 nodes are available: 1 No preemption victims found for incoming pod.",
+      "observedGeneration": 1,
+      "reason": "Unschedulable",
+      "status": "False",
+      "type": "PodScheduled"
+    }
+  ],
+  "gpu_annotations": {
+    "nvidia.com/use-gpuuuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3"
+  }
+}

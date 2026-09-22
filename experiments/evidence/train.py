@@ -15,6 +15,9 @@ from evidence import HERE, canonical_hash, digest, write_json
 def load_torch():
     # Set before importing torch or creating a CUDA context.
     os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    # Common pre-experiment algorithm choice for every backend. This fixed
+    # FP32 eager workload uses cuBLAS; cuBLASLt remains outside D3 support.
+    os.environ["DISABLE_ADDMM_CUDA_LT"] = "1"
     import torch
     torch.set_num_threads(1)
     torch.use_deterministic_algorithms(True)
@@ -58,7 +61,8 @@ def execute(a, c):
         raise ValueError("Fixture model/batch does not match configuration")
     net = model(torch, c).to(a.device)
     net.load_state_dict(data["weights"])
-    optimizer = torch.optim.SGD(net.parameters(), lr=c["model"]["lr"], momentum=0, weight_decay=0)
+    optimizer = torch.optim.SGD(net.parameters(), lr=c["model"]["lr"], momentum=0,
+                                weight_decay=0, foreach=False, fused=False)
     x_cpu, y_cpu = data["x"][:a.batch], data["y"][:a.batch]
     if a.input_mode == "resident":
         x, y = x_cpu.to(a.device), y_cpu.to(a.device)
@@ -119,6 +123,8 @@ def execute(a, c):
         "seed": data["metadata"]["seed"], "fixture_sha256": digest(a.fixture), "config_sha256": canonical_hash(c),
         "torch_version": str(torch.__version__), "cuda_version": torch.version.cuda,
         "input_mode": a.input_mode, "model": c["model"], "checkpoints": c["correctness_steps"],
+        "optimizer_execution": {"foreach": False, "fused": False},
+        "disable_addmm_cuda_lt": True,
         "measurement_start_wall_ns": wall0, "measurement_start_monotonic": t0,
         "cpu_affinity": sorted(os.sched_getaffinity(0)), "source_sha256": digest(Path(__file__)),
         "device_name": torch.cuda.get_device_name(0) if a.device == "cuda" else "cpu"}
@@ -148,7 +154,7 @@ def main():
     s = sub.add_parser("fixture"); s.add_argument("--out", type=Path, required=True); s.add_argument("--seed", type=int, choices=(2026, 2027), required=True)
     s = sub.add_parser("run")
     s.add_argument("--out", type=Path, required=True); s.add_argument("--fixture", type=Path, required=True)
-    s.add_argument("--backend", choices=("passthrough", "rpc-mps", "shm-hami"), required=True)
+    s.add_argument("--backend", choices=("passthrough", "rpc-mps", "shm-hami", "native-diagnostic"), required=True)
     s.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
     s.add_argument("--mode", choices=("correctness", "fixed", "window", "latency"), required=True)
     s.add_argument("--input-mode", choices=("resident", "transfer"), required=True)

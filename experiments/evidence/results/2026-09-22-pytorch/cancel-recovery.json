@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "formal_result": false,
+  "scope": "single observed pre-start cancellation regression after controller update",
+  "controller_image": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808",
+  "channel_name": "evidence-torch-final-single-channel",
+  "channel_status": {
+    "allocation": "1e0f3637f849fa93bbce600b295199b3",
+    "compute": 100,
+    "everBound": true,
+    "generation": "b1ebbb6d28ee9de26f7373254303083f",
+    "gpuUUID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+    "memoryMiB": 4096,
+    "nodeName": "gpu-4",
+    "phase": "Released",
+    "profileGeneration": 1,
+    "reason": "DetachAndReclamationConfirmed",
+    "requestGeneration": 1,
+    "sessions": [
+      "ee483480ec7896af4dbf5b0d008306b4"
+    ],
+    "vmiUID": "93c2ff42-8a89-47f7-817b-2988f9883551",
+    "workerPodUID": "14154aa3-4d30-4351-a884-347899a79ac9"
+  },
+  "attachment_status": {
+    "evidence": "KubeletTerminalUnstartedLauncher",
+    "launcherPodUID": "50234917-cbd4-4b39-9aeb-09bb79177138",
+    "observedGeneration": 1,
+    "phase": "Detached"
+  },
+  "old_launcher_absent": true,
+  "worker_absent": true
+}

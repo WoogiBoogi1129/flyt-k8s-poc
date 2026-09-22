@@ -1,0 +1,93 @@
+{
+  "status": "PASS",
+  "formal_result": false,
+  "checks": {
+    "gpu_bound_nvidia": true,
+    "driver_override_cleared": true,
+    "hami_data_restored": true,
+    "cordon_removed": true,
+    "kubevirt_configuration_restored": true,
+    "four_hami_gpus": true,
+    "no_test_vmi": true,
+    "torch_channels_released": true,
+    "no_torch_workers": true,
+    "no_admin_or_import_pods": true,
+    "no_target_compute_process": true,
+    "monitors_ready": true
+  },
+  "gpu_inventory": [
+    "GPU-772181af-05a4-0c24-de59-8487bd37c142, 0 MiB",
+    "GPU-7d708c42-8d4a-16d5-0746-474567157aa3, 0 MiB",
+    "GPU-c654d43e-43f8-c28e-77c2-1f17a0cbf46a, 0 MiB",
+    "GPU-1b4de6a0-88ae-4004-98b9-035906a2473f, 0 MiB"
+  ],
+  "hami_registration": [
+    {
+      "id": "GPU-772181af-05a4-0c24-de59-8487bd37c142",
+      "count": 10,
+      "devmem": 97887,
+      "devcore": 100,
+      "type": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "mode": "hami-core",
+      "health": true
+    },
+    {
+      "id": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "index": 1,
+      "count": 10,
+      "devmem": 97887,
+      "devcore": 100,
+      "type": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "mode": "hami-core",
+      "health": true
+    },
+    {
+      "id": "GPU-c654d43e-43f8-c28e-77c2-1f17a0cbf46a",
+      "index": 2,
+      "count": 10,
+      "devmem": 97887,
+      "devcore": 100,
+      "type": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "numa": 2,
+      "mode": "hami-core",
+      "health": true
+    },
+    {
+      "id": "GPU-1b4de6a0-88ae-4004-98b9-035906a2473f",
+      "index": 3,
+      "count": 10,
+      "devmem": 97887,
+      "devcore": 100,
+      "type": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "numa": 2,
+      "mode": "hami-core",
+      "health": true
+    }
+  ],
+  "channels": {
+    "evidence-torch-final-a-channel": "Released",
+    "evidence-torch-final-b-channel": "Released",
+    "evidence-torch-final-single-channel": "Released",
+    "evidence-torch-final-single2-channel": "Released",
+    "evidence-torch-final2-a-channel": "Released",
+    "evidence-torch-final2-b-channel": "Released",
+    "evidence-torch-v1-channel": "Released"
+  },
+  "monitor_pods": [
+    {
+      "name": "nvidia-dcgm-exporter-scbq4",
+      "namespace": "gpu-operator",
+      "uid": "891d679e-a7f1-496c-8614-337ce4537f61"
+    },
+    {
+      "name": "hami-device-plugin-jld7c",
+      "namespace": "kube-system",
+      "uid": "1df996fd-df9d-4e2a-873c-ac74fcb46bd7"
+    }
+  ],
+  "baseline_vms": {
+    "evidence-passthrough": "Halted",
+    "evidence-passthrough-v2": "Halted"
+  },
+  "retained_baseline_pvc": "evidence-passthrough-root; no active mount, retained for reproduction"
+}

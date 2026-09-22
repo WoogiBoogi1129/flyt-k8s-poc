@@ -1,0 +1,10 @@
+{
+  "development_revision": "torch-runtime-v1-control-v2",
+  "reason": "pre-start cancellation stuck on never-created PodInitializing containers",
+  "image": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808",
+  "source_sha256": {
+    "runtime/shm/control/observe.py": "a0c3bb9e01cfb047457279677acacaf353daecea75c4aaf43b7f4ff9d90632a6",
+    "tests/control/test_detach_observation.py": "18d15907b6209b26ab83e81dec18defed78c56304b2f2995d7995bc75880b5dd"
+  },
+  "regression_tests": 30
+}

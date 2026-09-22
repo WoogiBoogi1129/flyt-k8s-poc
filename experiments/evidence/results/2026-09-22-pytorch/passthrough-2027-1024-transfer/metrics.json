@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "measured": true,
+  "formal_result": false,
+  "scope": "guest workload execution only; correctness, route, host CPU and gates require separate evidence",
+  "cpu_validation_only": false,
+  "steps": 100,
+  "elapsed_seconds": 0.9552937529999781,
+  "samples_per_second": 107192.15914311788,
+  "guest_process_cpu_seconds": 0.9282409999999999,
+  "guest_process_average_cores": 0.9716812206559265,
+  "program_seconds_before_artifact_write": 4.928617650999996
+}

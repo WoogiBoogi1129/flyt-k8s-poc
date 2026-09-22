@@ -1,0 +1,34 @@
+[
+  {
+    "state": "StartRequested",
+    "seconds": 2.6108929890033323
+  },
+  {
+    "state": "SSHReady",
+    "seconds": 41.35318059800193
+  },
+  {
+    "state": "BarrierReady",
+    "seconds": 97.62603265199868
+  },
+  {
+    "state": "TrainingStarted",
+    "seconds": 117.63190196000505
+  },
+  {
+    "state": "ChannelReady",
+    "seconds": 126.22110088499903
+  },
+  {
+    "state": "TrainingPassed",
+    "seconds": 309.7341077979945
+  },
+  {
+    "state": "DrainRequested",
+    "seconds": 310.1806193670054
+  },
+  {
+    "state": "Released",
+    "seconds": 331.49252913700184
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "name": "evidence-flyt-controller",
+  "namespace": "flyt-evidence",
+  "uid": "4abf21f4-a9d1-41fb-aa74-2264a9a6cccc",
+  "images": {
+    "controller": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808"
+  },
+  "status": {
+    "availableReplicas": 1,
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-09-22T13:12:28Z",
+        "lastUpdateTime": "2026-09-22T13:12:28Z",
+        "message": "Deployment has minimum availability.",
+        "reason": "MinimumReplicasAvailable",
+        "status": "True",
+        "type": "Available"
+      },
+      {
+        "lastTransitionTime": "2026-09-22T07:47:44Z",
+        "lastUpdateTime": "2026-09-22T13:12:28Z",
+        "message": "ReplicaSet \"evidence-flyt-controller-89f4f7568\" has successfully progressed.",
+        "reason": "NewReplicaSetAvailable",
+        "status": "True",
+        "type": "Progressing"
+      }
+    ],
+    "observedGeneration": 4,
+    "readyReplicas": 1,
+    "replicas": 1,
+    "terminatingReplicas": 0,
+    "updatedReplicas": 1
+  }
+}

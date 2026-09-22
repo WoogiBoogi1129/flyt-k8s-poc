@@ -1,5 +1,9 @@
 # SHM/HAMi 후속 구현·실증 작업 기록
 
+> 이 문서는 초기 SHM/PTX·자원·생명주기 개발 검증 기록이다. 이후 수행한 PyTorch 학습,
+> passthrough 비교, 시작 전 취소 회수 수정은
+> [후속 PyTorch 보고서](PYTORCH_IMPLEMENTATION_2026-09-22.md)를 따른다.
+
 작업일: 2026-09-22 KST. 대상: gpu-4, `flyt-evidence` namespace.
 작업 시작 기준 커밋: `6bc0332`, 중간 반영: `1c07d1c`.
 **실제 구현·개발 검증 결과 보고서다. 요청한 전체 PyTorch 학습·성능 실증은 아직 완료되지 않았다.**

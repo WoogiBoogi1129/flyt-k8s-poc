@@ -49,6 +49,23 @@ int flyt_compat_dispatch(struct flyt_cuda_session *s,const struct flyt_shm_reque
     case FLYT_BLAS_STREAM:
         if(n!=16||(i=lookup(flyt_get(p,8),BLAS))<0||!flyt_async_stream(flyt_get(p+8,8),&st))goto invalid;
         r->api_result=cublasSetStream((cublasHandle_t)handles[i].value,(cudaStream_t)st);break;
+    case FLYT_BLAS_MATH_SET:case FLYT_BLAS_POINTER_SET:
+        if(n!=12||(i=lookup(flyt_get(p,8),BLAS))<0)goto invalid;
+        if(q->api_id==FLYT_BLAS_MATH_SET)r->api_result=cublasSetMathMode((cublasHandle_t)handles[i].value,(cublasMath_t)flyt_get(p+8,4));
+        else if(flyt_get(p+8,4)!=CUBLAS_POINTER_MODE_HOST)r->api_result=CUBLAS_STATUS_NOT_SUPPORTED;
+        else r->api_result=cublasSetPointerMode((cublasHandle_t)handles[i].value,CUBLAS_POINTER_MODE_HOST);break;
+    case FLYT_BLAS_MATH_GET:case FLYT_BLAS_POINTER_GET: {
+        if(n!=8||(i=lookup(flyt_get(p,8),BLAS))<0||r->output_capacity<4||!r->output)goto invalid;
+        if(q->api_id==FLYT_BLAS_MATH_GET){cublasMath_t mode;r->api_result=cublasGetMathMode((cublasHandle_t)handles[i].value,&mode);if(!r->api_result)flyt_put(r->output,mode,4);}
+        else {cublasPointerMode_t mode;r->api_result=cublasGetPointerMode((cublasHandle_t)handles[i].value,&mode);if(!r->api_result)flyt_put(r->output,mode,4);}
+        if(!r->api_result)r->output_bytes=4;break;
+    }
+    case FLYT_BLAS_WORKSPACE: {
+        if(n!=32||(i=lookup(flyt_get(p,8),BLAS))<0)goto invalid;
+        void *address=NULL;struct flyt_device_ref ref={flyt_get(p+8,8),flyt_get(p+16,8)};size_t bytes=(size_t)flyt_get(p+24,8);
+        if((ref.handle||bytes)&&!flyt_cuda_exec_resolve(s->exec,ref,bytes,&address))goto invalid;
+        r->api_result=cublasSetWorkspace((cublasHandle_t)handles[i].value,address,bytes);break;
+    }
     case FLYT_BLAS_SGEMM:{
         if(n!=96||(i=lookup(flyt_get(p,8),BLAS))<0)goto invalid;
         unsigned ta=(unsigned)flyt_get(p+8,4),tb=(unsigned)flyt_get(p+12,4);if(ta>2||tb>2)goto invalid;

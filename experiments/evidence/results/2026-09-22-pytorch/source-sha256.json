@@ -1,0 +1,30 @@
+{
+  "base_commit": "f1e0f86913768c0bda2a98270941ad92c2182c78",
+  "scope": "tested implementation with uncommitted changes; final docs/tests are separate",
+  "files": {
+    "experiments/evidence/guest_training_suite.py": "48eea156e7893e8165db6cd29b56b406c2c7f70253a29d948437dde2173ebb09",
+    "experiments/evidence/train.py": "3fb012a38bfcb1a2840d3eb71347e2cc9410845e88a735ab3c7cd71405c2af56",
+    "images/flyt/Containerfile": "fbef00a263b43d68ab4eb48c169416967fd5834f1b287035b795616bf7574228",
+    "images/flyt/EvidenceGuest.Containerfile": "bba16307c66002977fb7f0428386952541e1723dd0e2b86ffb63b0455a13730e",
+    "runtime/shm/CMakeLists.txt": "72661fe9ecb6b4dc92d841b9106403d9813f2ea388a7a3d0bd62b3c24f922f52",
+    "runtime/shm/include/flyt_async.h": "bdfae3457beea6623ad8354a1c7583cc3a5cffd20f61c5a176537afb0ecb744e",
+    "runtime/shm/include/flyt_compat.h": "d870b7e3806db9681087be2c052bb80b699805d2a4d0eb559666f926675d7e21",
+    "runtime/shm/include/flyt_guest.h": "5680a80dbb945193a8b9cd4544856984f55cd8e84fdaa6eb9c005fbbd8de90f6",
+    "runtime/shm/include/flyt_mapping.h": "616372208818a180a9d31819e50dd63e558577ad25679291123fec9aa7e32e41",
+    "runtime/shm/include/flyt_properties.inc": "77b5f0052084fab006077fd783099e9dd64add4ecdb0b2473e6621472da81119",
+    "runtime/shm/include/flyt_torch.h": "ffd31d144819aef77014a7a1bb004b4ca838a42a0d32b4f62d70a73aa64ce6cf",
+    "runtime/shm/include/flyt_wire.h": "84ad2bacfd1bc40891734ba04346579fa32814d32b28dd8f7a422925928a141f",
+    "runtime/shm/src/async.c": "6ddccbf7cbeb4cbe9b55c332db06b5433a0ee2d94cce7bc188c4f2b20ae3546f",
+    "runtime/shm/src/compat.c": "10216ccee49e0b1c9a960b466414ab55ce27c242a3a7b488e1ba0519d730eb1d",
+    "runtime/shm/src/dispatch.c": "40e8e372dc9693d1f45ed6ff431be5880fa47280feb4c9b55b49cacdb699acb3",
+    "runtime/shm/src/guest.c": "b28c00c6a81e2378c875c8464660cce6baadc087866f131aca9f3476547b765a",
+    "runtime/shm/src/guest_async.c": "7511973b65e1ad0b059ce51bb95bbe744bcf32fbd5fcd2e0b0042c88d4eab06c",
+    "runtime/shm/src/guest_compat.c": "f1a6c0ca8b5490493db51a081015315766d8910bf5a02710fa4f30063db86d51",
+    "runtime/shm/src/guest_torch.c": "65e02a37f18587478e656f95633352831e20762043633b0af85ef4dacc398d01",
+    "runtime/shm/src/mapping.c": "3422758ab347c290c1ad61242e54402dc3987241dbc2e0c937981be9b8f38345",
+    "runtime/shm/src/torch.c": "af1e75543f36eec4f975873f7a2d6377f00601aefb8d2dd27b6da2888780deb2",
+    "runtime/shm/src/worker.c": "b119fdbd7c385227d30ac99dbb63c31b377e4bc42a6a18b215a68334f69bb5b6",
+    "scripts/prepare-evidence-vm.py": "fb5c1dabb6375b66a15b86880258123c7a5324ae355dd526854d8f149b512dca",
+    "scripts/run-evidence-training.py": "0ed98f38d7a976a632de23c4b8ef0308a4f876f4de3170ec73e37276a45c030b"
+  }
+}

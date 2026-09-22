@@ -1,0 +1,42 @@
+[
+  {
+    "id": "single-vs-passthrough-32-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "single-vs-pair-32-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "single-vs-passthrough-32-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "single-vs-pair-32-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "single-vs-passthrough-1024-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "single-vs-pair-1024-resident",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "single-vs-passthrough-1024-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  },
+  {
+    "id": "single-vs-pair-1024-transfer",
+    "status": "PASS",
+    "max_absolute_error": 0.0
+  }
+]

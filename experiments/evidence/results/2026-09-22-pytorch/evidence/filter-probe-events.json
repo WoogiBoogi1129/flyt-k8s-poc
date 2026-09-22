@@ -1,0 +1,30 @@
+[
+  {
+    "reason": "FilteringFailed",
+    "message": "1 nodes CardUuidMismatch(gpu-4)",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-22T12:41:53Z",
+    "lastTimestamp": "2026-09-22T12:41:53Z"
+  },
+  {
+    "reason": "FilteringFailed",
+    "message": "no available node, 1 nodes do not meet",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-22T12:41:53Z",
+    "lastTimestamp": "2026-09-22T12:41:53Z"
+  },
+  {
+    "reason": "FailedScheduling",
+    "message": "0/1 nodes are available: 1 3/3 CardUuidMismatch. preemption: 0/1 nodes are available: 1 No preemption victims found for incoming pod.",
+    "type": "Warning",
+    "firstTimestamp": null,
+    "lastTimestamp": null
+  },
+  {
+    "reason": "FailedScheduling",
+    "message": "0/1 nodes are available: 1 3/3 CardUuidMismatch. preemption: 0/1 nodes are available: 1 No preemption victims found for incoming pod.",
+    "type": "Warning",
+    "firstTimestamp": null,
+    "lastTimestamp": null
+  }
+]

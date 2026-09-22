@@ -94,6 +94,13 @@ class ComparatorTests(unittest.TestCase):
     def test_exact_match(self):
         self.assertEqual(self.compare(self.ref, copy.deepcopy(self.ref), 1e-6, 1e-4)["status"], "PASS")
 
+    def test_changed_execution_configuration_rejected(self):
+        for key,value in (("optimizer_execution", {"foreach": True}),
+                          ("disable_addmm_cuda_lt", True), ("torch_version", "different"),
+                          ("cuda_version", "different"), ("source_sha256", "different")):
+            candidate=copy.deepcopy(self.ref);candidate["metadata"][key]=value
+            with self.assertRaises(ValueError): self.compare(self.ref,candidate,1e-6,1e-4)
+
     def test_nan_and_gradient_corruption_fail(self):
         for value in (float("nan"), .6):
             candidate = copy.deepcopy(self.ref); candidate["checkpoints"]["1"]["gradients"]["w"][1] = value

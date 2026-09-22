@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "flyt_guest.h"
+#include "flyt_torch.h"
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <stdlib.h>
@@ -9,6 +10,7 @@
 #include <stdatomic.h>
 #include <time.h>
 #include <errno.h>
+#include <stdio.h>
 
 pthread_mutex_t flyt_guest_lock=PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t io_lock=PTHREAD_MUTEX_INITIALIZER;
@@ -20,6 +22,7 @@ static pid_t owner_pid;
 static struct {uint32_t api;const void *input;size_t bytes;void *output;size_t capacity,received;int result;} job;
 static struct {void *base;size_t bytes,mapped;uint64_t handle;} allocations[4096];
 static _Thread_local cudaError_t last_error;
+int flyt_guest_mirror_enabled(void){const char *v=getenv("FLYT_MIRROR_DEVICE_VA");return v&&!strcmp(v,"1");}
 static void before_fork(void){pthread_mutex_lock(&flyt_guest_lock);pthread_mutex_lock(&io_lock);}
 static void after_fork(void){pthread_mutex_unlock(&io_lock);pthread_mutex_unlock(&flyt_guest_lock);}
 static void child_fork(void){broken=1;after_fork();}
@@ -34,7 +37,9 @@ static int exchange(struct flyt_shm_channel *c,struct flyt_shm_identity identity
     struct flyt_shm_response r={.output=out,.output_capacity=cap};
     if(flyt_shm_submit(c,&q)||flyt_shm_receive(c,*id,&r)){broken=1;return 999;}
     ++*id;*got=r.output_bytes;
-    if(r.transport_status){if(r.transport_status==FLYT_SHM_UNSUPPORTED_API)return 801;broken=1;return 999;}
+    if(r.transport_status){
+        fprintf(stderr,"flyt rejected api=0x%x transport_status=%u\n",api,r.transport_status);
+        if(r.transport_status==FLYT_SHM_UNSUPPORTED_API)return 801;broken=1;return 999;}
     if(r.result_domain!=FLYT_RESULT_CUDA_RUNTIME&&r.result_domain!=FLYT_RESULT_CUDA_DRIVER&&r.result_domain!=FLYT_RESULT_LIBRARY&&api>FLYT_HEARTBEAT){broken=1;return 999;}
     return (int)r.api_result;
 }
@@ -76,7 +81,9 @@ int flyt_guest_exchange(uint32_t api,const void *input,size_t bytes,void *output
     finished=0;work=1;pthread_cond_broadcast(&io_cond);
     while(!finished&&!broken)pthread_cond_wait(&io_cond,&io_lock);
     int result=finished?job.result:999;if(received)*received=job.received;
-    pthread_mutex_unlock(&io_lock);return result;
+    pthread_mutex_unlock(&io_lock);
+    if(getenv("FLYT_TRACE_CALLS"))fprintf(stderr,"flyt api=0x%x bytes=%zu result=%d\n",api,bytes,result);
+    return result;
 }
 __attribute__((destructor)) static void shutdown_guest(void){
     if(!started||owner_pid!=getpid()||pthread_mutex_trylock(&flyt_guest_lock))return;
@@ -86,10 +93,22 @@ __attribute__((destructor)) static void shutdown_guest(void){
 int flyt_guest_ref(const void *p,size_t n,struct flyt_device_ref *r){
     uintptr_t v=(uintptr_t)p;
     for(unsigned i=0;i<4096;i++)if(allocations[i].base){uintptr_t b=(uintptr_t)allocations[i].base;
-        if(v>=b&&v-b<=allocations[i].bytes&&n<=allocations[i].bytes-(v-b)){r->handle=allocations[i].handle;r->offset=v-b;return 0;}}
+        if(v>=b&&v-b<allocations[i].bytes&&n<=allocations[i].bytes-(v-b)){r->handle=allocations[i].handle;r->offset=v-b;return 0;}}
+    /* Prefer a live allocation's base over a preceding allocation's one-past
+     * address. Adjacent mirrored CUDA allocations make this case common. */
+    if(!n)for(unsigned i=0;i<4096;i++)if(allocations[i].base&&v-(uintptr_t)allocations[i].base==allocations[i].bytes){
+        r->handle=allocations[i].handle;r->offset=allocations[i].bytes;return 0;}
     return 1;
 }
 static cudaError_t finish(int e){last_error=(cudaError_t)e;return last_error;}
+static void *reserve_device_va(uint64_t address,size_t bytes){
+    if(!address||(address&4095)||!bytes||(bytes&4095)||address>UINTPTR_MAX-bytes)return MAP_FAILED;
+    void *wanted=(void *)(uintptr_t)address;
+    void *p=mmap(wanted,bytes,PROT_NONE,MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED_NOREPLACE,-1,0);
+    /* Old kernels can ignore an unknown flag. Never accept another address. */
+    if(p!=MAP_FAILED&&p!=wanted){munmap(p,bytes);return MAP_FAILED;}
+    return p;
+}
 cudaError_t cudaMemGetInfo(size_t *free_bytes,size_t *total_bytes){
     if(!free_bytes||!total_bytes)return finish(cudaErrorInvalidValue);
     *free_bytes=0;*total_bytes=0;uint8_t out[16];size_t got=0;
@@ -105,10 +124,19 @@ cudaError_t cudaMalloc(void **out,size_t n){
     if(!out)return finish(1);*out=NULL;pthread_mutex_lock(&flyt_guest_lock);unsigned i;
     for(i=0;i<4096&&allocations[i].base;i++);int e=2;uint8_t in[8],result[8];size_t got=0;
     if(i==4096||n>SIZE_MAX-4095)goto done;
-    flyt_put(in,n,8);e=flyt_guest_exchange(FLYT_API_RUNTIME_MALLOC,in,8,result,8,&got);
+    size_t requested=n;
+    if(flyt_guest_mirror_enabled()&&n)requested=(n+4095)&~(size_t)4095;
+    flyt_put(in,requested,8);e=flyt_guest_exchange(FLYT_API_RUNTIME_MALLOC,in,8,result,8,&got);
     if(e)goto done;if(got!=8){e=999;goto done;}uint64_t handle=flyt_get(result,8);if(!n&&!handle)goto done;
     size_t mapped=(n+4095)&~(size_t)4095;if(!mapped){e=999;goto done;}
-    void *p=mmap(NULL,mapped,PROT_NONE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    void *wanted=NULL;int flags=MAP_PRIVATE|MAP_ANONYMOUS;
+    if(flyt_guest_mirror_enabled()){
+        flyt_put(in,handle,8);e=flyt_guest_exchange(FLYT_ALLOCATION_ADDRESS,in,8,result,8,&got);
+        if(!e&&(got!=8||!flyt_get(result,8)||(flyt_get(result,8)&4095)))e=801;
+        if(e){flyt_guest_exchange(FLYT_API_RUNTIME_FREE,in,8,NULL,0,&got);goto done;}
+        wanted=(void *)(uintptr_t)flyt_get(result,8);flags|=MAP_FIXED_NOREPLACE;
+    }
+    void *p=wanted?reserve_device_va((uintptr_t)wanted,mapped):mmap(NULL,mapped,PROT_NONE,flags,-1,0);
     if(p==MAP_FAILED){flyt_put(in,handle,8);flyt_guest_exchange(FLYT_API_RUNTIME_FREE,in,8,NULL,0,&got);e=2;goto done;}
     allocations[i].base=p;allocations[i].bytes=n;allocations[i].mapped=mapped;allocations[i].handle=handle;*out=p;
 done:pthread_mutex_unlock(&flyt_guest_lock);return finish(e);

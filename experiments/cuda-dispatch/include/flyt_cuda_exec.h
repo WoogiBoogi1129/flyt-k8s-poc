@@ -57,7 +57,9 @@ struct flyt_cuda_backend {
 struct flyt_cuda_exec;
 /* Extension handlers must check thread ownership and terminal state before CUDA. */
 int flyt_cuda_exec_check(struct flyt_cuda_exec *);
-/* Host-only extension handler lookup; never expose returned pointer to Guest. */
+/* Host-only lookup. Ordinary wire calls use opaque handles. The opt-in SHM
+ * mirror adapter can encode an allocation's GPU VA as a dedicated integer
+ * token; it must never expose a Worker CPU buffer pointer through this API. */
 int flyt_cuda_exec_resolve(struct flyt_cuda_exec *, struct flyt_device_ref, size_t, void **);
 /* One execution session per process lifetime, including non-CUDA backends.
  * Start a fresh executable process per client; do not fork after CUDA init.

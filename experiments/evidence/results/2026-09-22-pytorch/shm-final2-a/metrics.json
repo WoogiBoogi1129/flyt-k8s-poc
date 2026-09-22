@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "formal_result": false,
+  "training": {
+    "status": "PASS",
+    "formal_result": false,
+    "scope": "development repeated training within one process/session",
+    "cases": [
+      {
+        "id": "b32-resident",
+        "status": "PASS"
+      },
+      {
+        "id": "b32-transfer",
+        "status": "PASS"
+      },
+      {
+        "id": "b1024-resident",
+        "status": "PASS"
+      },
+      {
+        "id": "b1024-transfer",
+        "status": "PASS"
+      }
+    ]
+  },
+  "guest_exit": 0,
+  "training_pass": true,
+  "released": true
+}

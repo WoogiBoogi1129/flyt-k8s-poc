@@ -1,12 +1,14 @@
 #include "flyt_async.h"
+#include "flyt_torch.h"
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <stdlib.h>
 #include <string.h>
 
-enum {STREAM=1,EVENT,MODULE,FUNCTION};
-struct object {uint64_t id,parent;int kind;void *pointer;};
+enum {STREAM=1,EVENT,MODULE,FUNCTION,UPLOAD};
+struct object {uint64_t id,parent;int kind;void *pointer;size_t bytes,received;};
 static struct object objects[4096];static uint64_t next=1;
+static size_t upload_bytes;
 struct stage {void *host;cudaEvent_t done;};static struct stage stages[128];
 static struct object *find(uint64_t id,int kind){for(int i=0;i<4096;i++)if(objects[i].id==id&&id&&objects[i].kind==kind)return &objects[i];return NULL;}
 static struct object *reserve(void){if(next==UINT64_MAX)return NULL;for(int i=0;i<4096;i++)if(!objects[i].id)return &objects[i];return NULL;}
@@ -23,6 +25,66 @@ int flyt_async_dispatch(struct flyt_cuda_session *s,const struct flyt_shm_reques
     r->output_bytes=0;r->api_result=0;r->result_domain=FLYT_RESULT_CUDA_RUNTIME;r->transport_status=0;
     if(q->payload_schema!=1)goto unsupported;
     switch(q->api_id){
+    case FLYT_STREAM_PRIORITY_CREATE: {
+        if(n!=8||r->output_capacity<8||!r->output)goto invalid;o=reserve();if(!o)goto internal;
+        cudaStream_t v=NULL;r->api_result=cudaStreamCreateWithPriority(&v,(unsigned)flyt_get(p,4),(int)flyt_get(p+4,4));
+        if(!r->api_result){o->pointer=v;o->kind=STREAM;o->id=next++;flyt_put(r->output,o->id,8);r->output_bytes=8;}break;
+    }
+    case FLYT_MODULE_BEGIN: {
+        r->result_domain=FLYT_RESULT_CUDA_DRIVER;
+        if(n!=8||flyt_get(p,8)<16||flyt_get(p,8)>FLYT_MAX_MODULE_BYTES||r->output_capacity<8||!r->output)goto invalid;
+        size_t bytes=(size_t)flyt_get(p,8);if(bytes>FLYT_MAX_MODULE_BYTES-upload_bytes){r->api_result=CUDA_ERROR_OUT_OF_MEMORY;break;}
+        o=reserve();if(!o)goto internal;void *data=malloc(bytes);
+        if(!data){r->api_result=CUDA_ERROR_OUT_OF_MEMORY;break;}
+        o->id=next++;o->kind=UPLOAD;o->pointer=data;o->bytes=bytes;o->received=0;upload_bytes+=bytes;
+        flyt_put(r->output,o->id,8);r->output_bytes=8;break;
+    }
+    case FLYT_MODULE_CHUNK: {
+        r->result_domain=FLYT_RESULT_CUDA_DRIVER;
+        if(n<=16||n>65536+16||(o=find(flyt_get(p,8),UPLOAD))==NULL||flyt_get(p+8,8)!=o->received||n-16>o->bytes-o->received)goto invalid;
+        memcpy((uint8_t*)o->pointer+o->received,p+16,n-16);o->received+=n-16;break;
+    }
+    case FLYT_MODULE_COMMIT: {
+        r->result_domain=FLYT_RESULT_CUDA_DRIVER;
+        if(n!=8||(o=find(flyt_get(p,8),UPLOAD))==NULL||o->received!=o->bytes||r->output_capacity<8||!r->output)goto invalid;
+        const uint8_t *data=o->pointer;
+        if(flyt_get(data,4)!=0xba55ed50||flyt_get(data+6,2)<16||flyt_get(data+6,2)>o->bytes||
+           flyt_get(data+8,8)!=o->bytes-flyt_get(data+6,2))goto invalid;
+        CUmodule module=NULL;r->api_result=cuModuleLoadData(&module,data);
+        upload_bytes-=o->bytes;free(o->pointer);o->pointer=NULL;
+        if(!r->api_result){o->pointer=module;o->kind=MODULE;flyt_put(r->output,o->id,8);r->output_bytes=8;}
+        else memset(o,0,sizeof(*o));break;
+    }
+    case FLYT_FUNCTION_LAYOUT: {
+        r->result_domain=FLYT_RESULT_CUDA_DRIVER;
+        if(n!=8||(o=find(flyt_get(p,8),FUNCTION))==NULL||r->output_capacity<8+64*4||!r->output)goto invalid;
+        unsigned count=0;size_t offset,size;
+        for(;count<64;count++){
+            CUresult e=cuFuncGetParamInfo((CUfunction)o->pointer,count,&offset,&size);
+            if(e==CUDA_ERROR_INVALID_VALUE)break;
+            if(e){r->api_result=e;break;}
+            if(!size||size>FLYT_MAX_PARAMETER_BYTES||offset>FLYT_MAX_PARAMETER_BYTES-size){r->api_result=CUDA_ERROR_NOT_SUPPORTED;break;}
+            flyt_put(r->output+8+4*count,size,4);
+        }
+        if(count==64){CUresult e=cuFuncGetParamInfo((CUfunction)o->pointer,count,&offset,&size);if(e!=CUDA_ERROR_INVALID_VALUE)r->api_result=CUDA_ERROR_NOT_SUPPORTED;}
+        if(!r->api_result){flyt_put(r->output,count,4);flyt_put(r->output+4,0,4);r->output_bytes=8+4*count;}break;
+    }
+    case FLYT_KERNEL_PACKED: {
+        r->result_domain=FLYT_RESULT_CUDA_DRIVER;
+        if(n<48||n>48+FLYT_MAX_PARAMETER_BYTES||(o=find(flyt_get(p,8),FUNCTION))==NULL||!stream(flyt_get(p+8,8),&st))goto invalid;
+        unsigned count=(unsigned)flyt_get(p+44,4);if(count>64)goto invalid;
+        void *params[64];size_t pos=48,used=0;unsigned char values[FLYT_MAX_PARAMETER_BYTES+1024];
+        for(unsigned i=0;i<count;i++){
+            if(n-pos<4)goto invalid;size_t bytes=(size_t)flyt_get(p+pos,4),offset=0,expected=0;pos+=4;
+            if(!bytes||bytes>n-pos||cuFuncGetParamInfo((CUfunction)o->pointer,i,&offset,&expected)!=CUDA_SUCCESS||bytes!=expected)goto invalid;
+            used=(used+15)&~(size_t)15;if(bytes>sizeof(values)-used)goto invalid;
+            memcpy(values+used,p+pos,bytes);params[i]=values+used;used+=bytes;pos+=bytes;
+        }
+        size_t offset=0,size=0;
+        if(pos!=n||cuFuncGetParamInfo((CUfunction)o->pointer,count,&offset,&size)!=CUDA_ERROR_INVALID_VALUE)goto invalid;
+        r->api_result=cuLaunchKernel((CUfunction)o->pointer,(unsigned)flyt_get(p+16,4),(unsigned)flyt_get(p+20,4),(unsigned)flyt_get(p+24,4),
+            (unsigned)flyt_get(p+28,4),(unsigned)flyt_get(p+32,4),(unsigned)flyt_get(p+36,4),(unsigned)flyt_get(p+40,4),(CUstream)st,params,NULL);break;
+    }
     case FLYT_STREAM_CREATE:case FLYT_EVENT_CREATE:
         if(n!=4||r->output_capacity<8||!r->output)goto invalid;o=reserve();if(!o)goto internal;
         if(q->api_id==FLYT_STREAM_CREATE){cudaStream_t v=NULL;r->api_result=cudaStreamCreateWithFlags(&v,(unsigned)flyt_get(p,4));o->pointer=v;o->kind=STREAM;}
@@ -77,7 +139,7 @@ int flyt_async_dispatch(struct flyt_cuda_session *s,const struct flyt_shm_reques
         r->api_result=cuCtxSynchronize();if(!r->api_result)r->api_result=cuModuleUnload((CUmodule)o->pointer);
         if(!r->api_result){id=o->id;memset(o,0,sizeof(*o));for(int i=0;i<4096;i++)if(objects[i].parent==id)memset(&objects[i],0,sizeof(objects[i]));}break;
     case FLYT_FUNCTION_GET:{
-        r->result_domain=FLYT_RESULT_CUDA_DRIVER;if(n<10||n>264||p[n-1]||memchr(p+8,0,n-9)||r->output_capacity<8||!r->output)goto invalid;
+        r->result_domain=FLYT_RESULT_CUDA_DRIVER;if(n<10||n>4104||p[n-1]||memchr(p+8,0,n-9)||r->output_capacity<8||!r->output)goto invalid;
         struct object *m=find(flyt_get(p,8),MODULE);if(!m)goto invalid;o=reserve();if(!o)goto internal;
         CUfunction f=NULL;r->api_result=cuModuleGetFunction(&f,(CUmodule)m->pointer,(const char *)p+8);
         if(!r->api_result){o->id=next++;o->kind=FUNCTION;o->parent=m->id;o->pointer=f;flyt_put(r->output,o->id,8);r->output_bytes=8;}break;}
@@ -111,6 +173,7 @@ int flyt_async_close(void){
         if(objects[i].kind==STREAM)e=cudaStreamDestroy((cudaStream_t)objects[i].pointer);
         if(objects[i].kind==EVENT)e=cudaEventDestroy((cudaEvent_t)objects[i].pointer);
         if(objects[i].kind==MODULE)e=cuModuleUnload((CUmodule)objects[i].pointer);
+        if(objects[i].kind==UPLOAD){upload_bytes-=objects[i].bytes;free(objects[i].pointer);}
         if(e)return -1;memset(&objects[i],0,sizeof(objects[i]));}
     return 0;
 }

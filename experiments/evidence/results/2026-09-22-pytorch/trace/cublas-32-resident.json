@@ -1,0 +1,397 @@
+{
+  "scope": "development native CUDA trace; not VM correctness or performance",
+  "calls": [
+    {
+      "domain": "driver",
+      "api": "cuCtxGetApiVersion",
+      "count": 1
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxGetCurrent",
+      "count": 1079
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxGetDevice",
+      "count": 17636
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxGetLimit",
+      "count": 2
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxGetStreamPriorityRange",
+      "count": 1
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxPopCurrent_v2",
+      "count": 11
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxPushCurrent_v2",
+      "count": 11
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxSetCurrent",
+      "count": 2
+    },
+    {
+      "domain": "driver",
+      "api": "cuCtxSynchronize",
+      "count": 5
+    },
+    {
+      "domain": "driver",
+      "api": "cuDeviceGet",
+      "count": 4
+    },
+    {
+      "domain": "driver",
+      "api": "cuDeviceGetAttribute",
+      "count": 864
+    },
+    {
+      "domain": "driver",
+      "api": "cuDeviceGetCount",
+      "count": 3
+    },
+    {
+      "domain": "driver",
+      "api": "cuDeviceGetName",
+      "count": 4
+    },
+    {
+      "domain": "driver",
+      "api": "cuDeviceGetUuid",
+      "count": 3
+    },
+    {
+      "domain": "driver",
+      "api": "cuDevicePrimaryCtxGetState",
+      "count": 5381
+    },
+    {
+      "domain": "driver",
+      "api": "cuDevicePrimaryCtxRetain",
+      "count": 3
+    },
+    {
+      "domain": "driver",
+      "api": "cuDeviceTotalMem_v2",
+      "count": 3
+    },
+    {
+      "domain": "driver",
+      "api": "cuDriverGetVersion",
+      "count": 2
+    },
+    {
+      "domain": "driver",
+      "api": "cuEventCreate",
+      "count": 32
+    },
+    {
+      "domain": "driver",
+      "api": "cuFuncGetParamInfo",
+      "count": 6324
+    },
+    {
+      "domain": "driver",
+      "api": "cuGetProcAddress_v2",
+      "count": 840
+    },
+    {
+      "domain": "driver",
+      "api": "cuInit",
+      "count": 4
+    },
+    {
+      "domain": "driver",
+      "api": "cuKernelGetFunction",
+      "count": 500
+    },
+    {
+      "domain": "driver",
+      "api": "cuLaunchKernel",
+      "count": 2606
+    },
+    {
+      "domain": "driver",
+      "api": "cuLibraryGetKernel",
+      "count": 8
+    },
+    {
+      "domain": "driver",
+      "api": "cuLibraryGetModule",
+      "count": 11
+    },
+    {
+      "domain": "driver",
+      "api": "cuLibraryLoadData",
+      "count": 15
+    },
+    {
+      "domain": "driver",
+      "api": "cuMemAlloc_v2",
+      "count": 9
+    },
+    {
+      "domain": "driver",
+      "api": "cuMemFree_v2",
+      "count": 2
+    },
+    {
+      "domain": "driver",
+      "api": "cuMemcpyDtoHAsync_v2",
+      "count": 18
+    },
+    {
+      "domain": "driver",
+      "api": "cuMemcpyHtoDAsync_v2",
+      "count": 10
+    },
+    {
+      "domain": "driver",
+      "api": "cuModuleGetFunction",
+      "count": 10
+    },
+    {
+      "domain": "driver",
+      "api": "cuModuleGetGlobal_v2",
+      "count": 1
+    },
+    {
+      "domain": "driver",
+      "api": "cuModuleGetLoadingMode",
+      "count": 3
+    },
+    {
+      "domain": "driver",
+      "api": "cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags",
+      "count": 500
+    },
+    {
+      "domain": "driver",
+      "api": "cuStreamIsCapturing",
+      "count": 33
+    },
+    {
+      "domain": "driver",
+      "api": "cuStreamSynchronize",
+      "count": 28
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaDeviceGetAttribute",
+      "count": 521
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaDeviceGetStreamPriorityRange",
+      "count": 1
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaDeviceSynchronize",
+      "count": 5
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaEventCreateWithFlags",
+      "count": 32
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaFree",
+      "count": 2
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaFuncGetParamInfo",
+      "count": 6324
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaGetDevice",
+      "count": 17633
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaGetDeviceCount",
+      "count": 3
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaGetDeviceProperties_v2",
+      "count": 2
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaGetDriverEntryPoint",
+      "count": 2
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaGetLastError",
+      "count": 4417
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaGetSymbolAddress",
+      "count": 1
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaLaunchKernel",
+      "count": 2106
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaMalloc",
+      "count": 9
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaMemcpyAsync",
+      "count": 28
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaPeekAtLastError",
+      "count": 1806
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaStreamIsCapturing",
+      "count": 33
+    },
+    {
+      "domain": "runtime",
+      "api": "cudaStreamSynchronize",
+      "count": 28
+    }
+  ],
+  "kernels": {
+    "_ZN2at6native13reduce_kernelILi128ELi4ENS0_8ReduceOpIfNS0_14func_wrapper_tIfZNS0_11sum_functorIfffEclERNS_14TensorIteratorEEUlffE_EEjfLi4ELi4EEEEEvT1_": 200,
+    "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_": 100,
+    "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_EEvS4_RKT_EUliE_EEviT1_": 200,
+    "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastIZZZNS0_24mse_backward_cuda_kernelERNS_14TensorIteratorERKN3c106ScalarEENKUlvE_clEvENKUlvE0_clEvEUlfffE_EEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_": 100,
+    "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIfEESt5arrayIPcLm1EEEEviT0_T1_": 506,
+    "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BinaryFunctorIfffZNS0_67_GLOBAL__N__7dfbdb4e_28_ActivationThresholdKernel_cu_f944bec3_2249921threshold_kernel_implIfEEvRNS_18TensorIteratorBaseET_S7_EUlffE_EESt5arrayIPcLm3EEEEviT0_T1_": 100,
+    "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIfEESt5arrayIPcLm3EEEEviT0_T1_": 400,
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15mse_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE0_clEvEUlffE_St5arrayIPcLm3EEEEviT0_T1_": 100,
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_49_GLOBAL__N__62234e63_16_TensorCompare_cu_71e06f4e19launch_clamp_scalarERNS_18TensorIteratorBaseEN3c106ScalarES6_NS0_6detail11ClampLimitsEENKUlvE_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_": 100
+  },
+  "kernel_parameters": {
+    "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIfEESt5arrayIPcLm1EEEEviT0_T1_": [
+      {
+        "offset": 0,
+        "bytes": 4
+      },
+      {
+        "offset": 4,
+        "bytes": 4
+      },
+      {
+        "offset": 8,
+        "bytes": 8
+      }
+    ],
+    "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_EEvS4_RKT_EUliE_EEviT1_": [
+      {
+        "offset": 0,
+        "bytes": 4
+      },
+      {
+        "offset": 8,
+        "bytes": 536
+      }
+    ],
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_49_GLOBAL__N__62234e63_16_TensorCompare_cu_71e06f4e19launch_clamp_scalarERNS_18TensorIteratorBaseEN3c106ScalarES6_NS0_6detail11ClampLimitsEENKUlvE_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_": [
+      {
+        "offset": 0,
+        "bytes": 4
+      },
+      {
+        "offset": 8,
+        "bytes": 24
+      },
+      {
+        "offset": 32,
+        "bytes": 16
+      }
+    ],
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15mse_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE0_clEvEUlffE_St5arrayIPcLm3EEEEviT0_T1_": [
+      {
+        "offset": 0,
+        "bytes": 4
+      },
+      {
+        "offset": 4,
+        "bytes": 1
+      },
+      {
+        "offset": 8,
+        "bytes": 24
+      }
+    ],
+    "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_": [
+      {
+        "offset": 0,
+        "bytes": 1048
+      }
+    ],
+    "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastIZZZNS0_24mse_backward_cuda_kernelERNS_14TensorIteratorERKN3c106ScalarEENKUlvE_clEvENKUlvE0_clEvEUlfffE_EEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_": [
+      {
+        "offset": 0,
+        "bytes": 4
+      },
+      {
+        "offset": 8,
+        "bytes": 760
+      }
+    ],
+    "_ZN2at6native13reduce_kernelILi128ELi4ENS0_8ReduceOpIfNS0_14func_wrapper_tIfZNS0_11sum_functorIfffEclERNS_14TensorIteratorEEUlffE_EEjfLi4ELi4EEEEEvT1_": [
+      {
+        "offset": 0,
+        "bytes": 1048
+      }
+    ],
+    "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BinaryFunctorIfffZNS0_67_GLOBAL__N__7dfbdb4e_28_ActivationThresholdKernel_cu_f944bec3_2249921threshold_kernel_implIfEEvRNS_18TensorIteratorBaseET_S7_EUlffE_EESt5arrayIPcLm3EEEEviT0_T1_": [
+      {
+        "offset": 0,
+        "bytes": 4
+      },
+      {
+        "offset": 8,
+        "bytes": 16
+      },
+      {
+        "offset": 24,
+        "bytes": 24
+      }
+    ],
+    "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIfEESt5arrayIPcLm3EEEEviT0_T1_": [
+      {
+        "offset": 0,
+        "bytes": 4
+      },
+      {
+        "offset": 4,
+        "bytes": 4
+      },
+      {
+        "offset": 8,
+        "bytes": 24
+      }
+    ]
+  },
+  "unmatched_entries": 0,
+  "unmatched_exits": 0
+}
