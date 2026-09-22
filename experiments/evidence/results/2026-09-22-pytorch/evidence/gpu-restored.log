@@ -1,0 +1,9 @@
+{"stage": "bound", "driver": "nvidia", "bdf": "0000:41:00.0"}
+Persistence mode is already Disabled for GPU 00000000:41:00.0.
+All done.
+
+index, uuid, memory.used [MiB]
+0, GPU-772181af-05a4-0c24-de59-8487bd37c142, 0 MiB
+1, GPU-7d708c42-8d4a-16d5-0746-474567157aa3, 0 MiB
+2, GPU-c654d43e-43f8-c28e-77c2-1f17a0cbf46a, 0 MiB
+3, GPU-1b4de6a0-88ae-4004-98b9-035906a2473f, 0 MiB

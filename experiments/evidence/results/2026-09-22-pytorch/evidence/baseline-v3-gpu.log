@@ -1,0 +1,6 @@
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+eth0             UP             10.0.2.2/24 metric 100 fe80::ff:fe09:2201/64
+GPU 0: NVIDIA RTX PRO 6000 Blackwell Server Edition (UUID: GPU-7d708c42-8d4a-16d5-0746-474567157aa3)
+Warning: Permanently added '10.85.0.64' (ED25519) to the list of known hosts.
+cat: /etc/netplan/50-cloud-init.yaml: Permission denied
+ls: cannot access '/dev/nvidia*': No such file or directory

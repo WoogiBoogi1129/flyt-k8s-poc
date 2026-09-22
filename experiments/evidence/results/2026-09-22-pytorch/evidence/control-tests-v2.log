@@ -1,0 +1,9 @@
+{"event": "channel_review", "level": "INFO", "message": "vms vm is unavailable", "name": "example", "namespace": "review", "reason": "DependencyNotReady", "uid": "channel-uid"}
+{"event": "dependency_wait", "level": "INFO", "message": "PVC pending", "name": "example"}
+{"event": "channel_review", "level": "INFO", "message": "vms vm is unavailable", "name": "example", "namespace": "review", "reason": "DependencyNotReady", "uid": "channel-uid"}
+{"event": "channel_review", "level": "INFO", "message": "vms vm is unavailable", "name": "example", "namespace": "review", "reason": "DependencyNotReady", "uid": "channel-uid"}
+{"event": "channel_review", "level": "INFO", "message": "Declared dependencies are present; execution remains disabled", "name": "example", "namespace": "review", "reason": "DependenciesPresent", "uid": "channel-uid"}
+----------------------------------------------------------------------
+Ran 30 tests in 0.011s
+
+OK

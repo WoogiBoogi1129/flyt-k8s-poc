@@ -1,0 +1,13 @@
+flyt api=0x1010 bytes=8 result=0
+flyt api=0x2103 bytes=8 result=0
+flyt api=0x1012 bytes=60 result=0
+flyt api=0x2040 bytes=8 result=0
+flyt api=0x2041 bytes=6400 result=0
+flyt api=0x2042 bytes=8 result=0
+flyt api=0x2032 bytes=27 result=0
+flyt api=0x2043 bytes=8 result=0
+flyt api=0x2044 bytes=128 result=0
+flyt api=0x1012 bytes=48 result=0
+flyt api=0x1011 bytes=8 result=0
+flyt api=0x2 bytes=0 result=0
+{"status":"PASS","scope":"SHM compiled kernel; route requires binding evidence","page_aligned":true,"address":136868320509952}
