@@ -17,6 +17,7 @@ def render(namespace,image,ca):
         {'apiGroups':['kubevirt.io'],'resources':['virtualmachines'],'verbs':['get','list','update']},
         {'apiGroups':['kubevirt.io'],'resources':['virtualmachineinstances'],'verbs':['get','list']},
         {'apiGroups':[''],'resources':['pods','serviceaccounts'],'verbs':['get','list','create','delete']},
+        {'apiGroups':[''],'resources':['pods'],'verbs':['update']},
         {'apiGroups':[''],'resources':['persistentvolumeclaims'],'verbs':['get']},
         {'apiGroups':['rbac.authorization.k8s.io'],'resources':['roles','rolebindings'],'verbs':['get','create']}]
     role={'apiVersion':'rbac.authorization.k8s.io/v1','kind':'Role','metadata':meta('flyt-shm-controller'),'rules':rules}

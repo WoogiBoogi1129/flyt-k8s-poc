@@ -1,11 +1,23 @@
 #include "flyt_wire.h"
 #include <string.h>
+#include <cuda_runtime_api.h>
 int flyt_cuda_dispatch(struct flyt_cuda_session *s,const struct flyt_shm_request *q,struct flyt_shm_response *r){
     struct flyt_cuda_call c={0};struct flyt_cuda_result result={0};size_t need=0;int rc;
     if(!s||!q||!r)return FLYT_SHM_BAD_DESCRIPTOR;
     r->output_bytes=0;r->transport_status=0;r->result_domain=0;r->api_result=0;
     if(q->payload_schema!=1){r->transport_status=FLYT_SHM_UNSUPPORTED_API;return 0;}
     c.api_id=q->api_id;
+    if(c.api_id==FLYT_API_RUNTIME_MEM_GET_INFO){
+        if(!s->exec||q->input_bytes||r->output_capacity<16||!r->output)goto invalid;
+        size_t free_bytes=0,total_bytes=0;
+        r->result_domain=FLYT_RESULT_CUDA_RUNTIME;
+        r->api_result=(uint32_t)cudaMemGetInfo(&free_bytes,&total_bytes);
+        if(!r->api_result){
+            if(!total_bytes||free_bytes>total_bytes){r->api_result=cudaErrorUnknown;return 0;}
+            flyt_put(r->output,free_bytes,8);flyt_put(r->output+8,total_bytes,8);r->output_bytes=16;
+        }
+        return 0;
+    }
     switch(c.api_id){
     case FLYT_API_RUNTIME_GET_DEVICE_COUNT:case FLYT_API_RUNTIME_GET_DEVICE:
         if(q->input_bytes)goto invalid;need=4;break;

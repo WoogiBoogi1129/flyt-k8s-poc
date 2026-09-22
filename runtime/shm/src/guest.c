@@ -90,6 +90,17 @@ int flyt_guest_ref(const void *p,size_t n,struct flyt_device_ref *r){
     return 1;
 }
 static cudaError_t finish(int e){last_error=(cudaError_t)e;return last_error;}
+cudaError_t cudaMemGetInfo(size_t *free_bytes,size_t *total_bytes){
+    if(!free_bytes||!total_bytes)return finish(cudaErrorInvalidValue);
+    *free_bytes=0;*total_bytes=0;uint8_t out[16];size_t got=0;
+    pthread_mutex_lock(&flyt_guest_lock);
+    int e=flyt_guest_exchange(FLYT_API_RUNTIME_MEM_GET_INFO,NULL,0,out,sizeof(out),&got);
+    if(!e){
+        if(got!=16||!flyt_get(out+8,8)||flyt_get(out,8)>flyt_get(out+8,8))e=cudaErrorUnknown;
+        else{*free_bytes=(size_t)flyt_get(out,8);*total_bytes=(size_t)flyt_get(out+8,8);}
+    }
+    pthread_mutex_unlock(&flyt_guest_lock);return finish(e);
+}
 cudaError_t cudaMalloc(void **out,size_t n){
     if(!out)return finish(1);*out=NULL;pthread_mutex_lock(&flyt_guest_lock);unsigned i;
     for(i=0;i<4096&&allocations[i].base;i++);int e=2;uint8_t in[8],result[8];size_t got=0;
@@ -149,3 +160,4 @@ CUresult cuMemcpyHtoD_v2(CUdeviceptr d,const void *s,size_t n){return driver(cud
 CUresult cuMemcpyDtoH_v2(void *d,CUdeviceptr s,size_t n){return driver(cudaMemcpy(d,(void *)(uintptr_t)s,n,cudaMemcpyDeviceToHost));}
 CUresult cuMemcpyDtoD_v2(CUdeviceptr d,CUdeviceptr s,size_t n){return driver(cudaMemcpy((void *)(uintptr_t)d,(void *)(uintptr_t)s,n,cudaMemcpyDeviceToDevice));}
 CUresult cuCtxSynchronize(void){return driver(cudaDeviceSynchronize());}
+CUresult cuMemGetInfo_v2(size_t *free_bytes,size_t *total_bytes){return driver(cudaMemGetInfo(free_bytes,total_bytes));}

@@ -7,7 +7,7 @@ import os
 import secrets
 import time
 from kube import API, ref, require_ref
-from observe import observe_guest, observe_worker_exit
+from observe import observe_guest, observe_worker_exit, DETACH_FINALIZER, CHANNEL_ANNOTATION
 
 FINAL='flyt.dev/shm-detach'
 def owned(o,c):return any(r['uid']==c['metadata']['uid'] for r in o['metadata'].get('ownerReferences',[]))
@@ -34,7 +34,7 @@ def update(api,c,**values):
 
 def reconcile(api,c):
     name=c['metadata']['name'];s=c.setdefault('status',{});spec=c['spec']
-    observe_guest(api,c)
+    guest_protected=observe_guest(api,c)
     observe_worker_exit(api,c)
     if FINAL not in c['metadata'].get('finalizers',[]):
         if c['metadata'].get('deletionTimestamp'):return
@@ -131,6 +131,8 @@ def reconcile(api,c):
         'roleRef':{'apiGroup':'rbac.authorization.k8s.io','kind':'Role','name':name+'-worker'},
         'subjects':[{'kind':'ServiceAccount','name':service['metadata']['name'],'namespace':c['metadata']['namespace']}]},c)
     worker=pod(c,name+'-worker',spec['workerImage'],['python3','/opt/flyt/control/supervisor.py'])
+    worker['metadata']['finalizers']=[DETACH_FINALIZER]
+    worker['metadata'].setdefault('annotations',{})[CHANNEL_ANNOTATION]=c['metadata']['uid']
     worker['spec']['serviceAccountName']=name+'-worker';worker['spec']['automountServiceAccountToken']=True
     worker['spec']['schedulerName']=p['spec']['schedulerName']
     if p['spec'].get('runtimeClass'):worker['spec']['runtimeClassName']=p['spec']['runtimeClass']
@@ -156,7 +158,7 @@ def reconcile(api,c):
         update(api,c,phase='Draining',reason='WorkerEnded',workerPodUID=w['metadata']['uid']);return
     attachments=[a for a in api.items('attachments') if a['spec']['channelRef']==ref(c)]
     pod_ready=any(x['type']=='Ready' and x['status']=='True' for x in w.get('status',{}).get('conditions',[]))
-    ready=pod_ready and len(attachments)==2 and all(a.get('status',{}).get('phase')=='Mapped' and
+    ready=guest_protected and pod_ready and len(attachments)==2 and all(a.get('status',{}).get('phase')=='Mapped' and
         a['status'].get('observedGeneration')==a['metadata']['generation'] for a in attachments)
     update(api,c,phase='Ready' if ready else 'Bound',workerPodUID=w['metadata']['uid'],reason='MappingACK' if ready else 'AwaitingMappingACK')
 

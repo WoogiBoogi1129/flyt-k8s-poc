@@ -2,6 +2,44 @@
 import os
 from kube import ref
 
+DETACH_FINALIZER='flyt.dev/detach-observation'
+CHANNEL_ANNOTATION='flyt.dev/detach-channel-uid'
+
+def protect_pod(api,pod,c):
+    """Keep the API object until detach evidence is durable, not the process alive."""
+    meta=pod['metadata'];owner=meta.get('annotations',{}).get(CHANNEL_ANNOTATION)
+    if owner not in (None,c['metadata']['uid']):raise ValueError('foreign detach observer')
+    if DETACH_FINALIZER in meta.get('finalizers',[]):
+        if owner!=c['metadata']['uid']:raise ValueError('unowned detach finalizer')
+        return True
+    if meta.get('deletionTimestamp'):return False  # Cannot add finalizers after deletion began.
+    meta.setdefault('annotations',{})[CHANNEL_ANNOTATION]=c['metadata']['uid']
+    meta.setdefault('finalizers',[]).append(DETACH_FINALIZER)
+    api.replace('pods',pod)
+    return True
+
+def release_pod(api,pod,c):
+    meta=pod['metadata']
+    if DETACH_FINALIZER not in meta.get('finalizers',[]):return
+    if meta.get('annotations',{}).get(CHANNEL_ANNOTATION)!=c['metadata']['uid']:
+        raise ValueError('foreign detach observer')
+    meta['finalizers'].remove(DETACH_FINALIZER)
+    api.replace('pods',pod)
+
+def terminal_pod(pod):
+    if pod.get('status',{}).get('phase') not in ('Succeeded','Failed'):return False
+    for spec_key,status_key in [('containers','containerStatuses'),('initContainers','initContainerStatuses'),
+                                ('ephemeralContainers','ephemeralContainerStatuses')]:
+        expected={x['name'] for x in pod['spec'].get(spec_key,[])}
+        statuses=pod.get('status',{}).get(status_key,[])
+        if {x['name'] for x in statuses}!=expected:return False
+        if not all('terminated' in x.get('state',{}) for x in statuses):return False
+    return bool(pod['spec'].get('containers'))
+
+def node_ready(api,node):
+    obj=api.call('GET','/api/v1/nodes/'+node)
+    return bool(obj and any(x['type']=='Ready' and x['status']=='True' for x in obj.get('status',{}).get('conditions',[])))
+
 def report(api,role,phase):
     name=os.environ['FLYT_CHANNEL_NAME'];c=api.get('channels',name)
     if not c or c['metadata']['uid']!=os.environ['FLYT_CHANNEL_UID']:raise ValueError('channel replaced')
@@ -20,7 +58,7 @@ def report(api,role,phase):
 def observe_guest(api,c):
     a=api.get('attachments',c['metadata']['name']+'-guest')
     if not a or a['spec']['channelRef']!=ref(c):return
-    if a.get('status',{}).get('phase')=='Detached':return
+    if a['spec']['generation']!=c.get('status',{}).get('generation'):return False
     uid=a['spec']['holderUID'];status=a.setdefault('status',{})
     pods=[p for p in api.items('pods') if p['metadata'].get('labels',{}).get('kubevirt.io/created-by')==uid]
     saved=status.get('launcherPodUID')
@@ -28,27 +66,28 @@ def observe_guest(api,c):
     if len(pods)!=1:return
     pod=pods[0]
     if pod['spec'].get('nodeName')!=a['spec']['nodeName']:return
+    if a.get('status',{}).get('phase')=='Detached':
+        release_pod(api,pod,c);return False
+    protected=protect_pod(api,pod,c)
     if not saved:
-        status['launcherPodUID']=pod['metadata']['uid'];api.replace('attachments',a,True);return
+        status['launcherPodUID']=pod['metadata']['uid'];api.replace('attachments',a,True);return protected
     # Kubelet terminal phase with all containers terminated, on a Ready node.
     # Missing or force-deleted Pods cannot pass this condition.
-    statuses=pod.get('status',{}).get('containerStatuses',[])
-    init=pod.get('status',{}).get('initContainerStatuses',[])
-    if pod.get('status',{}).get('phase') not in ('Succeeded','Failed') or not statuses:return
-    if not all('terminated' in x.get('state',{}) for x in statuses+init):return
-    node=api.call('GET','/api/v1/nodes/'+a['spec']['nodeName'])
-    if not node or not any(x['type']=='Ready' and x['status']=='True' for x in node.get('status',{}).get('conditions',[])):return
+    if not terminal_pod(pod) or not node_ready(api,a['spec']['nodeName']):return protected
     status.update(phase='Detached',observedGeneration=a['metadata']['generation'],evidence='KubeletTerminalLauncher',launcherPodUID=pod['metadata']['uid'])
     api.replace('attachments',a,True)
+    release_pod(api,pod,c)
+    return False
 
 def observe_worker_exit(api,c):
     a=api.get('attachments',c['metadata']['name']+'-worker')
-    if not a or a['spec']['channelRef']!=ref(c) or a.get('status',{}).get('phase')=='Detached':return
+    if not a or a['spec']['channelRef']!=ref(c) or a['spec']['generation']!=c.get('status',{}).get('generation'):return
     p=api.get('pods',c['metadata']['name']+'-worker')
     if not p or p['metadata']['uid']!=a['spec']['holderUID']:return
-    statuses=p.get('status',{}).get('containerStatuses',[])
-    if p.get('status',{}).get('phase') not in ('Succeeded','Failed') or not statuses or not all('terminated' in x.get('state',{}) for x in statuses):return
-    node=api.call('GET','/api/v1/nodes/'+a['spec']['nodeName'])
-    if not node or not any(x['type']=='Ready' and x['status']=='True' for x in node.get('status',{}).get('conditions',[])):return
+    if a.get('status',{}).get('phase')=='Detached':
+        release_pod(api,p,c);return
+    protect_pod(api,p,c)
+    if not terminal_pod(p) or not node_ready(api,a['spec']['nodeName']):return
     a['status']={'phase':'Detached','observedGeneration':a['metadata']['generation'],'evidence':'KubeletTerminalWorker','reporterPodUID':p['metadata']['uid']}
     api.replace('attachments',a,True)
+    release_pod(api,p,c)

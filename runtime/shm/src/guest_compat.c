@@ -67,6 +67,7 @@ CUresult cuGetProcAddress(const char *symbol,void **pfn,int version,cuuint64_t f
 #define SYMBOL(name) if(!strcmp(symbol,#name)){*pfn=(void *)&name;return CUDA_SUCCESS;}
     SYMBOL(cuInit) SYMBOL(cuDeviceGet) SYMBOL(cuDeviceGetCount)
     SYMBOL(cuMemAlloc_v2) SYMBOL(cuMemFree_v2) SYMBOL(cuMemcpyHtoD_v2) SYMBOL(cuMemcpyDtoH_v2) SYMBOL(cuMemcpyDtoD_v2)
+    SYMBOL(cuMemGetInfo_v2)
     SYMBOL(cuCtxSynchronize) SYMBOL(cuModuleLoadData) SYMBOL(cuModuleUnload) SYMBOL(cuModuleGetFunction) SYMBOL(cuLaunchKernel)
 #undef SYMBOL
     return CUDA_ERROR_NOT_SUPPORTED;

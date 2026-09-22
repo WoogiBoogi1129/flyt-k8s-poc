@@ -71,7 +71,8 @@ int flyt_cuda_exec_call(struct flyt_cuda_exec *, const struct flyt_cuda_call *,
 void flyt_cuda_result_release(struct flyt_cuda_result *);
 /* Stops submissions first, synchronizes and releases tracked allocations.
  * On CUDA failure retains *session and returns INTERNAL_ERROR; cuda_error is
- * the raw error. Allocation/copy/free/sync errors poison the session. Destruction
+ * the raw error. Allocation errors other than memory exhaustion, and
+ * copy/free/sync errors poison the session. Destruction
  * does not retry CUDA on a poisoned session: supervisor must exit this process.
  * No cudaDeviceReset or other-session cleanup.
  */

@@ -2,6 +2,12 @@
 
 현재 선행 개발은 미완료다. 이 문서는 남은 구현과 종료 조건이며 수행 결과가 아니다.
 
+2026-09-22 후속 개발에서는 D1의 실제 VM 부팅·BAR·SHM 왕복과 D2의 두 VM
+독립 GPU 실행을 확인했다. D4는 수동 보조 없이 정상 회수·신규 allocation 재사용을
+확인하고 반복 검증 중이다. 메모리 초과 후 세션이 닫히던 오류도 발견해 수정·재시험한다.
+세부 실행 및 최종 판정은 [구현·검증 보고서](IMPLEMENTATION_AND_VALIDATION_2026-09-22.md)를 따른다.
+D3·D5가 완료되지 않았으므로 이 결과를 본 학습 실험의 진입 승인으로 사용하지 않는다.
+
 | ID | 구현·준비 작업 | 종료 조건/증거 |
 |---|---|---|
 | D1 | 현재 KubeVirt 1.9 launcher와 같은 배포판·QEMU 계열에서 ivshmem을 활성화한 QEMU/launcher 빌드. downstream 패치·module 경로·libvirt 동작 보존 | image digest, `-device help`의 ivshmem-plain, 기본 VM 부팅, hook domain XML, guest BAR, SHM 왕복 |

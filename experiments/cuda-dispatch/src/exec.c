@@ -166,8 +166,15 @@ int flyt_cuda_exec_call(struct flyt_cuda_exec *s, const struct flyt_cuda_call *c
             r->handle = a->id;
         } else {
             a->pointer = NULL;
-            s->closing = 1;
-            s->fatal_error = r->api_result;
+            /* CUDA Runtime error 2 is an ordinary allocation rejection (also
+             * used by HAMi quota enforcement), not a poisoned CUDA context.
+             * Keep existing allocations usable for free and a smaller retry.
+             * All other allocation failures retain the conservative shutdown.
+             */
+            if (r->api_result != 2) {
+                s->closing = 1;
+                s->fatal_error = r->api_result;
+            }
         }
         break;
     case FLYT_API_RUNTIME_FREE:
