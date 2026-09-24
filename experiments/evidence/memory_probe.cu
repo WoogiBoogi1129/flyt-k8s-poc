@@ -126,6 +126,46 @@ static int suite(size_t quota) {
     return failed||!restored;
 }
 
+/* Retain real allocations long enough for independent GPU/monitor capture.
+ * Observation rows are not individual verdicts; the final row checks recovery.
+ */
+static void observe_stage(const char *stage, size_t bytes, cudaError_t code) {
+    printf("{\"scenario\":\"observe\",\"stage\":\"%s\",\"requested_bytes\":%zu,\"cuda_status\":%d,\"status\":\"%s\"}\n",
+           stage, bytes, (int)code, code == cudaSuccess ? "PASS" : "FAIL");
+    fflush(stdout);
+    sleep(15);
+}
+
+static int observe(size_t quota) {
+    if (initialized()) return 20;
+    size_t before=0,total=0,after=0,total_after=0;
+    if (cudaMemGetInfo(&before,&total)!=cudaSuccess || total!=quota || !before) return 21;
+    void *memory=NULL,*extra=NULL;
+    size_t bytes=before/2;
+    observe_stage("baseline",0,cudaSuccess);
+    cudaError_t allocated=cudaMalloc(&memory,bytes);
+    if (allocated!=cudaSuccess) return 22;
+    observe_stage("allocated",bytes,allocated);
+    cudaError_t exceeded=cudaMalloc(&extra,quota+1);
+    if (extra) cudaFree(extra);
+    printf("{\"scenario\":\"observe\",\"stage\":\"over_quota\",\"requested_bytes\":%zu,\"cuda_status\":%d,\"status\":\"%s\"}\n",
+           quota+1,(int)exceeded,exceeded==cudaErrorMemoryAllocation?"PASS":"FAIL");
+    fflush(stdout);
+    cudaError_t freed=cudaFree(memory);
+    observe_stage("freed",bytes,freed);
+    memory=NULL;
+    cudaError_t reallocated=cudaMalloc(&memory,bytes);
+    observe_stage("reallocated",bytes,reallocated);
+    cudaError_t final_free=memory?cudaFree(memory):cudaErrorMemoryAllocation;
+    cudaError_t info=cudaMemGetInfo(&after,&total_after);
+    int pass=exceeded==cudaErrorMemoryAllocation && freed==cudaSuccess &&
+        reallocated==cudaSuccess && final_free==cudaSuccess && info==cudaSuccess &&
+        before==after && total==total_after;
+    printf("{\"scenario\":\"observe\",\"stage\":\"accounting_restored\",\"before_free\":%zu,\"after_free\":%zu,\"status\":\"%s\"}\n",
+           before,after,pass?"PASS":"FAIL");
+    return pass?0:1;
+}
+
 static int run_probe(int argc, char **argv) {
     if(argc==7&&!strcmp(argv[1],"race-child"))return race_child(argv);
     if (argc != 3) {
@@ -136,7 +176,8 @@ static int run_probe(int argc, char **argv) {
     errno = 0;
     unsigned long long amount = strtoull(argv[2], &end, 10);
     if (errno || !end || *end || !amount || argv[2][0] == '-' || amount > SIZE_MAX) return 2;
-    alarm(70);
+    alarm(100);
+    if (!strcmp(argv[1], "observe")) return observe((size_t)amount);
     if (!strcmp(argv[1], "suite")) return suite((size_t)amount);
     if (!strcmp(argv[1], "aggregate_race")) return race((size_t)amount);
     if (strcmp(argv[1], "below") && strcmp(argv[1], "boundary") && strcmp(argv[1], "over") && strcmp(argv[1], "free_reallocate")) return 2;

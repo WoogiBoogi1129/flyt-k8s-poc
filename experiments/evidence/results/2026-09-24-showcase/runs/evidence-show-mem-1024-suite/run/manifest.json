@@ -1,0 +1,15 @@
+{
+  "case_id": "evidence-show-mem-1024-suite/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "8a781598-e5fe-4cdd-a424-34bcfc6eb350",
+  "monotonic_origin_seconds": 256397.221459515,
+  "git_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "probe": "memory",
+  "scenario": "suite",
+  "bytes": 1073741824,
+  "seed": 23,
+  "timeout_seconds": 300,
+  "gpu_seconds": 10
+}

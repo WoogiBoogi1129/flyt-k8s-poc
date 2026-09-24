@@ -1,0 +1,20 @@
+{
+  "base_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "files": {
+    "experiments/evidence/memory_probe.cu": "9872408f9c11578933fae09605caac9893582f925c2834c4e85b403f80fe2905",
+    "experiments/evidence/compute_probe.c": "8a294e4b1b8b7f0a7bab3684deed5ec4f5736f1a61c4fe455d4ca7a95c01ab13",
+    "experiments/evidence/export_development.py": "83566eb2ffee16bf5f88d3b8a807cdfac69290f873280d1b17c03ddab2702e6e",
+    "experiments/evidence/plot_showcase.py": "83a4d97b6689a47895b7a0814e993ffe9e1cd3fd1cf7bf40070461643faa0b2f",
+    "scripts/run-evidence-showcase.py": "3e840a6f0ce6ee45408bc48fb68a08c8dab85fb5c77f69aa36c3386c3bbef54d",
+    "scripts/run-evidence-training.py": "0ed98f38d7a976a632de23c4b8ef0308a4f876f4de3170ec73e37276a45c030b",
+    "scripts/record-evidence-dashboard.cjs": "d1b394651750de2a8a46ace4e31d58ef38c39a558054b5b3eb1a632d903f1dea",
+    "scripts/import-evidence-image.py": "fc104f7af4262d0cff7a74ade38771327a00a62aea9ab969d35663d3fc7af758",
+    "scripts/run-evidence-smoke.py": "6bde1223c21d7b3b2bd3e2e157a0dd92b10b6152e952156a8f8354013957599c",
+    "scripts/fault-evidence-smoke.py": "4707ff7cd76c7e8efab2de690c38a03fed4325bc244620dae7e1d4d4ff6cb039",
+    "scripts/repeat-evidence-smoke.py": "ca9d8b9594156884d5e6b2bae6c6e4fcec882a6147b6a0e21c26258636be4b44",
+    "scripts/capture-evidence-dashboard.cjs": "6aead4517873bd55810eb8ae4f752b0bfc998956092c751d7f4ed0d1aa9e8793",
+    "scripts/prepare-evidence-vm.py": "fb5c1dabb6375b66a15b86880258123c7a5324ae355dd526854d8f149b512dca",
+    "scripts/serve-evidence-dashboard.py": "a50ef3a3e6d4387dec65e936a18dd6208b431edcf46cb086b7499bf698d9057d",
+    "scripts/set-evidence-launcher.py": "4c3b988f5477765c54973ae992ce55d42db8dd44f7585c54344074c6f59dab20"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "evidence-show-life-02/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "0e99599a-b941-4d18-959b-44a91b4ae581",
+  "monotonic_origin_seconds": 257068.392061225,
+  "git_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 3001,
+  "timeout_seconds": 300,
+  "gpu_seconds": 10,
+  "gpu_program": "smoke"
+}

@@ -15,7 +15,7 @@ for path in sorted(a.source.rglob('metrics.json')):
     metrics=json.loads(path.read_text());relative=path.parent.relative_to(a.source)
     target=a.output/relative;target.mkdir(parents=True,exist_ok=True)
     hashes={}
-    for name in ['metrics.json','timeline.json','guest-stdout.txt','guest-stderr.txt']:
+    for name in ['metrics.json','timeline.json','guest-stdout.txt','guest-stderr.txt','guest-command.json']:
         original=path.parent/name
         if original.is_file() and not original.is_symlink():
             data=original.read_bytes();hashes[name]=hashlib.sha256(data).hexdigest();(target/name).write_bytes(data)
@@ -37,7 +37,7 @@ for path in sorted(a.source.rglob('metrics.json')):
         (target/'program-hashes.json').write_text(json.dumps(manifest.get('file_sha256',{}),indent=2))
         public={'case_id':str(relative),'formal_training_result':False}
         public.update({key:manifest[key] for key in ['phase','namespace','channel_uid',
-            'monotonic_origin_seconds','git_commit','probe','scenario','bytes','seed','timeout_seconds'] if key in manifest})
+            'monotonic_origin_seconds','git_commit','probe','scenario','bytes','seed','timeout_seconds','gpu_seconds','gpu_program'] if key in manifest})
         (target/'manifest.json').write_text(json.dumps(public,indent=2))
     rows.append({'case':str(relative),'status':metrics.get('status'),'scope':metrics.get('scope',metrics.get('mode')),'sha256':hashes})
 (a.output/'index.json').write_text(json.dumps({'phase':'development','formal_training_completed':False,'cases':rows},indent=2))

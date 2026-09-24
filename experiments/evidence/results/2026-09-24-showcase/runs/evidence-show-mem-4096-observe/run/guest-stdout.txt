@@ -1,0 +1,6 @@
+{"scenario":"observe","stage":"baseline","requested_bytes":0,"cuda_status":0,"status":"PASS"}
+{"scenario":"observe","stage":"allocated","requested_bytes":1859125248,"cuda_status":0,"status":"PASS"}
+{"scenario":"observe","stage":"over_quota","requested_bytes":4294967297,"cuda_status":2,"status":"PASS"}
+{"scenario":"observe","stage":"freed","requested_bytes":1859125248,"cuda_status":0,"status":"PASS"}
+{"scenario":"observe","stage":"reallocated","requested_bytes":1859125248,"cuda_status":0,"status":"PASS"}
+{"scenario":"observe","stage":"accounting_restored","before_free":3718250496,"after_free":3718250496,"status":"PASS"}

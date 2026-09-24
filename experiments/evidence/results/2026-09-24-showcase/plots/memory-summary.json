@@ -1,0 +1,66 @@
+[
+  {
+    "quota_mib": 1024,
+    "stage": "baseline",
+    "samples": 5,
+    "gpu_memory_mib": 559.0,
+    "gpu_process_memory_mib": 550.0,
+    "hami_container_memory_mib": 550.0
+  },
+  {
+    "quota_mib": 1024,
+    "stage": "allocated",
+    "samples": 6,
+    "gpu_memory_mib": 797.0,
+    "gpu_process_memory_mib": 788.0,
+    "hami_container_memory_mib": 787.0
+  },
+  {
+    "quota_mib": 1024,
+    "stage": "freed",
+    "samples": 6,
+    "gpu_memory_mib": 559.0,
+    "gpu_process_memory_mib": 550.0,
+    "hami_container_memory_mib": 550.0
+  },
+  {
+    "quota_mib": 1024,
+    "stage": "reallocated",
+    "samples": 5,
+    "gpu_memory_mib": 797.0,
+    "gpu_process_memory_mib": 788.0,
+    "hami_container_memory_mib": 787.0
+  },
+  {
+    "quota_mib": 4096,
+    "stage": "baseline",
+    "samples": 5,
+    "gpu_memory_mib": 559.0,
+    "gpu_process_memory_mib": 550.0,
+    "hami_container_memory_mib": 550.0
+  },
+  {
+    "quota_mib": 4096,
+    "stage": "allocated",
+    "samples": 6,
+    "gpu_memory_mib": 2333.0,
+    "gpu_process_memory_mib": 2324.0,
+    "hami_container_memory_mib": 2323.0
+  },
+  {
+    "quota_mib": 4096,
+    "stage": "freed",
+    "samples": 6,
+    "gpu_memory_mib": 559.0,
+    "gpu_process_memory_mib": 550.0,
+    "hami_container_memory_mib": 550.0
+  },
+  {
+    "quota_mib": 4096,
+    "stage": "reallocated",
+    "samples": 6,
+    "gpu_memory_mib": 2333.0,
+    "gpu_process_memory_mib": 2324.0,
+    "hami_container_memory_mib": 2323.0
+  }
+]

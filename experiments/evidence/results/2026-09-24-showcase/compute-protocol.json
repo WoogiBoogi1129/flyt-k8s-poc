@@ -1,0 +1,17 @@
+{
+  "binary_sha256": "e98badc7ab64065af728fcca833ed372f16702d1e1c18eec01b1d8f6cbf7a9fb",
+  "embedded_git_hash": "GIT_HASH_b216ba1",
+  "hami_tag": "v2.10.0",
+  "hami_core_submodule": "b216ba1be1b8e21488d1c7370ed3357b3049aad1",
+  "source_url": "https://github.com/Project-HAMi/HAMi-core/tree/b216ba1be1b8e21488d1c7370ed3357b3049aad1",
+  "binary_build_flags_verified": false,
+  "formal_enforcement_contract": "NOT_ESTABLISHED",
+  "planned_observation": "100/50/25, 10s warmup then >=60s per fresh VM; record GPU/HAMi utilization and launch count; exploratory, not E2 PASS",
+  "workload": {
+    "grid": 2048,
+    "block": 256,
+    "dependent_fma_iterations_per_thread": 1048576,
+    "warmup_seconds": 10,
+    "total_seconds": 71
+  }
+}

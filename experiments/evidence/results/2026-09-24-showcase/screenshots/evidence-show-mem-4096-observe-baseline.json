@@ -1,0 +1,133 @@
+{
+  "captured_at": "2026-09-24T10:07:24.096Z",
+  "url": "http://127.0.0.1:8765/",
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1800,
+    "height": 1300
+  },
+  "snapshot": {
+    "sequence": 201,
+    "timestamp": "2026-09-24T10:07:22.468812+00:00",
+    "run_id": "runs",
+    "errors": [],
+    "routes": [
+      {
+        "channel": "evidence-show-mem-1024-observe-channel",
+        "channel_uid": "b9acba87-8567-456b-ac6a-ee6c4c6a8f37",
+        "vm": "evidence-show-mem-1024-observe",
+        "phase": "Released",
+        "allocation": "d0240182699ca5080729a2e63db57a9f",
+        "generation": "e841b884053d7b8674e09ac8e8d2dab9",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 1024,
+        "compute": 100,
+        "worker_uid": "80727733-a19c-41c3-90a2-6e7f46a99d71",
+        "worker": null,
+        "hami_allocation": null,
+        "worker_image_ids": [],
+        "vmi_uid": "720900b7-1ea0-4d2d-8d52-983d2e290b3b",
+        "vmi_phase": null
+      },
+      {
+        "channel": "evidence-show-mem-1024-suite-channel",
+        "channel_uid": "8a781598-e5fe-4cdd-a424-34bcfc6eb350",
+        "vm": "evidence-show-mem-1024-suite",
+        "phase": "Released",
+        "allocation": "6c762e42de22b131464118ba3b703cff",
+        "generation": "dd1a39a3d150de942aa828a5e0c28bd4",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 1024,
+        "compute": 100,
+        "worker_uid": "2c816147-ea6e-42f6-81fb-5cc031b9992c",
+        "worker": null,
+        "hami_allocation": null,
+        "worker_image_ids": [],
+        "vmi_uid": "7c365213-1e00-4d49-bb60-ec25df7d74c4",
+        "vmi_phase": null
+      },
+      {
+        "channel": "evidence-show-mem-1024-suite-retry-channel",
+        "channel_uid": "b625e38d-18a7-4605-a87f-66e1d19eaaf4",
+        "vm": "evidence-show-mem-1024-suite-retry",
+        "phase": "Released",
+        "allocation": "d9a68a9c5b7d98f8297c6037e09ef3e5",
+        "generation": "eb07c7bd5b98862b090595ac47d58611",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 1024,
+        "compute": 100,
+        "worker_uid": "eb5a6eb5-33eb-421b-8283-0b4b6f94962a",
+        "worker": null,
+        "hami_allocation": null,
+        "worker_image_ids": [],
+        "vmi_uid": "61b31b48-1853-4e4c-81de-2245e3d72404",
+        "vmi_phase": null
+      },
+      {
+        "channel": "evidence-show-mem-4096-observe-channel",
+        "channel_uid": "db8b92dc-0c88-4cd6-b488-e8785b8ecd28",
+        "vm": "evidence-show-mem-4096-observe",
+        "phase": "Ready",
+        "allocation": "96a8689cb7cb4b0d3c3a8dd7fd5badd7",
+        "generation": "f48a0dca0c6bd83e9744c6eeb3521467",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 4096,
+        "compute": 100,
+        "worker_uid": "69cda9c0-223f-4906-bcaa-d9df0c9d82a9",
+        "worker": "evidence-show-mem-4096-observe-channel-worker",
+        "hami_allocation": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3,NVIDIA,4096,100:;",
+        "worker_image_ids": [
+          "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+        ],
+        "vmi_uid": "04e633f9-2876-4278-9d2f-c3ed2ba2e279",
+        "vmi_phase": "Running"
+      },
+      {
+        "channel": "evidence-show-pair-a-channel",
+        "channel_uid": "fc4afe67-d960-44e6-b099-6aa98a06e7ba",
+        "vm": "evidence-show-pair-a",
+        "phase": "Released",
+        "allocation": "5160589ba1d2b98adf76b313983f58e1",
+        "generation": "8f407cadc700a1b834d207bfb555cc7b",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 4096,
+        "compute": 50,
+        "worker_uid": "bb24f31c-21d0-45fa-a112-97db46810b76",
+        "worker": null,
+        "hami_allocation": null,
+        "worker_image_ids": [],
+        "vmi_uid": "09a27cab-7473-4d90-a52a-10939c15d2f1",
+        "vmi_phase": null
+      },
+      {
+        "channel": "evidence-show-pair-b-channel",
+        "channel_uid": "435c24b7-e285-4d69-9886-d43b4a203eb0",
+        "vm": "evidence-show-pair-b",
+        "phase": "Released",
+        "allocation": "fa851836267d2ef847681f136ba93285",
+        "generation": "f30990bc5bec8eb21289e88f1dd13794",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 4096,
+        "compute": 50,
+        "worker_uid": "a7464864-a4fa-41e9-812f-c152905b87fc",
+        "worker": null,
+        "hami_allocation": null,
+        "worker_image_ids": [],
+        "vmi_uid": "3b3a399c-6429-4ca0-a63e-c2bd3ee1749e",
+        "vmi_phase": null
+      }
+    ],
+    "route": "$ kubectl get vmi,flytsharedmemorychannels,pods -n flyt-evidence (selected fields)\n$ kubectl get pod WORKER -n flyt-evidence -o json (HAMi allocation / imageID)\nevidence-show-mem-4096-observe | VMI=Running | Channel=Ready | memory=4096 MiB compute=100\n  GPU=GPU-7d708c42-8d4a-16d5-0746-474567157aa3 | Worker=evidence-show-mem-4096-observe-channel-worker\n  HAMi=GPU-7d708c42-8d4a-16d5-0746-474567157aa3,NVIDIA,4096,100:;\n  allocation=96a8689cb7cb4b0d3c3a8dd7fd5badd7 | Worker UID=69cda9c0-223f-4906-bcaa-d9df0c9d82a9\nevidence-show-pair-a | VMI=None | Channel=Released | memory=4096 MiB compute=50\n  GPU=GPU-7d708c42-8d4a-16d5-0746-474567157aa3 | Worker=None\n  HAMi=None\n  allocation=5160589ba1d2b98adf76b313983f58e1 | Worker UID=bb24f31c-21d0-45fa-a112-97db46810b76\nevidence-show-pair-b | VMI=None | Channel=Released | memory=4096 MiB compute=50\n  GPU=GPU-7d708c42-8d4a-16d5-0746-474567157aa3 | Worker=None\n  HAMi=None\n  allocation=fa851836267d2ef847681f136ba93285 | Worker UID=a7464864-a4fa-41e9-812f-c152905b87fc",
+    "gpu": "$ nvidia-smi -i GPU-7d708c42-8d4a-16d5-0746-474567157aa3 --query-gpu=timestamp,uuid,memory.used,memory.total,utilization.gpu --format=csv\ntimestamp, uuid, memory.used [MiB], memory.total [MiB], utilization.gpu [%]\n2026/09/24 19:07:22.934, GPU-7d708c42-8d4a-16d5-0746-474567157aa3, 559 MiB, 97887 MiB, 0 %\n\n$ nvidia-smi -i GPU-7d708c42-8d4a-16d5-0746-474567157aa3 --query-compute-apps=gpu_uuid,pid,process_name,used_gpu_memory --format=csv\ngpu_uuid, pid, process_name, used_gpu_memory [MiB]\nGPU-7d708c42-8d4a-16d5-0746-474567157aa3, 4001612, /opt/flyt/bin/flyt-shm-worker, 550 MiB\n",
+    "hami": "$ curl http://192.168.24.21:31992/metrics (target GPU / experiment Worker lines)\nhami_container_device_memory_bytes{container=\"main\",device_uuid=\"GPU-7d708c42-8d4a-16d5-0746-474567157aa3\",namespace=\"flyt-evidence\",pod=\"evidence-show-mem-4096-observe-channel-worker\",vdevice_index=\"0\",zone=\"vGPU\"} 5.767168e+08\nhami_container_device_utilization_ratio{container=\"main\",device_uuid=\"GPU-7d708c42-8d4a-16d5-0746-474567157aa3\",namespace=\"flyt-evidence\",pod=\"evidence-show-mem-4096-observe-channel-worker\",vdevice_index=\"0\",zone=\"vGPU\"} 0\nhami_host_gpu_memory_used_bytes{device_index=\"1\",device_type=\"NVIDIA-NVIDIA RTX PRO 6000 Blackwell Server Edition\",device_uuid=\"GPU-7d708c42-8d4a-16d5-0746-474567157aa3\",node=\"gpu-4\",zone=\"vGPU\"} 1.253441536e+09",
+    "guest": "evidence-show-mem-4096-observe | BAR=0000:00:1e.0 | slot=0\n$ memory-probe-guest observe 4294967296\n{\"scenario\":\"observe\",\"stage\":\"baseline\",\"requested_bytes\":0,\"cuda_status\":0,\"status\":\"PASS\"}",
+    "results": "evidence-show-mem-1024-observe: PASS | released=True | 130.56s\nevidence-show-mem-1024-suite: FAIL | released=True | 178.69s\nevidence-show-mem-1024-suite-retry: PASS | released=True | 66.17s\nevidence-show-pair-a: PASS | released=True | 122.61s\nevidence-show-pair-b: PASS | released=True | 104.62s",
+    "stages": [
+      {
+        "run": "evidence-show-mem-4096-observe",
+        "stage": "baseline"
+      }
+    ],
+    "completed_at": "2026-09-24T10:07:23.013943+00:00"
+  }
+}

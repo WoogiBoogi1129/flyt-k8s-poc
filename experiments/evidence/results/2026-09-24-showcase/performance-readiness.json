@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-09-24T10:14:37.659821+00:00",
+  "scope": "Read-only S6 readiness inventory, not a performance execution",
+  "status": "NOT_RUN",
+  "passthrough_vms": [
+    {
+      "namespace": "flyt-evidence-baseline",
+      "name": "evidence-passthrough",
+      "uid": "c048dcfb-db0c-401f-8987-deb0b2f60c9d",
+      "run_strategy": "Halted",
+      "ready": null,
+      "host_devices": []
+    },
+    {
+      "namespace": "flyt-evidence-baseline",
+      "name": "evidence-passthrough-v2",
+      "uid": "da512315-583c-45ac-8a0c-f14dde098171",
+      "run_strategy": "Halted",
+      "ready": null,
+      "host_devices": []
+    }
+  ],
+  "rpc_mps_pods": [],
+  "observed_worker_resources": [
+    {
+      "name": "main",
+      "requests": {
+        "nvidia.com/gpu": "1",
+        "nvidia.com/gpucores": "100",
+        "nvidia.com/gpumem": "1024"
+      },
+      "limits": {
+        "nvidia.com/gpu": "1",
+        "nvidia.com/gpucores": "100",
+        "nvidia.com/gpumem": "1024"
+      }
+    }
+  ],
+  "remaining": [
+    "Configure and validate preserved RPC/MPS baseline with the same workload and software",
+    "Freeze guest/Worker/RPC/MPS CPU/NUMA budgets and disjoint accounting",
+    "Transition the selected GPU to VFIO and back in an isolated baseline run",
+    "Calibrate all backend/batch/input combinations and perform independent repetitions"
+  ],
+  "excluded": [
+    "New training tensor comparisons",
+    "Fault injection and fault recovery experiments"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-09-24T11:08:54.124254+00:00",
+  "status": "PASS",
+  "channels_released": 39,
+  "unique_allocations": 39,
+  "lifecycle_count": 20,
+  "residual_execution_pods": [],
+  "backing_listing": {
+    "a": [],
+    "b": []
+  },
+  "preserved_channels": [
+    {
+      "name": "shm-channel-a",
+      "uid": "f69f0409-4d2f-4940-9a5c-342602d804e9",
+      "before": "Draining",
+      "after": "Draining"
+    },
+    {
+      "name": "shm-channel-b",
+      "uid": "b1239701-0bd4-4982-933b-d92ca8dbd705",
+      "before": "Released",
+      "after": "Released"
+    }
+  ],
+  "basic_vm_launcher_uid": "1893094f-dac2-4151-8bb7-d4fd72ec1b70",
+  "basic_vm_phase": "Running",
+  "gpu_processes": "gpu_uuid, pid, used_gpu_memory [MiB]\n",
+  "gpu_memory": "uuid, memory.used [MiB]\nGPU-772181af-05a4-0c24-de59-8487bd37c142, 0 MiB\nGPU-7d708c42-8d4a-16d5-0746-474567157aa3, 0 MiB\nGPU-c654d43e-43f8-c28e-77c2-1f17a0cbf46a, 0 MiB\nGPU-1b4de6a0-88ae-4004-98b9-035906a2473f, 0 MiB\n"
+}

@@ -1,0 +1,58 @@
+{
+  "captured_at": "2026-09-24T09:58:43.734Z",
+  "url": "http://127.0.0.1:8765/",
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1800,
+    "height": 1300
+  },
+  "snapshot": {
+    "sequence": 75,
+    "timestamp": "2026-09-24T09:58:41.126783+00:00",
+    "run_id": "runs",
+    "errors": [],
+    "routes": [
+      {
+        "channel": "evidence-show-pair-a-channel",
+        "channel_uid": "fc4afe67-d960-44e6-b099-6aa98a06e7ba",
+        "vm": "evidence-show-pair-a",
+        "phase": "Released",
+        "allocation": "5160589ba1d2b98adf76b313983f58e1",
+        "generation": "8f407cadc700a1b834d207bfb555cc7b",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 4096,
+        "compute": 50,
+        "worker_uid": "bb24f31c-21d0-45fa-a112-97db46810b76",
+        "worker": null,
+        "hami_allocation": null,
+        "worker_image_ids": [],
+        "vmi_uid": "09a27cab-7473-4d90-a52a-10939c15d2f1",
+        "vmi_phase": null
+      },
+      {
+        "channel": "evidence-show-pair-b-channel",
+        "channel_uid": "435c24b7-e285-4d69-9886-d43b4a203eb0",
+        "vm": "evidence-show-pair-b",
+        "phase": "Released",
+        "allocation": "fa851836267d2ef847681f136ba93285",
+        "generation": "f30990bc5bec8eb21289e88f1dd13794",
+        "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+        "memory_mib": 4096,
+        "compute": 50,
+        "worker_uid": "a7464864-a4fa-41e9-812f-c152905b87fc",
+        "worker": null,
+        "hami_allocation": null,
+        "worker_image_ids": [],
+        "vmi_uid": "3b3a399c-6429-4ca0-a63e-c2bd3ee1749e",
+        "vmi_phase": null
+      }
+    ],
+    "route": "$ kubectl get vmi,flytsharedmemorychannels,pods -n flyt-evidence (selected fields)\n$ kubectl get pod WORKER -n flyt-evidence -o json (HAMi allocation / imageID)\nevidence-show-pair-a | VMI=None | Channel=Released | memory=4096 MiB compute=50\n  GPU=GPU-7d708c42-8d4a-16d5-0746-474567157aa3 | Worker=None\n  HAMi=None\n  allocation=5160589ba1d2b98adf76b313983f58e1 | Worker UID=bb24f31c-21d0-45fa-a112-97db46810b76\nevidence-show-pair-b | VMI=None | Channel=Released | memory=4096 MiB compute=50\n  GPU=GPU-7d708c42-8d4a-16d5-0746-474567157aa3 | Worker=None\n  HAMi=None\n  allocation=fa851836267d2ef847681f136ba93285 | Worker UID=a7464864-a4fa-41e9-812f-c152905b87fc",
+    "gpu": "$ kubectl exec -n gpu-operator nvidia-dcgm-exporter-scbq4 -c nvidia-dcgm-exporter -- nvidia-smi -i GPU-7d708c42-8d4a-16d5-0746-474567157aa3 --query-gpu=timestamp,uuid,memory.used,memory.total,utilization.gpu --format=csv\ntimestamp, uuid, memory.used [MiB], memory.total [MiB], utilization.gpu [%]\n2026/09/24 09:58:41.926, GPU-7d708c42-8d4a-16d5-0746-474567157aa3, 0 MiB, 97887 MiB, 0 %\n\n$ kubectl exec -n gpu-operator nvidia-dcgm-exporter-scbq4 -c nvidia-dcgm-exporter -- nvidia-smi -i GPU-7d708c42-8d4a-16d5-0746-474567157aa3 --query-compute-apps=gpu_uuid,pid,process_name,used_gpu_memory --format=csv\ngpu_uuid, pid, process_name, used_gpu_memory [MiB]\n",
+    "hami": "$ curl http://192.168.24.21:31992/metrics (target GPU / experiment Worker lines)\nhami_host_gpu_memory_used_bytes{device_index=\"1\",device_type=\"NVIDIA-NVIDIA RTX PRO 6000 Blackwell Server Edition\",device_uuid=\"GPU-7d708c42-8d4a-16d5-0746-474567157aa3\",node=\"gpu-4\",zone=\"vGPU\"} 6.6813952e+08",
+    "guest": "No active guest output",
+    "results": "evidence-show-pair-a: PASS | released=True | 122.61s\nevidence-show-pair-b: PASS | released=True | 104.62s",
+    "stages": [],
+    "completed_at": "2026-09-24T09:58:42.197559+00:00"
+  }
+}

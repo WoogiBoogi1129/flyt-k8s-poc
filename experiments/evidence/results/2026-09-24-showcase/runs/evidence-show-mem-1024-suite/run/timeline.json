@@ -1,0 +1,24 @@
+[
+  {
+    "elapsed_seconds": 0.2592331139894668,
+    "state": "VMStartRequested"
+  },
+  {
+    "elapsed_seconds": 108.15951421498903,
+    "state": "GuestSSHReady",
+    "ip": "10.85.0.178"
+  },
+  {
+    "elapsed_seconds": 152.21570353698917,
+    "state": "Failed",
+    "error": "Guest ended before Channel Ready"
+  },
+  {
+    "elapsed_seconds": 153.07516981798108,
+    "state": "DrainRequested"
+  },
+  {
+    "elapsed_seconds": 178.54963884799508,
+    "state": "Released"
+  }
+]

@@ -1,0 +1,83 @@
+[
+  {
+    "reason": "Unhealthy",
+    "message": "Readiness probe failed: ",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T09:59:07Z",
+    "lastTimestamp": "2026-09-24T09:59:07Z",
+    "count": 1,
+    "object": "evidence-show-mem-1024-observe-channel-worker"
+  },
+  {
+    "reason": "Failed",
+    "message": "Failed to pull image \"localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d\": RegistryUnavailable: unable to pull image: initializing source docker://localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d: fetching manifest sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d in localhost/flyt-worker: pinging container registry localhost: Get \"https://localhost/v2/\": dial tcp 127.0.0.1:443: connect: connection refused",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T10:01:37Z",
+    "lastTimestamp": "2026-09-24T10:02:18Z",
+    "count": 3,
+    "object": "evidence-show-mem-1024-suite-channel-worker"
+  },
+  {
+    "reason": "Failed",
+    "message": "Error: RegistryUnavailable",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T10:01:37Z",
+    "lastTimestamp": "2026-09-24T10:02:18Z",
+    "count": 3,
+    "object": "evidence-show-mem-1024-suite-channel-worker"
+  },
+  {
+    "reason": "Failed",
+    "message": "Error: ImagePullBackOff",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T10:01:37Z",
+    "lastTimestamp": "2026-09-24T10:02:30Z",
+    "count": 3,
+    "object": "evidence-show-mem-1024-suite-channel-worker"
+  },
+  {
+    "reason": "Unhealthy",
+    "message": "Readiness probe failed: ",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T09:56:46Z",
+    "lastTimestamp": "2026-09-24T09:56:46Z",
+    "count": 2,
+    "object": "evidence-show-pair-a-channel-worker"
+  },
+  {
+    "reason": "Unhealthy",
+    "message": "Readiness probe failed: ",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T09:57:05Z",
+    "lastTimestamp": "2026-09-24T09:57:05Z",
+    "count": 1,
+    "object": "evidence-show-pair-b-channel-worker"
+  },
+  {
+    "reason": "Failed",
+    "message": "Failed to pull image \"localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554\": RegistryUnavailable: unable to pull image: initializing source docker://localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554: fetching manifest sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554 in localhost/flyt-hook: pinging container registry localhost: Get \"https://localhost/v2/\": dial tcp 127.0.0.1:443: connect: connection refused",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T10:01:32Z",
+    "lastTimestamp": "2026-09-24T10:02:31Z",
+    "count": 3,
+    "object": "virt-launcher-evidence-show-mem-1024-suite-plkvz"
+  },
+  {
+    "reason": "Failed",
+    "message": "Error: RegistryUnavailable",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T10:01:32Z",
+    "lastTimestamp": "2026-09-24T10:02:31Z",
+    "count": 3,
+    "object": "virt-launcher-evidence-show-mem-1024-suite-plkvz"
+  },
+  {
+    "reason": "Failed",
+    "message": "Error: ImagePullBackOff",
+    "type": "Warning",
+    "firstTimestamp": "2026-09-24T10:01:33Z",
+    "lastTimestamp": "2026-09-24T10:02:15Z",
+    "count": 15,
+    "object": "virt-launcher-evidence-show-mem-1024-suite-plkvz"
+  }
+]

@@ -1,0 +1,513 @@
+{
+  "phase": "development",
+  "formal_training_completed": false,
+  "cases": [
+    {
+      "case": "evidence-show-aggregate/run",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "651d13baa5dbdb15a55fc53b303eccd27115798a4898f41f94b8234042fe6b94",
+        "timeline.json": "42fbdf99235c11fd1a1d4d812c00f1e45419d8bf7cc994af919a27b568cdc1a0",
+        "guest-stdout.txt": "84408d4d17e45a94d3ba72fedef6c5109b3590c8597d3a189f7fc8a6744d76f7",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0595e6128610fc171872ea85725a5cacc2b6538b6e577bf1867cb40242f806e1",
+        "private_manifest.json": "6ba13cd8cc744509f3e1e7529cccd0158120b2fd0bcf3dd93a52495e80bcd303"
+      }
+    },
+    {
+      "case": "evidence-show-capture-a/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "c1c709a68fe6a64693686cee4202d35058e2ea2cd6c8ba1c4584c33f02a55df1",
+        "timeline.json": "b41fb988d41fa3ab1db4f8f6bbcdf1cff22638064863740ea9bdee2728fcdfd8",
+        "guest-stdout.txt": "d2b3e92ac9146a8ec64a3cb9d8aeb99ae1ad0bd868abdaf6bdaf6b33a5abab94",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "e85a6e3b71b3a7d5f929835d14d564167f25ed074ee5282735afd1364b51b3ad",
+        "private_manifest.json": "38665be5d0f27b37cd2b9cd9b45a700163052a8d98174f707baf2199f3d4748d"
+      }
+    },
+    {
+      "case": "evidence-show-capture-b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "0bd3c269c669fe4b32686b9a0ab4a0de66c982f7f34cab6fe582e97a6d136a37",
+        "timeline.json": "16af7bc68561d5153db7ef226c885797eb86b174150914f20d3b865a67da7fc6",
+        "guest-stdout.txt": "3984b6c8aa7fa6c3280722367fdb851abe0dafeb2b18570ddbb77809b65b460c",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "39f36f3d975bc37f0673d723a33eab1cd7c0b0cdb198dd203376f3b80fedebb0",
+        "private_manifest.json": "f85c910ad75212d781b1dc12e7dcd89e5d635619d909aeee322c764551bf4072"
+      }
+    },
+    {
+      "case": "evidence-show-compute-100-1/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "b4a70d9b62ce7ffaa1a94f0399c612cde06861b9972d788715ace05cac4c3b61",
+        "timeline.json": "15db005264452e1fa673b9f43ed1070e9f318746e763e465842b7c987b8a0e91",
+        "guest-stdout.txt": "28ea29a055ff04ded01dec170c8badd49a1d0ef92663aa9690e1f4989ae8e82c",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "9eaf5add0e823b2def0fcc956b81e4761c53ada4c0016b4cef47dc453fae91f9"
+      }
+    },
+    {
+      "case": "evidence-show-compute-100-2/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "58f8a27b75fb4ee5337adae12032ad7490db587b164bafc38bd000eaf49af364",
+        "timeline.json": "d15abf76fdfc8079a5ad16b6ec2ff579dbe20fa8603a8de3bd32ebd4d29bb0b1",
+        "guest-stdout.txt": "8756b0d4cbbce0847c66da785d381043af2df629d93beeb4b12508d72c3f2c26",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "fac4d5cb994d5e28bdc6ae4d08f5274f2af0f6315a4c422a868806350851e31b"
+      }
+    },
+    {
+      "case": "evidence-show-compute-100-3/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "2d67af6f88cbbabc0ca99f87ce655c8e24a5f3abe2417bf52c400e3e17104bbb",
+        "timeline.json": "327e44f859dc3278e129a801078a5230a1fb0a4dd1eb78862d35431a40869c19",
+        "guest-stdout.txt": "a6e0d02c889c14424254cab2cbcf3d1757c17cac0a3c30de9bb93eb838bc9a5f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "d330173e026e411e2089804b3ee531935600617cbdadd29c970c3c3f323ae8c6"
+      }
+    },
+    {
+      "case": "evidence-show-compute-25-1/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "fcdad43d6950725311cbf297fb6f35b2de818fe73e53efd1f350fc5018721962",
+        "timeline.json": "6b5c26d06c8adf7e6e7112fd9d4e2930923a84fb963f10abf00e8ea41625255c",
+        "guest-stdout.txt": "ea1a77ee6a1bb2839513403a9590b3140b68e7e058576534d4caec2c2a37c61f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "924692fe6312f6316ed7ef8cf33dff5f93cb23ab45e1f295385cda05eb3be044"
+      }
+    },
+    {
+      "case": "evidence-show-compute-25-2/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "514461994568739fcf083cd9b48544b99e6fad5961c754451520c13610d03342",
+        "timeline.json": "075559cbf1844182abc58f8829398fd0fc227202fcfeeecef94b8d043a72ecac",
+        "guest-stdout.txt": "c8132a003cbcad0ff882fa1d9022a24e127f15ca71749283ecffe213178e2a1d",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "8e0f626113966cc84f8019e2831245540f1a021cdc6643b1e60f320e97803292"
+      }
+    },
+    {
+      "case": "evidence-show-compute-25-3/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "2961b64dd42ccc332350f8583375cd07a230b3bd1c3519a5fd69f0496f438d52",
+        "timeline.json": "e8338ad35f34ef1adfe37fc3c571737bb8916d0a1a723a69e321ec8167c005fd",
+        "guest-stdout.txt": "310eee7f6e9632ae416294efacafd463aeb9ca6c50cf67e779912182d3b1e888",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "5b16c9d38c49181536bc8083de5046d4ed8f3184a07ad40ce3dacbfca9826497"
+      }
+    },
+    {
+      "case": "evidence-show-compute-50-1/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d115da3c6c7e79e518c35a77e80a1d6a0f04f592152dd0908ea3815396602209",
+        "timeline.json": "793da292f0553498b6abc23174bf6d8ae646e819826956e85c12df218920fecb",
+        "guest-stdout.txt": "3cdd9eef599b2c9d334fb5c727b82306a13717df108f96f0380e7d5180c2b1b6",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "75b49685a7ed545b991496f5ab4a89c4bdf6ffd1d68bd3cf8d7caf2e2cb3371e"
+      }
+    },
+    {
+      "case": "evidence-show-compute-50-2/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "30ff155a6cb44a22236e1e613a9151c8bf3a121772cc9d1fc05c24575b67fed5",
+        "timeline.json": "221c816af14259499609679634ccd037305724c18e5cf4c249790e067e6ac6af",
+        "guest-stdout.txt": "f9398ed5ecefbd559928a25f242486d1fef67c9f417ef27532b62931a5eb3218",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "b43c668e4ffb8ed2aead8db9365ede497a92a5931dae44287c9d04df2ff64cb2"
+      }
+    },
+    {
+      "case": "evidence-show-compute-50-3/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "39cbafc9a3eeca3cb65ee7b55009536306f21beb74bd778accc1d7468eb2b062",
+        "timeline.json": "98e2c2ba87c66338287f4f55cc37a19fbb0d2d7a4d8174a07968aecd4bbfcc75",
+        "guest-stdout.txt": "9bd3139b1ea7d18e4e0f18cab274d0a8fd416f6f0b14578b902c337f637d2918",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0a6e6db19d932c8a837138db0339dade12187454de505bad631c4b6ec4c683e4",
+        "private_manifest.json": "1ad33b1dd5725e0a5c7f1c4eef9f74ad3f8556ddcaca35c0884642c846c472fb"
+      }
+    },
+    {
+      "case": "evidence-show-life-01/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "631ed839ca3de703be0a05ec63a1315ac3f7a1ca5e50eb68b3bd1dc3c99c08ab",
+        "timeline.json": "4d98b2362e03821f96e47d2adc5884593e75a4c8003c3a7ec7237449069caacb",
+        "guest-stdout.txt": "23a87bf2fa3210a7a9136fe206d2e508be3a821f6722c34ed822a216279c09ec",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "d158667b51bbc8894a2823e982edaff62dc86daafa9db38a93d750f2baef0e82",
+        "private_manifest.json": "ba5d6642d3734de72e64ada59c1d006b804d902dd57fcb61f182e317e1f6722d"
+      }
+    },
+    {
+      "case": "evidence-show-life-02/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "8c966e46e547a3d8cbbbdb01c587dd004a73c2a3dc74e095c680f11143b3414e",
+        "timeline.json": "49427722df84581992fd8590a44b60e903dec408b6d1ddba28df34c7da4173c1",
+        "guest-stdout.txt": "f052df65d06219698bba183fdf8534f0ae20d52d9ee1a680bb0e20a43ea482fd",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "ed58ce6109874fdc7a9cfc934299ff75940efb743a5d81067578b72bfdad1e03",
+        "private_manifest.json": "bfe99fa28fffd5844179dcceac8be49c83267b12757a6f31855b83ed00502415"
+      }
+    },
+    {
+      "case": "evidence-show-life-03/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "dcfddd03a9cc36262be96ce9632f99ad8b5f8027dfa81bfbf83eabfa9757e794",
+        "timeline.json": "6161dcd1fa47c4e6a79cb0914f6263141386843dec096a278b393e4d68eef5a9",
+        "guest-stdout.txt": "7af07d7a7a5e9329cb07e23ce59f34b86db9b5c27e908fc135deaf9537272b85",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "ef56ce40bdeed2c5da48270b6aed77c02f2cfd293d2c09fd8f6429a078452dfd",
+        "private_manifest.json": "c6e558d0178b8d2b8a571defd71ad3800c278eecd3b22cc3fff9295a6b40d9d7"
+      }
+    },
+    {
+      "case": "evidence-show-life-04/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "5c317adf940665b684fbd9fe290945071d013f90283635a62c6b51033da5e33a",
+        "timeline.json": "00477f66c431b0593db8f7f2fbc4aae4b4a86678f887118bd476529067a18811",
+        "guest-stdout.txt": "9a26131e95cfe40ebc284fa259500dbf777118e2c879d4cce1b84dd0b175e239",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "c61b295f56104c17240c7b95579e3f87df271b40c596366ac25698f280dafa06",
+        "private_manifest.json": "58894f4f9169580124d79efa0bf0e563630de44da32e6f444ff8fa42897ec6f8"
+      }
+    },
+    {
+      "case": "evidence-show-life-05/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "883abe8e59638bbae9b6708a844cae00e38290b93b684a066abd70649371ba3c",
+        "timeline.json": "b1f3aed7ca740a2ee647f2d4ae25e6bd4aecc2c342998ec55836852768207545",
+        "guest-stdout.txt": "4615cbe5a747e60e3410e8e93a5f51beed2d943faf5b980415fbd2b30d450d54",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "e1c4eb83c41c263578823d4b110f89522eeb461c08c6fb0b40ea1883cc03300b",
+        "private_manifest.json": "e1589b35ea576b30d3e657885b8c3e36cf26dc26fd07ebe8da1e30f73e36bacd"
+      }
+    },
+    {
+      "case": "evidence-show-life-06/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "e6c84ef1220a3727bb825b916d94d2ab8d202ec299a90b1ee0ace333b4d55f5c",
+        "timeline.json": "b8b3bbfcac61f02e5de4bca4ed4e82c7169b7689d0e2b7125a274ad0958a2d18",
+        "guest-stdout.txt": "9c82da9bd36e82ca61ee92de4ff2cf3c7a04370bbd20c930eee5a7858e556056",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "a171b51de894484e367b2d37254422e1f4bc16d888a595e22b51fe6977eead46",
+        "private_manifest.json": "ae0c9ca7d696438a1c519494cb9783a17a4609865c52ef10e06cb5c9d8c04544"
+      }
+    },
+    {
+      "case": "evidence-show-life-07/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "74cba9a8e1ab9ed0d88558306b8a73e39eae1197a73b453fcd5be430e0ce9f15",
+        "timeline.json": "313e08a21e3b6e8db2c180cd0944312e922c86c5a7a4cba441cf154aa1405a49",
+        "guest-stdout.txt": "ad47d50afec7f567512de2580d60416abb6bcff00a203688e8d039886c21a1d5",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "2845534e3c17686c004b5922bd35041e4608282633913b96c4e64ebb56a7eda6",
+        "private_manifest.json": "69edc842f409acd9f29826723590abac8c857ecd53735f8f7d1db0c888cb0904"
+      }
+    },
+    {
+      "case": "evidence-show-life-08/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "e1e626389f33ad07eb1a16ee3f16daa5dfbf75d00d9a3259a5337ab6e8996554",
+        "timeline.json": "ae0fa09937961851831bceb4dce9b5fc3c9d353fc26c7d0992017b1a6f4c930e",
+        "guest-stdout.txt": "340e4b00212146becc81743b444fe9cf9242e1c6f33924066beb355e94a2a5c4",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "f61947f2e30f5e068cec4ba5b8cc182c218f49c153187c7430ef0055eba79b7c",
+        "private_manifest.json": "6b7ffb6fb078fc9745ca088d8c6ec5aba4a9199a03839510bc03ea59bef239d5"
+      }
+    },
+    {
+      "case": "evidence-show-life-09/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "df1367036951ffcee649c676a6d743c3541d87e77a2515d66ccb235c3f81de8b",
+        "timeline.json": "ac6fc0de1f1c5e03b6e885a9e6719f444c452a8e8a97b0d80f69abace486bef4",
+        "guest-stdout.txt": "fc088bdf842d91347f2235a3dc5731098d9efeb514f2a659bac6edaf4945d6a4",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "a678ed1fe2355013f45dad1c756a27eb46db81a49dbd422a56fcf9e9693cf67c",
+        "private_manifest.json": "1a4bc132537e822ccae2600d16c484fd0822ad735d1e4b3b84b50c7e662c3f41"
+      }
+    },
+    {
+      "case": "evidence-show-life-10/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "ac0f1faabcc2b7f13d36f61b52b3e2ca53b1c52c431b4d640c40234fa25baad1",
+        "timeline.json": "e461e60ae48de012e5201fad6fd1117af46d604eae07991c4e2339d7f27820c4",
+        "guest-stdout.txt": "7dfbc354393bb58aa68c4d8f0a4adc6d8d98037dae9bf961d4e40607efa64462",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "f9b30d2bd30ff40360e09201e9967f37176a941e9f5dd390bbae352cc925f31f",
+        "private_manifest.json": "5e44f061ad3949c119a52723659bced30b6d2e9bac207ea934daf712467490c4"
+      }
+    },
+    {
+      "case": "evidence-show-life-11/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "777140f73e4104986085090c7e197aabb0c250f0babbe708bd7823fa9acb2a17",
+        "timeline.json": "9a6d1eb239bee7609a5179c5b54caf24eea6f9e6b0c33fa0f71a7b8c64ab758d",
+        "guest-stdout.txt": "ff0898e235375b2538894958134e56d948bd85afa11a9b819d087fc51334f8c3",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "28c60c8089ea071d4fc0a132ab156b7fbc0ccd8594f4571b414251e78125ce13",
+        "private_manifest.json": "7f123686fd6c8a2305e643d1ce940f27789d01016bf2311a13de925a28f7e2e5"
+      }
+    },
+    {
+      "case": "evidence-show-life-12/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "0a6441b4e7998111413f6a38e8fe9fe7d86bf5de30e6ddb4183d4b9465938c0b",
+        "timeline.json": "1e99b869089ecb33eadc8eb05f8e8f4d0c03dcc9cb510c618c4cc4d73cee4112",
+        "guest-stdout.txt": "f8d1158a1d02c1d313966334bb49bb94a1ff35eca1cc2ab7d03e13e4c2d82dbc",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "8b8f8aa2a07a302e666e367ad2fe8595b21ed04c9cf5057b4888b7c8acaa932b",
+        "private_manifest.json": "15982fb4a96e6a6e1a1f7f942be8eb918ea121233e296b8c14696719a389dabe"
+      }
+    },
+    {
+      "case": "evidence-show-life-13/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "a074dc998218f2e0946df3b9f7965a61d6dacf99cf9bd07a6888b272174041a3",
+        "timeline.json": "5645321162f8cca57bb93528088c95ca80891a63032503faca363a038042f244",
+        "guest-stdout.txt": "0ba80e2919d418980576d170d6cae3f2a111688a4273b9e869aa7ec20e891488",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "376df6b8c551a0bf8d89e4548f230f325e4cfc5e8f409e82c94bb4e7bb7df0b3",
+        "private_manifest.json": "29f6893b6b85807dde49d691dca4ad357ed41cf0e4ef0af33b76b5111fda8f5c"
+      }
+    },
+    {
+      "case": "evidence-show-life-14/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "9455796bd369e3a97f708d90e886ed3638b092fd331e7719819c22d9920a6024",
+        "timeline.json": "86f2c879f1cc47149e9beddef10efaf7b2d15f01dcdd24c5af207ec1c189aae6",
+        "guest-stdout.txt": "6516edb06d2fde2444f8c47ea4c95238aa3ab48a1f40acdd545a74552b4cd5cb",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "89ad2b4212fcc63c992aaad4dbcb7cc0f5a5c699ee52eee4b75ef34b7da6f3fe",
+        "private_manifest.json": "7fd235a3af88a9983af159056e425f6fa869532db0f949967a71cecb72dd0ece"
+      }
+    },
+    {
+      "case": "evidence-show-life-15/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "02e2603b6e04ea99d3cba3ed5b96eee2005094d823b15f7841b7fc359204e41e",
+        "timeline.json": "494fd53e5e218a81faf56b9e517719d33304eb2e184901bd1b0aeb8b8a276a23",
+        "guest-stdout.txt": "0cccba80cb20c8f5faaf12eff7a4547fd0a2129b7d47dc2a1267f79bbe6c14b7",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "28bc9033b9aea6c0095b2a983b26df4412c155e17130dc667a0aa366516ee494",
+        "private_manifest.json": "b24069e59192b38fa73efbb54d03a788948468f759c621a2f2d59ecbc94f8462"
+      }
+    },
+    {
+      "case": "evidence-show-life-16/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "bbb4cf0e90a564a35d1616b01c7e21fb0854b24cbe39bffe1c374e1a263897ef",
+        "timeline.json": "f512e5e9985a063102e2c96ed1f27c00bddea003e35217095d0525939adebc0e",
+        "guest-stdout.txt": "c54556a4a36f6317f86733649eeb307dc6991606c9358da194db5fa2d6963a81",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "4555d43ecb20285a6c63d95b3b972b2934c6968a730cdc6bf8abea61a32cdce6",
+        "private_manifest.json": "41d1bf421aae864195bd9c9fc65277494594e835f8ee0a8e487729191f04a8be"
+      }
+    },
+    {
+      "case": "evidence-show-life-17/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "79aea7e21332ea106c88d979aa5e20cad61d080163e974c0d517c5f578fb5929",
+        "timeline.json": "d02850604b42727e4437300a661ab6e1e32c0e6d3b69cd256f8ab485aa4b69c1",
+        "guest-stdout.txt": "44bb77e2cd5ab18f18daea25d444c1aeba14910ae3e3cd3009caf6c1df1e3974",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "6282a324025ab6f18d8f4193e4bc0cc4268128c8ca947fc718ba61b161a8bd3d",
+        "private_manifest.json": "db1aca9705dcf153ee67c0e0d120b480b04d0e3e1e89dce15c9fc93891156d59"
+      }
+    },
+    {
+      "case": "evidence-show-life-18/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "4359d56d599cdbd812fcff694c95d38b2bd78ace6174bceccc1c7f63654a2350",
+        "timeline.json": "7af8a3b1502a300d8658f2f590b20b58cbb837ae9d3f3c8799ce2557da6a5c33",
+        "guest-stdout.txt": "48ad8e198afb8876679f6a9c4ef7a327522c6539d0f8298463418af47577bd3c",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "05d6b0a52cfb192e926269c9023cd10c0c7943bca43236353d62053d2f990f33",
+        "private_manifest.json": "a30f3e0ac27dbf4e85a85cc3633b05cd104fda621daac8b6b6fbf3e0bbda4bf9"
+      }
+    },
+    {
+      "case": "evidence-show-life-19/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "fe9304416ef19c74086a852528f5c9a91d6417ac608994254af095b42931d461",
+        "timeline.json": "6c65152d041acb13fa5f01d3322b0f041700d3371674d5ceaf85ac3dc22eef37",
+        "guest-stdout.txt": "29e0545e52da2234e3f9a48a8af2d05e0fd28559698c4e4b33eea3bef597f767",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "6c06b6408444d2ddbd50da3feb5ded5755d4a9e3cf8d7189ec1bd4acc05017a1",
+        "private_manifest.json": "8d5f7b8efd870b6f440ce85c3e62b4a97dea02f11c776a9dbfd9a9cf45868e8f"
+      }
+    },
+    {
+      "case": "evidence-show-life-20/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "f61d5d6f260c9880a441d1623764b178117d957838809ea9a8c5b309fa08411e",
+        "timeline.json": "39f6d20053d872aff3b1d3cfe8709b63419548d06e48b18f55dd1e5eecd1ab27",
+        "guest-stdout.txt": "22bd08951e9970c53fd8b004d24baaa82dd3954358df1285201cb95550da3fcc",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "a8665f773335b8322ad0f1c082090fb7ec4e342545b858b226b4c42fb2b235e6",
+        "private_manifest.json": "154b77e4d1e38fb0016af3184ea878aac82dea932a9c9aef08b78b376152873b"
+      }
+    },
+    {
+      "case": "evidence-show-mem-1024-observe/run",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "f9a821a517edd8e954c4b0a5c447b3187bc84d76fa9fd6da7d525d35380d8894",
+        "timeline.json": "2aaecb5e1dfb8bf40788c844a08e882dcb23d71ab9bdbc17011e0cd45c1038b1",
+        "guest-stdout.txt": "43ed6bacbd45510058dbd429de2128f80cc306704ed2f62d42fc760f707d7ec1",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "0f913f5f84cf70603c91082ef0e18d8fa70fda1e9b917e435a0c9279813465ad",
+        "private_manifest.json": "df649d4142602024f40b9009b26a1790661ee66825f47ad7329449e58c31be9a"
+      }
+    },
+    {
+      "case": "evidence-show-mem-1024-suite/run",
+      "status": "FAIL",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "a55cbb36f3f4e69be3bc2ccaeac714a06a5faf5a93bf1416373251a7b9c18e3a",
+        "timeline.json": "aa5be2167ae816228f106359361f6eed22828fb8ec930f7e6a6ca54c299045cd",
+        "guest-stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "cf165964d2ddde5aedc98b4e53dbb5e11a6cecb0b04c301641f18e0639fc2aa5",
+        "private_manifest.json": "bf969fb2b57bca95203eaff1e286a43990289e9abd5f8033e3b3e0104758f7d0"
+      }
+    },
+    {
+      "case": "evidence-show-mem-1024-suite-retry/run",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "b99f14d4c0f614e78fa09a605e5ba687bc433a2a998b3d1c6fefffa6ae0e9695",
+        "timeline.json": "80361b54ce5921dcfcdf768bc091a0f2367cad1791402f6f4b6a0281aef581a3",
+        "guest-stdout.txt": "1941e2647641bb412ffefcf175f60871d04e15129c532168f5584dbd61e5dbab",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "cf165964d2ddde5aedc98b4e53dbb5e11a6cecb0b04c301641f18e0639fc2aa5",
+        "private_manifest.json": "6743cc53254772bd8029cff757817a0ebe99cad955fcadae46f46aedbc552bde"
+      }
+    },
+    {
+      "case": "evidence-show-mem-4096-observe/run",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "943f4a8eceda7142b67f43475a3b05ad02eaaed0d532f396bc98f83486faaa70",
+        "timeline.json": "a1b78613456c988e65fe522bda40c5ace8e14af54fd98db1797d6c5cc41198bc",
+        "guest-stdout.txt": "92a88013a5ecb48ec0bd02e054f74d72b46e5bf68acac26d7e01e1d83ddaa326",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "6ce8e55f8d516cf1eab786f96f385aa4375edd55a5de6c1f7b5ee8fb14506075",
+        "private_manifest.json": "71f62a3b4b0b86f18e1f6ce4fdd8ff03e591a600c8955429756addbe51295922"
+      }
+    },
+    {
+      "case": "evidence-show-mem-4096-suite/run",
+      "status": "PASS",
+      "scope": "VM SHM memory smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "d5f426fd2cfea43ff05169eb9e47057d62d718628bd2dd1aba3bf6da01dc53e2",
+        "timeline.json": "a48256b291cc186b0585c5aced1d5987091f8d58f265ece0bc1f8e68b1955a02",
+        "guest-stdout.txt": "4f93cc8c4e83a348d926c62f2eb4c3cad77dc5b12341140bfb2e9e8b392489d5",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "989cce3d6fed3d60bae77412b4f6a76a4a6b7d3cce4490f6fac75314e19d8e28",
+        "private_manifest.json": "2f3ba17c1fd3c60f536f63bec3d3e6229bc0c12594f06569514b4d192476f097"
+      }
+    },
+    {
+      "case": "evidence-show-pair-a/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "20a805f81f197bb18480ff10d3fbc2cda28eebc88058b299e5bb02cf807beecf",
+        "timeline.json": "2b42703f4f37cbd19f96544048f3249ec0830d1e3c4c1ec38fa69d2238a900bf",
+        "guest-stdout.txt": "aba4631c3c17382ae18af62627bcc9587562e7fc4bcc982df4f1e26254aace7f",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "47a7a0181bd78da6d5a9cd2dc0ef786cd95fe8ad49cef55307190ff2a0a26348",
+        "private_manifest.json": "d987228e09f3339615120a93ef3a09450906a1b9258ce4c7896ce3092950bdfd"
+      }
+    },
+    {
+      "case": "evidence-show-pair-b/run",
+      "status": "PASS",
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "sha256": {
+        "metrics.json": "7ccfa67a320d72ef0a683415aad97143ec0bff29880eebe034b29fb3d1547379",
+        "timeline.json": "b663e36c642d7bd95218b7642848ae5f4496b98b0bd9a6e54b9c738e16be6d88",
+        "guest-stdout.txt": "4c7c05e6686be0891d8f94ad676c494a6032594ea618cbd0786c776b36aa22e5",
+        "guest-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "guest-command.json": "e15df8b1429a37814c6f6195426bebfb14723552d630333dabd844299ac0c6df",
+        "private_manifest.json": "158d45aa83f27c83ab90198893567f602ad13475e0edf6afa839a2447ee3ae2c"
+      }
+    }
+  ]
+}

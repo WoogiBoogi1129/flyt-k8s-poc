@@ -1,0 +1,16 @@
+{
+  "case_id": "evidence-show-mem-4096-observe/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "db8b92dc-0c88-4cd6-b488-e8785b8ecd28",
+  "monotonic_origin_seconds": 256709.050355113,
+  "git_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "probe": "memory",
+  "scenario": "observe",
+  "bytes": 4294967296,
+  "seed": 23,
+  "timeout_seconds": 300,
+  "gpu_seconds": 10,
+  "gpu_program": "smoke"
+}

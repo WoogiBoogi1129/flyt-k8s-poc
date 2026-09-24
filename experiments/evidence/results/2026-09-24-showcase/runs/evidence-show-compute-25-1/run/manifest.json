@@ -1,0 +1,16 @@
+{
+  "case_id": "evidence-show-compute-25-1/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "0cb493e1-0b51-496d-b87c-0f462b6a13e1",
+  "monotonic_origin_seconds": 259099.496065578,
+  "git_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 23,
+  "timeout_seconds": 300,
+  "gpu_seconds": 71,
+  "gpu_program": "compute"
+}

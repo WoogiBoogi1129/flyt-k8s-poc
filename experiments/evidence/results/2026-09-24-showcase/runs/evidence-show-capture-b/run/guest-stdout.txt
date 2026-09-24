@@ -1,0 +1,1 @@
+{"status":"PASS","scope":"Guest-SHM-HAMi-GPU memory and PTX kernel","seed":4027,"kernel_repeats":10681,"copy_bytes":4096,"active_seconds":45.001403}

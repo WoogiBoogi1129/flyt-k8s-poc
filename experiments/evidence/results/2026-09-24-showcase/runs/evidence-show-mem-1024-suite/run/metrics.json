@@ -1,0 +1,11 @@
+{
+  "status": "FAIL",
+  "formal_training_result": false,
+  "scope": "VM SHM memory smoke and lifecycle",
+  "probe": "memory",
+  "scenario": "suite",
+  "bytes": 1073741824,
+  "error": "Guest ended before Channel Ready",
+  "released": true,
+  "elapsed_seconds": 178.68851763999555
+}

@@ -1,0 +1,115 @@
+{
+  "completed": 20,
+  "rows": [
+    {
+      "run": "evidence-show-life-01",
+      "ready_seconds": 43.73543699100264,
+      "release_seconds": 21.230202647013357
+    },
+    {
+      "run": "evidence-show-life-02",
+      "ready_seconds": 44.48208075098228,
+      "release_seconds": 19.152159289980773
+    },
+    {
+      "run": "evidence-show-life-03",
+      "ready_seconds": 41.55728282601922,
+      "release_seconds": 21.265507636999246
+    },
+    {
+      "run": "evidence-show-life-04",
+      "ready_seconds": 41.61444598098751,
+      "release_seconds": 21.24734199201339
+    },
+    {
+      "run": "evidence-show-life-05",
+      "ready_seconds": 43.87264762900304,
+      "release_seconds": 25.482551182998577
+    },
+    {
+      "run": "evidence-show-life-06",
+      "ready_seconds": 45.92817971599288,
+      "release_seconds": 27.58494856499601
+    },
+    {
+      "run": "evidence-show-life-07",
+      "ready_seconds": 39.24222718499368,
+      "release_seconds": 25.52073992000078
+    },
+    {
+      "run": "evidence-show-life-08",
+      "ready_seconds": 41.45279817600385,
+      "release_seconds": 25.481460581999272
+    },
+    {
+      "run": "evidence-show-life-09",
+      "ready_seconds": 43.58576755100512,
+      "release_seconds": 31.865980009984924
+    },
+    {
+      "run": "evidence-show-life-10",
+      "ready_seconds": 38.66293196199695,
+      "release_seconds": 25.518211018003058
+    },
+    {
+      "run": "evidence-show-life-11",
+      "ready_seconds": 44.72045654300018,
+      "release_seconds": 36.089231986989034
+    },
+    {
+      "run": "evidence-show-life-12",
+      "ready_seconds": 48.071485468011815,
+      "release_seconds": 25.524450668977806
+    },
+    {
+      "run": "evidence-show-life-13",
+      "ready_seconds": 40.388820090010995,
+      "release_seconds": 29.747778824996203
+    },
+    {
+      "run": "evidence-show-life-14",
+      "ready_seconds": 41.50843562299269,
+      "release_seconds": 31.864837796980282
+    },
+    {
+      "run": "evidence-show-life-15",
+      "ready_seconds": 41.627377021010034,
+      "release_seconds": 38.17619712499436
+    },
+    {
+      "run": "evidence-show-life-16",
+      "ready_seconds": 46.04994915702264,
+      "release_seconds": 29.759018384007504
+    },
+    {
+      "run": "evidence-show-life-17",
+      "ready_seconds": 44.965750036993995,
+      "release_seconds": 34.027863508003065
+    },
+    {
+      "run": "evidence-show-life-18",
+      "ready_seconds": 48.02180569199845,
+      "release_seconds": 25.484621449984843
+    },
+    {
+      "run": "evidence-show-life-19",
+      "ready_seconds": 47.889167690998875,
+      "release_seconds": 25.457285480981227
+    },
+    {
+      "run": "evidence-show-life-20",
+      "ready_seconds": 47.99654281299445,
+      "release_seconds": 25.516853879002156
+    }
+  ],
+  "ready_seconds": {
+    "median": 43.80404231000284,
+    "min": 38.66293196199695,
+    "max": 48.071485468011815
+  },
+  "release_seconds": {
+    "median": 25.519475469001918,
+    "min": 19.152159289980773,
+    "max": 38.17619712499436
+  }
+}

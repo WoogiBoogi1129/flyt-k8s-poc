@@ -1,0 +1,1214 @@
+[
+  {
+    "name": "evidence-show-pair-a",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 2026,
+          "kernel_repeats": 10570,
+          "copy_bytes": 4096,
+          "active_seconds": 45.003566
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 122.60610600799555
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-pair-b",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 2027,
+          "kernel_repeats": 10713,
+          "copy_bytes": 4096,
+          "active_seconds": 45.001709
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 104.6240905940067
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-mem-1024-observe",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM memory smoke and lifecycle",
+      "probe": "memory",
+      "scenario": "observe",
+      "bytes": 1073741824,
+      "probe_results": [
+        {
+          "scenario": "observe",
+          "stage": "baseline",
+          "requested_bytes": 0,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "allocated",
+          "requested_bytes": 248512512,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "over_quota",
+          "requested_bytes": 1073741825,
+          "cuda_status": 2,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "freed",
+          "requested_bytes": 248512512,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "reallocated",
+          "requested_bytes": 248512512,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "accounting_restored",
+          "before_free": 497025024,
+          "after_free": 497025024,
+          "status": "PASS"
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 130.5624621839961
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-mem-1024-suite",
+    "exit_code": 1,
+    "metrics": {
+      "status": "FAIL",
+      "formal_training_result": false,
+      "scope": "VM SHM memory smoke and lifecycle",
+      "probe": "memory",
+      "scenario": "suite",
+      "bytes": 1073741824,
+      "error": "Guest ended before Channel Ready",
+      "released": true,
+      "elapsed_seconds": 178.68851763999555
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-mem-1024-suite-retry",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM memory smoke and lifecycle",
+      "probe": "memory",
+      "scenario": "suite",
+      "bytes": 1073741824,
+      "probe_results": [
+        {
+          "scenario": "below",
+          "requested_bytes": 248512512,
+          "info_status": 0,
+          "free_bytes": 497025024,
+          "total_bytes": 1073741824,
+          "cuda_status": 0,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "boundary",
+          "requested_bytes": 497025024,
+          "info_status": 0,
+          "free_bytes": 497025024,
+          "total_bytes": 1073741824,
+          "cuda_status": 0,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "over",
+          "requested_bytes": 497025025,
+          "info_status": 0,
+          "free_bytes": 497025024,
+          "total_bytes": 1073741824,
+          "cuda_status": 2,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "free_reallocate",
+          "requested_bytes": 248512512,
+          "info_status": 0,
+          "free_bytes": 497025024,
+          "total_bytes": 1073741824,
+          "cuda_status": 0,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "accounting_restored",
+          "status": "PASS",
+          "before_free": 497025024,
+          "after_free": 497025024
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 66.1696609770006
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-mem-4096-observe",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM memory smoke and lifecycle",
+      "probe": "memory",
+      "scenario": "observe",
+      "bytes": 4294967296,
+      "probe_results": [
+        {
+          "scenario": "observe",
+          "stage": "baseline",
+          "requested_bytes": 0,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "allocated",
+          "requested_bytes": 1859125248,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "over_quota",
+          "requested_bytes": 4294967297,
+          "cuda_status": 2,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "freed",
+          "requested_bytes": 1859125248,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "reallocated",
+          "requested_bytes": 1859125248,
+          "cuda_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "observe",
+          "stage": "accounting_restored",
+          "before_free": 3718250496,
+          "after_free": 3718250496,
+          "status": "PASS"
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 128.48452968301717
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-mem-4096-suite",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM memory smoke and lifecycle",
+      "probe": "memory",
+      "scenario": "suite",
+      "bytes": 4294967296,
+      "probe_results": [
+        {
+          "scenario": "below",
+          "requested_bytes": 1859125248,
+          "info_status": 0,
+          "free_bytes": 3718250496,
+          "total_bytes": 4294967296,
+          "cuda_status": 0,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "boundary",
+          "requested_bytes": 3718250496,
+          "info_status": 0,
+          "free_bytes": 3718250496,
+          "total_bytes": 4294967296,
+          "cuda_status": 0,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "over",
+          "requested_bytes": 3718250497,
+          "info_status": 0,
+          "free_bytes": 3718250496,
+          "total_bytes": 4294967296,
+          "cuda_status": 2,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "free_reallocate",
+          "requested_bytes": 1859125248,
+          "info_status": 0,
+          "free_bytes": 3718250496,
+          "total_bytes": 4294967296,
+          "cuda_status": 0,
+          "release_status": 0,
+          "reallocate_status": 0,
+          "status": "PASS"
+        },
+        {
+          "scenario": "accounting_restored",
+          "status": "PASS",
+          "before_free": 3718250496,
+          "after_free": 3718250496
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 66.50156451601651
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-aggregate",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM memory smoke and lifecycle",
+      "probe": "memory",
+      "scenario": "aggregate_race",
+      "bytes": 4294967296,
+      "probe_results": [
+        {
+          "scenario": "aggregate_race",
+          "quota_bytes": 4294967296,
+          "request_per_process": 2576980377,
+          "cuda_status": [
+            0,
+            2
+          ],
+          "status": "PASS"
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 72.86927097500302
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-01",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3000,
+          "kernel_repeats": 2375,
+          "copy_bytes": 4096,
+          "active_seconds": 10.003775
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 70.43964049400529
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-02",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3001,
+          "kernel_repeats": 2352,
+          "copy_bytes": 4096,
+          "active_seconds": 10.003701
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 71.40303897499689
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-03",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3002,
+          "kernel_repeats": 2348,
+          "copy_bytes": 4096,
+          "active_seconds": 10.003777
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 70.70398480800213
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-04",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3003,
+          "kernel_repeats": 2330,
+          "copy_bytes": 4096,
+          "active_seconds": 10.004116
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 70.40594734001206
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-05",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3004,
+          "kernel_repeats": 2363,
+          "copy_bytes": 4096,
+          "active_seconds": 10.002853
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 74.8838157519931
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-06",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3005,
+          "kernel_repeats": 2366,
+          "copy_bytes": 4096,
+          "active_seconds": 10.005033
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 77.11192182698869
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-07",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3006,
+          "kernel_repeats": 2383,
+          "copy_bytes": 4096,
+          "active_seconds": 10.001581
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 74.54134018998593
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-08",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3007,
+          "kernel_repeats": 2335,
+          "copy_bytes": 4096,
+          "active_seconds": 10.002439
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 74.7731698360003
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-09",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3008,
+          "kernel_repeats": 2347,
+          "copy_bytes": 4096,
+          "active_seconds": 10.000554
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 80.98695753098582
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-10",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3009,
+          "kernel_repeats": 2377,
+          "copy_bytes": 4096,
+          "active_seconds": 10.003301
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 74.3589376390155
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-11",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3010,
+          "kernel_repeats": 2327,
+          "copy_bytes": 4096,
+          "active_seconds": 10.004695
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 86.58965276897652
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-12",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3011,
+          "kernel_repeats": 2316,
+          "copy_bytes": 4096,
+          "active_seconds": 10.000558
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 77.1928741929878
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-13",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3012,
+          "kernel_repeats": 2403,
+          "copy_bytes": 4096,
+          "active_seconds": 10.002315
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 80.2122672770056
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-14",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3013,
+          "kernel_repeats": 2370,
+          "copy_bytes": 4096,
+          "active_seconds": 10.00372
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 81.0946043220174
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-15",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3014,
+          "kernel_repeats": 2377,
+          "copy_bytes": 4096,
+          "active_seconds": 10.002324
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 87.53502036700957
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-16",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3015,
+          "kernel_repeats": 2322,
+          "copy_bytes": 4096,
+          "active_seconds": 10.002416
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 79.36620664299699
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-17",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3016,
+          "kernel_repeats": 2380,
+          "copy_bytes": 4096,
+          "active_seconds": 10.004017
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 84.773901381006
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-18",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3017,
+          "kernel_repeats": 2368,
+          "copy_bytes": 4096,
+          "active_seconds": 10.002338
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 75.27101465099258
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-19",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3018,
+          "kernel_repeats": 2407,
+          "copy_bytes": 4096,
+          "active_seconds": 10.000226
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 75.09120716000325
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-life-20",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 3019,
+          "kernel_repeats": 2345,
+          "copy_bytes": 4096,
+          "active_seconds": 10.000945
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 77.17402539099567
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-capture-a",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 4026,
+          "kernel_repeats": 10788,
+          "copy_bytes": 4096,
+          "active_seconds": 45.000839
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 160.1462887430098
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-capture-b",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "scope": "Guest-SHM-HAMi-GPU memory and PTX kernel",
+          "seed": 4027,
+          "kernel_repeats": 10681,
+          "copy_bytes": 4096,
+          "active_seconds": 45.001403
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 111.59450428999844
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-100-1",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.011538
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 832,
+          "launches": 5129,
+          "measurement_seconds": 60.998673,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 134.6132936470094
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-50-1",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.001296
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 832,
+          "launches": 5101,
+          "measurement_seconds": 61.005014,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 138.2266933490173
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-25-1",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.009625
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 838,
+          "launches": 5119,
+          "measurement_seconds": 60.997405,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 141.17958023300162
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-25-2",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.008278
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 836,
+          "launches": 5149,
+          "measurement_seconds": 61.000424,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 144.46454080400872
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-50-2",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.003882
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 832,
+          "launches": 5156,
+          "measurement_seconds": 60.999641,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 133.60923028699472
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-100-2",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.002729
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 840,
+          "launches": 5103,
+          "measurement_seconds": 61.003806,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 139.88795366100385
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-100-3",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.007507
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 830,
+          "launches": 5089,
+          "measurement_seconds": 61.001273,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 144.3999394729908
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-50-3",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.003234
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 829,
+          "launches": 5132,
+          "measurement_seconds": 61.001355,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 146.76463896900532
+    },
+    "residual_execution_pods": []
+  },
+  {
+    "name": "evidence-show-compute-25-3",
+    "exit_code": 0,
+    "metrics": {
+      "status": "PASS",
+      "formal_training_result": false,
+      "scope": "VM SHM gpu smoke and lifecycle",
+      "probe": "gpu",
+      "scenario": null,
+      "bytes": null,
+      "probe_results": [
+        {
+          "status": "PASS",
+          "event": "MEASUREMENT_START",
+          "warmup_seconds": 10.004655
+        },
+        {
+          "status": "PASS",
+          "scope": "compute load execution only, not enforcement verdict",
+          "warmup_launches": 829,
+          "launches": 5118,
+          "measurement_seconds": 60.996735,
+          "grid": 2048,
+          "block": 256
+        }
+      ],
+      "probe_pass": true,
+      "released": true,
+      "elapsed_seconds": 150.80789348500548
+    },
+    "residual_execution_pods": []
+  }
+]

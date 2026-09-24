@@ -1,0 +1,18 @@
+{
+  "base_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "files": {
+    "experiments/evidence/memory_probe.cu": "9872408f9c11578933fae09605caac9893582f925c2834c4e85b403f80fe2905",
+    "experiments/evidence/compute_probe.c": "8a294e4b1b8b7f0a7bab3684deed5ec4f5736f1a61c4fe455d4ca7a95c01ab13",
+    "scripts/run-evidence-smoke.py": "6bde1223c21d7b3b2bd3e2e157a0dd92b10b6152e952156a8f8354013957599c",
+    "scripts/prepare-evidence-vm.py": "fb5c1dabb6375b66a15b86880258123c7a5324ae355dd526854d8f149b512dca",
+    "scripts/serve-evidence-dashboard.py": "a50ef3a3e6d4387dec65e936a18dd6208b431edcf46cb086b7499bf698d9057d",
+    "scripts/capture-evidence-dashboard.cjs": "630c4669b9054d0b332c7acd95373c6693be6a913054dd677335e6c89b181035",
+    "scripts/run-evidence-showcase.py": "3e840a6f0ce6ee45408bc48fb68a08c8dab85fb5c77f69aa36c3386c3bbef54d"
+  },
+  "artifacts": {
+    "guest-gpu-smoke": "0c74f49b136a93e76d3a9c15f46e8cca1aa6538845f3573f23b26c7db3877589",
+    "compute-probe-guest": "b41e0a4e5cced0c90de74412fdb8728a3762ab3cb61ef8adad5ef7c3b87b3203",
+    "memory-probe-guest": "840368bca79c7cf8d1ab89c48901f0583f91a0f058094c28eed6ab1f9cfbafd7",
+    "libflyt_guest.so": "a82a3a818b335cbca7ee9d986ae8b1dc7d14915b09f6bdf9351fde1bfd48c401"
+  }
+}

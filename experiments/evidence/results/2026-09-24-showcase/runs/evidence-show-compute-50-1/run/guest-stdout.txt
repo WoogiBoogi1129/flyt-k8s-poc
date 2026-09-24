@@ -1,0 +1,2 @@
+{"status":"PASS","event":"MEASUREMENT_START","warmup_seconds":10.001296}
+{"status":"PASS","scope":"compute load execution only, not enforcement verdict","warmup_launches":832,"launches":5101,"measurement_seconds":61.005014,"grid":2048,"block":256}

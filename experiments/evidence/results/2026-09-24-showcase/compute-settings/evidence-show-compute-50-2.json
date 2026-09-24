@@ -1,0 +1,30 @@
+{
+  "snapshot_timestamp": "2026-09-24T10:53:50.054816+00:00",
+  "route": {
+    "channel": "evidence-show-compute-50-2-channel",
+    "channel_uid": "41c1c95b-d570-438a-afbc-43af40260d96",
+    "vm": "evidence-show-compute-50-2",
+    "phase": "Ready",
+    "allocation": "192383dea1aa2b73e51040295dc45831",
+    "generation": "77911a9f0b2ea04b013fedc3d912c464",
+    "gpu_uuid": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+    "memory_mib": 4096,
+    "compute": 50,
+    "worker_uid": "bf2f0143-f4ee-401f-b606-2e7681c2e857",
+    "worker": "evidence-show-compute-50-2-channel-worker",
+    "hami_allocation": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3,NVIDIA,4096,50:;",
+    "worker_image_ids": [
+      "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+    ],
+    "vmi_uid": "695e226d-9524-4c2a-b697-a9e49a38663c",
+    "vmi_phase": "Running"
+  },
+  "selected_runtime_environment": {
+    "CUDA_DEVICE_SM_LIMIT": "50",
+    "CUDA_DEVICE_SM_LIMIT_0": null,
+    "CUDA_DEVICE_MEMORY_LIMIT": null,
+    "CUDA_DEVICE_MEMORY_LIMIT_0": "4096m",
+    "GPU_CORE_UTILIZATION_POLICY": null,
+    "LD_PRELOAD": null
+  }
+}

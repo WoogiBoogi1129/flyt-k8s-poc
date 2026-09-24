@@ -1,0 +1,78 @@
+{
+  "channel-before.json": {
+    "uid": "8eb8454b-6b19-459e-9e72-b95a6fa5062a",
+    "images": {
+      "image": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808",
+      "workerImage": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d",
+      "hookImage": "localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554"
+    },
+    "status": {
+      "phase": "BackingReady",
+      "allocation": "ce046af96a4a75d92ce904718ba20839",
+      "generation": "10c7c42570d800e84cb622c02a0f491b",
+      "gpuUUID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "memoryMiB": 4096,
+      "compute": 100,
+      "vmiUID": null,
+      "workerPodUID": null,
+      "reason": "ManualVMStartAllowed"
+    }
+  },
+  "channel-bound.json": {
+    "uid": "8eb8454b-6b19-459e-9e72-b95a6fa5062a",
+    "images": {
+      "image": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808",
+      "workerImage": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d",
+      "hookImage": "localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554"
+    },
+    "status": {
+      "phase": "Bound",
+      "allocation": "ce046af96a4a75d92ce904718ba20839",
+      "generation": "10c7c42570d800e84cb622c02a0f491b",
+      "gpuUUID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "memoryMiB": 4096,
+      "compute": 100,
+      "vmiUID": "a40d3e60-0eee-4423-a7e4-e400de61dd9e",
+      "workerPodUID": "cce2a068-ba9b-4ee3-ba86-20455093221b",
+      "reason": "AwaitingMappingACK"
+    }
+  },
+  "channel-ready.json": {
+    "uid": "8eb8454b-6b19-459e-9e72-b95a6fa5062a",
+    "images": {
+      "image": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808",
+      "workerImage": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d",
+      "hookImage": "localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554"
+    },
+    "status": {
+      "phase": "Ready",
+      "allocation": "ce046af96a4a75d92ce904718ba20839",
+      "generation": "10c7c42570d800e84cb622c02a0f491b",
+      "gpuUUID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "memoryMiB": 4096,
+      "compute": 100,
+      "vmiUID": "a40d3e60-0eee-4423-a7e4-e400de61dd9e",
+      "workerPodUID": "cce2a068-ba9b-4ee3-ba86-20455093221b",
+      "reason": "MappingACK"
+    }
+  },
+  "channel-released.json": {
+    "uid": "8eb8454b-6b19-459e-9e72-b95a6fa5062a",
+    "images": {
+      "image": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808",
+      "workerImage": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d",
+      "hookImage": "localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554"
+    },
+    "status": {
+      "phase": "Released",
+      "allocation": "ce046af96a4a75d92ce904718ba20839",
+      "generation": "10c7c42570d800e84cb622c02a0f491b",
+      "gpuUUID": "GPU-7d708c42-8d4a-16d5-0746-474567157aa3",
+      "memoryMiB": 4096,
+      "compute": 100,
+      "vmiUID": "a40d3e60-0eee-4423-a7e4-e400de61dd9e",
+      "workerPodUID": "cce2a068-ba9b-4ee3-ba86-20455093221b",
+      "reason": "DetachAndReclamationConfirmed"
+    }
+  }
+}

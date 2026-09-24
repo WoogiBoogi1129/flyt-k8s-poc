@@ -1,0 +1,1016 @@
+[
+  {
+    "run": "evidence-show-aggregate",
+    "pod": "evidence-show-aggregate-channel-worker",
+    "uid": "cce2a068-ba9b-4ee3-ba86-20455093221b",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://faa310dc4298d48f2ca126c7cd9249cc0042447bd2d6f017ff44e20b51346c0a"
+    ]
+  },
+  {
+    "run": "evidence-show-capture-a",
+    "pod": "evidence-show-capture-a-channel-worker",
+    "uid": "ba9858c8-f965-4d94-be3c-f2fd245476f6",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://e159192f18eeac543766bc97ef1ce362956edd25be49f1ce823b944c588460cc"
+    ]
+  },
+  {
+    "run": "evidence-show-capture-b",
+    "pod": "evidence-show-capture-b-channel-worker",
+    "uid": "d23e5516-4d74-4419-8380-afa8cea257b0",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://37f213c04f025a865ebd4b45bc85c594c1ffb017a3857269f9fc649c9903c503"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-100-1",
+    "pod": "evidence-show-compute-100-1-channel-worker",
+    "uid": "963c8072-1c97-49f8-9ac4-ebbe7912223e",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://4765ecdce9c1985d31d5a7b77ba75ff189cb77d824e29b4cf194682e5d538de3"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-100-2",
+    "pod": "evidence-show-compute-100-2-channel-worker",
+    "uid": "649843ea-9750-4ea3-80ab-d00a9493fbec",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://f7be521237df7bde00f6e8d11017430107c30f70d64f981868b6aa1c0ee20c74"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-100-3",
+    "pod": "evidence-show-compute-100-3-channel-worker",
+    "uid": "dbd06b7a-ca25-4cf9-a419-11a60bf20be4",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://b81a3520da8b050072497eb65f4a09395c3723241bc339c4ad1f324a8e83cd6b"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-25-1",
+    "pod": "evidence-show-compute-25-1-channel-worker",
+    "uid": "62bc0d41-e073-4f88-8278-0170b025e01d",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "25",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "25",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://b24cf3e4e780e6c6577381fd2ea0bcf0c59d1ba68c6d28cf3679c2075ec0d3e4"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-25-2",
+    "pod": "evidence-show-compute-25-2-channel-worker",
+    "uid": "914f48ef-4172-47db-860a-65a27edf1b7c",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "25",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "25",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://1cc5f59458ff93b015397a98093909def31e83d03d44ec4f94c328ee19ffddec"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-25-3",
+    "pod": "evidence-show-compute-25-3-channel-worker",
+    "uid": "325872ee-b8b3-47f9-b29b-2c526f67b3ab",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "25",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "25",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://6c52939c84c72b9bcc18a631941f72c0402261b5fbee260f3cce0bca6c5e3db3"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-50-1",
+    "pod": "evidence-show-compute-50-1-channel-worker",
+    "uid": "6354e401-ba3f-4f89-952d-7d2379fd4424",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://0ed9d5293d54da0dff7a1682b8817376242d6e211e3fc13e0fae699756dfea8f"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-50-2",
+    "pod": "evidence-show-compute-50-2-channel-worker",
+    "uid": "bf2f0143-f4ee-401f-b606-2e7681c2e857",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://84ab2ce13e246334ead7390f8be3b21392dcf7409a4cf1cf7f426469f498408c"
+    ]
+  },
+  {
+    "run": "evidence-show-compute-50-3",
+    "pod": "evidence-show-compute-50-3-channel-worker",
+    "uid": "af8b09a1-baf9-4db0-b13a-6a40fc02e833",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://81ac8e34ac8a9203a5b9e18518551a1f162113249592629819f0e7e31e1fee86"
+    ]
+  },
+  {
+    "run": "evidence-show-life-01",
+    "pod": "evidence-show-life-01-channel-worker",
+    "uid": "63382175-0b9b-4c4e-84e4-8a2c417cb2cd",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://535deed5ee8bce83409c9b77a5da2bec44a7edb1e60db93994fcb0b8b3bc147c"
+    ]
+  },
+  {
+    "run": "evidence-show-life-02",
+    "pod": "evidence-show-life-02-channel-worker",
+    "uid": "62e35f39-5a9e-484d-bcec-b0eeddf3a21a",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://0d0024d4bfab3391b85eaf6b32d3e2c3e45ee284f48912e20754b8177365b7db"
+    ]
+  },
+  {
+    "run": "evidence-show-life-03",
+    "pod": "evidence-show-life-03-channel-worker",
+    "uid": "40830f47-5eb6-4310-8fdd-9e7ebd03be1d",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://4313d630ed3835eef5025a334b74b8d36e7515e537bceccb705eed0717715120"
+    ]
+  },
+  {
+    "run": "evidence-show-life-04",
+    "pod": "evidence-show-life-04-channel-worker",
+    "uid": "ecb3fb99-bb87-4c63-bb89-4b29781008d4",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://8c30aceca5c0fee1b6184a6f96a1e71e3f37d7d91816fff4b60fb81cee70a7ad"
+    ]
+  },
+  {
+    "run": "evidence-show-life-05",
+    "pod": "evidence-show-life-05-channel-worker",
+    "uid": "ef5ce4a9-a0a2-4bdb-9ea2-c3bb0cf70a6a",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://a0eab9a7888d86c8f11bf5e5154b92a738fc603895481e28ff43e115a4ce5f43"
+    ]
+  },
+  {
+    "run": "evidence-show-life-06",
+    "pod": "evidence-show-life-06-channel-worker",
+    "uid": "1b45f62b-c428-40d3-b764-01a1defe58d0",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://2cad9219c4d71e7920864a455fb9077e381d82202973bbcb80625f1a8b76e8b8"
+    ]
+  },
+  {
+    "run": "evidence-show-life-07",
+    "pod": "evidence-show-life-07-channel-worker",
+    "uid": "016afcff-e547-44fd-a270-d992a29612d5",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://fbb7c3e9089117c1e1d0d991771ca513bf31bdaf8aaa6a6696f13eb73313d194"
+    ]
+  },
+  {
+    "run": "evidence-show-life-08",
+    "pod": "evidence-show-life-08-channel-worker",
+    "uid": "141a1a32-0f11-4c19-aa9f-908fa8d5aac3",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://fb4c833fa32d0123dd9d630de0352a00ef6ab838bedd39fef8976d22c5bf6fef"
+    ]
+  },
+  {
+    "run": "evidence-show-life-09",
+    "pod": "evidence-show-life-09-channel-worker",
+    "uid": "1c74021b-1bb6-4710-9230-ea1766832ddc",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://42698f13e4db194b481c0e7774b831d8e92fb902dc922d0021a27c53e0e31359"
+    ]
+  },
+  {
+    "run": "evidence-show-life-10",
+    "pod": "evidence-show-life-10-channel-worker",
+    "uid": "6e07ce98-cd97-4597-8373-0b9397c71c92",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://9dff6dce8f6a9c0115d5a7f71e364654b21cc6202a4567759a862aa0f7967ec7"
+    ]
+  },
+  {
+    "run": "evidence-show-life-11",
+    "pod": "evidence-show-life-11-channel-worker",
+    "uid": "90b6ade1-da63-427f-afcb-8178b7cbc5bd",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://91a23025497d69e1aa0a799a8917830f0267ea9351e3adee06ad0bda73075543"
+    ]
+  },
+  {
+    "run": "evidence-show-life-12",
+    "pod": "evidence-show-life-12-channel-worker",
+    "uid": "3b220b85-ee22-4077-ab67-3686ccc4ac2e",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://83dcf99601890934ae4fa66a6df9e09ad060e746c04d0ebe3effc0ad78a3e2e9"
+    ]
+  },
+  {
+    "run": "evidence-show-life-13",
+    "pod": "evidence-show-life-13-channel-worker",
+    "uid": "67b621b1-1540-4c1b-96c2-7e38577543f6",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://664bfe647a43e07408ac64e5382bc2f3396ae19e37e1b226844946ea429d9687"
+    ]
+  },
+  {
+    "run": "evidence-show-life-14",
+    "pod": "evidence-show-life-14-channel-worker",
+    "uid": "ecd3d6e6-13c9-498e-a876-b52ec5984762",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://cabb0acba6e29c835ad37ae9b3acb8ec428244cd4e29e83eb1394b29762bdca1"
+    ]
+  },
+  {
+    "run": "evidence-show-life-15",
+    "pod": "evidence-show-life-15-channel-worker",
+    "uid": "903c9fce-7c26-4dd9-b217-da16fe179577",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://d094c05cf5ef70f23808c90cbef215d8a6c6fbac542eb5c62e704e7e05e6c50b"
+    ]
+  },
+  {
+    "run": "evidence-show-life-16",
+    "pod": "evidence-show-life-16-channel-worker",
+    "uid": "9f73fe03-5abf-47bd-a4af-e935727a8a7e",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://d4fe6c1281915624be8d81a0c09e8bee0d604d8720a916dded13bec1684d50f3"
+    ]
+  },
+  {
+    "run": "evidence-show-life-17",
+    "pod": "evidence-show-life-17-channel-worker",
+    "uid": "6a3542ca-ed6a-4b21-9720-db03913b86da",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://06ee4955124886eeeb4f5b93d7510701feb1d4f1b955d3e5e9204d82faa989a0"
+    ]
+  },
+  {
+    "run": "evidence-show-life-18",
+    "pod": "evidence-show-life-18-channel-worker",
+    "uid": "6f047fe7-ba49-4b9d-a225-e2f6f0b48bc1",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://464f053331aa5b765dc27931bb5f52ea968a10e206c08edcec1e1ff648dc3f7e"
+    ]
+  },
+  {
+    "run": "evidence-show-life-19",
+    "pod": "evidence-show-life-19-channel-worker",
+    "uid": "1473d0a3-dda2-4897-b3b6-16c0b3f8cd73",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://88ccf30d140ff477ff05be1d9ebc178a71a46b1ff5f4896156cf76708d9677c4"
+    ]
+  },
+  {
+    "run": "evidence-show-life-20",
+    "pod": "evidence-show-life-20-channel-worker",
+    "uid": "ec4c08eb-d1b3-4862-96b8-5328872371a6",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://8377d0a2f875802f236fa3f2c5bbda17e365413ef3f0319d7584a6ac831e82a5"
+    ]
+  },
+  {
+    "run": "evidence-show-mem-1024-observe",
+    "pod": "evidence-show-mem-1024-observe-channel-worker",
+    "uid": "80727733-a19c-41c3-90a2-6e7f46a99d71",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "1024"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "1024"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://1757d0261d093fb88f15758510331feff7ec9429c06590fb225f5a331fc806b8"
+    ]
+  },
+  {
+    "run": "evidence-show-mem-1024-suite",
+    "pod": "evidence-show-mem-1024-suite-channel-worker",
+    "uid": "2c816147-ea6e-42f6-81fb-5cc031b9992c",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "1024"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "1024"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      null
+    ]
+  },
+  {
+    "run": "evidence-show-mem-1024-suite-retry",
+    "pod": "evidence-show-mem-1024-suite-retry-channel-worker",
+    "uid": "eb5a6eb5-33eb-421b-8283-0b4b6f94962a",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "1024"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "1024"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://2be0fafdd9f90ecefe26e7f0f45a94c2a3c550d5a62577e4646aadc3bbe03c4e"
+    ]
+  },
+  {
+    "run": "evidence-show-mem-4096-observe",
+    "pod": "evidence-show-mem-4096-observe-channel-worker",
+    "uid": "69cda9c0-223f-4906-bcaa-d9df0c9d82a9",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://31fcc26a990c01053a959a6b1d8aae7f9da82fa22a0fd78b12e089cb0f4995bf"
+    ]
+  },
+  {
+    "run": "evidence-show-mem-4096-suite",
+    "pod": "evidence-show-mem-4096-suite-channel-worker",
+    "uid": "11955347-f137-462b-a2fd-4ea178001dfd",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "100",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://ddd6046d5dd539e30214a90146e2e4a5c689f4c9363649dfb29b4a4d368cc3d9"
+    ]
+  },
+  {
+    "run": "evidence-show-pair-a",
+    "pod": "evidence-show-pair-a-channel-worker",
+    "uid": "bb24f31c-21d0-45fa-a112-97db46810b76",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://6fafbca4f36671593e211216a3ec73efd7992f3da7e492e8d90af09b3d853f81"
+    ]
+  },
+  {
+    "run": "evidence-show-pair-b",
+    "pod": "evidence-show-pair-b-channel-worker",
+    "uid": "a7464864-a4fa-41e9-812f-c152905b87fc",
+    "containers": [
+      {
+        "name": "main",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1",
+            "nvidia.com/gpucores": "50",
+            "nvidia.com/gpumem": "4096"
+          }
+        },
+        "image": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d"
+      }
+    ],
+    "container_ids": [
+      "cri-o://0d298b956fedbdc8bd162d5e1f7a3e72fe8032de05cfa705695802d3a81bd165"
+    ]
+  }
+]

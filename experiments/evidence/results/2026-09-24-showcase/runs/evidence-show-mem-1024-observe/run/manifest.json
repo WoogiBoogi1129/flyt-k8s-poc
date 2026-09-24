@@ -1,0 +1,15 @@
+{
+  "case_id": "evidence-show-mem-1024-observe/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "b9acba87-8567-456b-ac6a-ee6c4c6a8f37",
+  "monotonic_origin_seconds": 256248.053297712,
+  "git_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "probe": "memory",
+  "scenario": "observe",
+  "bytes": 1073741824,
+  "seed": 23,
+  "timeout_seconds": 300,
+  "gpu_seconds": 10
+}

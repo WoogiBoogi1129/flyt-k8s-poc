@@ -17,12 +17,16 @@ p.add_argument('--name',required=True);p.add_argument('--key',type=Path,required
 p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
 p.add_argument('--seed',type=int,default=23);p.add_argument('--timeout',type=int,default=300)
 p.add_argument('--probe',choices=['gpu','memory'],default='gpu')
-p.add_argument('--scenario',choices=['below','boundary','over','free_reallocate','aggregate_race','suite'])
+p.add_argument('--scenario',choices=['below','boundary','over','free_reallocate','aggregate_race','suite','observe'])
+p.add_argument('--gpu-program',choices=['smoke','compute'],default='smoke')
+p.add_argument('--gpu-seconds',type=int,default=10,help='GPU execution/observation window, 1..90 seconds')
 p.add_argument('--bytes',type=int);p.add_argument('--barrier',type=Path)
 a=p.parse_args()
+if not 1<=a.gpu_seconds<=90:p.error('gpu-seconds must be 1..90')
 if a.probe=='memory' and (not a.scenario or not a.bytes or a.bytes<=0):p.error('memory requires scenario and positive bytes')
 if not re.fullmatch(r'evidence-[a-z0-9-]+',a.name):p.error('evidence VM name required')
 a.output.mkdir(parents=True,exist_ok=False)
+binary=('compute-probe-guest' if a.gpu_program=='compute' else 'guest-gpu-smoke') if a.probe=='gpu' else 'memory-probe-guest'
 ns='flyt-evidence';channel=a.name+'-channel';timeline=[];started=time.monotonic();ssh_process=None
 def k(args):return subprocess.check_output(['kubectl',*args],text=True,timeout=20)
 def get(kind,name):
@@ -43,12 +47,13 @@ def wait_for(function,label,timeout=None):
 initial=get('flytsharedmemorychannel',channel)
 if not initial or initial.get('status',{}).get('phase')!='BackingReady':raise ValueError('new BackingReady channel required')
 save('channel-before.json',initial)
-files=[ROOT/'scripts/run-evidence-smoke.py',ROOT/'experiments/evidence/guest_gpu_smoke.c',ROOT/'experiments/evidence/memory_probe.cu',a.artifacts/'libflyt_guest.so',a.artifacts/('guest-gpu-smoke' if a.probe=='gpu' else 'memory-probe-guest')]
+files=[ROOT/'scripts/run-evidence-smoke.py',ROOT/'experiments/evidence/guest_gpu_smoke.c',ROOT/'experiments/evidence/memory_probe.cu',a.artifacts/'libflyt_guest.so',a.artifacts/binary]
+if a.gpu_program=='compute':files.append(ROOT/'experiments/evidence/compute_probe.c')
 save('manifest.json',{'run_id':a.output.name,'phase':'development','namespace':ns,'channel_uid':initial['metadata']['uid'],
  'monotonic_origin_seconds':started,
  'channel_spec':initial['spec'],'git_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
  'file_sha256':{str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in files},
- 'probe':a.probe,'scenario':a.scenario,'bytes':a.bytes,'seed':a.seed,'timeout_seconds':a.timeout})
+ 'probe':a.probe,'scenario':a.scenario,'bytes':a.bytes,'seed':a.seed,'timeout_seconds':a.timeout,'gpu_seconds':a.gpu_seconds,'gpu_program':a.gpu_program})
 metrics={'status':'FAIL','formal_training_result':False,'scope':'VM SHM '+a.probe+' smoke and lifecycle',
          'probe':a.probe,'scenario':a.scenario,'bytes':a.bytes}
 try:
@@ -74,12 +79,12 @@ try:
                  '--bdf',bdf,'--slot','0','--output',str(a.output/'guest-config')],check=True)
  subprocess.run(ssh+['mkdir -p /tmp/flyt-evidence-run'],check=True,timeout=10)
  scp=['scp','-i',str(a.key.resolve()),'-o','BatchMode=yes','-o','StrictHostKeyChecking=accept-new','-o','UserKnownHostsFile='+str((a.output/'known-hosts').resolve())]
- binary='guest-gpu-smoke' if a.probe=='gpu' else 'memory-probe-guest'
  subprocess.run(scp+[str(a.artifacts/binary),str(a.artifacts/'libflyt_guest.so'),str(a.output/'guest-config/layout.bin'),'ubuntu@'+ip+':/tmp/flyt-evidence-run/'],check=True,timeout=30)
  if a.barrier:
   a.barrier.mkdir(parents=True,exist_ok=True);(a.barrier/(a.name+'.ready')).write_text(ip)
   event('BarrierReady');wait_for(lambda:(a.barrier/'start').exists(),'start barrier not released')
- arguments=str(a.seed)+' 10' if a.probe=='gpu' else a.scenario+' '+str(a.bytes)
+ arguments=str(a.seed)+' '+str(a.gpu_seconds) if a.probe=='gpu' else a.scenario+' '+str(a.bytes)
+ save('guest-command.json',{'argv':arguments,'bdf':bdf,'binary':binary,'slot':0})
  command='sudo env FLYT_LAYOUT=/tmp/flyt-evidence-run/layout.bin FLYT_IVSHMEM_BDF='+bdf+' FLYT_SLOT=0 FLYT_PROBE_HOLD=10 LD_LIBRARY_PATH=/tmp/flyt-evidence-run /tmp/flyt-evidence-run/'+binary+' '+arguments
  with (a.output/'guest-stdout.txt').open('w') as stdout,(a.output/'guest-stderr.txt').open('w') as stderr:
   ssh_process=subprocess.Popen(ssh+[command],stdout=stdout,stderr=stderr)

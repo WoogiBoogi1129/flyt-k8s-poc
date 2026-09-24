@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "formal_training_result": false,
+  "scope": "VM SHM gpu smoke and lifecycle",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "probe_results": [
+    {
+      "status": "PASS",
+      "event": "MEASUREMENT_START",
+      "warmup_seconds": 10.007507
+    },
+    {
+      "status": "PASS",
+      "scope": "compute load execution only, not enforcement verdict",
+      "warmup_launches": 830,
+      "launches": 5089,
+      "measurement_seconds": 61.001273,
+      "grid": 2048,
+      "block": 256
+    }
+  ],
+  "probe_pass": true,
+  "released": true,
+  "elapsed_seconds": 144.3999394729908
+}

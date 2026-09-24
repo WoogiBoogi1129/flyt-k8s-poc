@@ -1,0 +1,1 @@
+{"scenario":"aggregate_race","quota_bytes":4294967296,"request_per_process":2576980377,"cuda_status":[0,2],"status":"PASS"}

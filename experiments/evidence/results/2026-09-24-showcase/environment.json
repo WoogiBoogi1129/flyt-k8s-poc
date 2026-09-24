@@ -1,0 +1,41 @@
+{
+  "observed_at": "2026-09-24T10:24:08.673487+00:00",
+  "node_name": "gpu-4",
+  "node_info": {
+    "architecture": "amd64",
+    "bootID": "8df59f8a-2964-43cc-8aac-4469572afbdd",
+    "containerRuntimeVersion": "cri-o://1.37.0",
+    "kernelVersion": "6.8.0-138-generic",
+    "kubeProxyVersion": "",
+    "kubeletVersion": "v1.37.0",
+    "machineID": "71c3f08b1d134e1692ab7254b38f6591",
+    "operatingSystem": "linux",
+    "osImage": "Ubuntu 24.04.4 LTS",
+    "runningInUserNamespace": false,
+    "systemUUID": "00000000-0000-0000-0000-905a08ba7595"
+  },
+  "node_capacity": {
+    "cpu": "128",
+    "devices.kubevirt.io/kvm": "1k",
+    "devices.kubevirt.io/sev": "1k",
+    "devices.kubevirt.io/tun": "1k",
+    "devices.kubevirt.io/vhost-net": "1k",
+    "ephemeral-storage": "3776075399168",
+    "flyt.dev/evidence-passthrough": "0",
+    "hugepages-1Gi": "0",
+    "hugepages-2Mi": "0",
+    "memory": "791135216Ki",
+    "nvidia.com/gpu": "40",
+    "pods": "110"
+  },
+  "gpus": "name, uuid, driver_version, pci.bus_id, memory.total [MiB]\nNVIDIA RTX PRO 6000 Blackwell Server Edition, GPU-772181af-05a4-0c24-de59-8487bd37c142, 580.173.02, 00000000:40:00.0, 97887 MiB\nNVIDIA RTX PRO 6000 Blackwell Server Edition, GPU-7d708c42-8d4a-16d5-0746-474567157aa3, 580.173.02, 00000000:41:00.0, 97887 MiB\nNVIDIA RTX PRO 6000 Blackwell Server Edition, GPU-c654d43e-43f8-c28e-77c2-1f17a0cbf46a, 580.173.02, 00000000:AA:00.0, 97887 MiB\nNVIDIA RTX PRO 6000 Blackwell Server Edition, GPU-1b4de6a0-88ae-4004-98b9-035906a2473f, 580.173.02, 00000000:AB:00.0, 97887 MiB\n",
+  "host_kernel": "6.8.0-138-generic",
+  "python": "Python 3.12.3",
+  "nodejs": "v24.16.0",
+  "images": {
+    "control": "localhost/flyt-control-plane@sha256:8dd0a2f445244a839ce390e83da5ad653cd82c6904dced06fc777dc570ccb808",
+    "worker": "localhost/flyt-worker@sha256:a7bae7a184238df59b16cce0233ed6dbc74a135c3b3295b0c97811c2c9e9e47d",
+    "hook": "localhost/flyt-hook@sha256:ff8db37b7ee864c5b63335986b2d4c85c550ca7bd82c80ed241563f715fa0554"
+  },
+  "formal_cpu_numa_control": false
+}

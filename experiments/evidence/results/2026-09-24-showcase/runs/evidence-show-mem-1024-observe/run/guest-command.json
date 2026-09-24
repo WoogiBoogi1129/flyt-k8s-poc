@@ -1,0 +1,6 @@
+{
+  "argv": "observe 1073741824",
+  "bdf": "0000:00:1e.0",
+  "binary": "memory-probe-guest",
+  "slot": 0
+}

@@ -1,0 +1,22 @@
+{
+  "workers": [
+    {
+      "pid": 113,
+      "libvgpu_maps": [
+        "7e02a7c00000-7e02a7c56000 r-xp 00000000 fc:00 37770815                   /usr/local/vgpu/libvgpu.so",
+        "7e02a7c56000-7e02a7e56000 ---p 00056000 fc:00 37770815                   /usr/local/vgpu/libvgpu.so",
+        "7e02a7e56000-7e02a7e58000 r--p 00056000 fc:00 37770815                   /usr/local/vgpu/libvgpu.so",
+        "7e02a7e58000-7e02a7e5b000 rw-p 00058000 fc:00 37770815                   /usr/local/vgpu/libvgpu.so"
+      ],
+      "environment": {
+        "CUDA_DEVICE_SM_LIMIT": "100",
+        "CUDA_DEVICE_MEMORY_LIMIT_0": "4096m",
+        "GPU_CORE_UTILIZATION_POLICY": null,
+        "LD_PRELOAD": null
+      }
+    }
+  ],
+  "libvgpu_sha256": "e98badc7ab64065af728fcca833ed372f16702d1e1c18eec01b1d8f6cbf7a9fb",
+  "worker_uid": "dbd06b7a-ca25-4cf9-a419-11a60bf20be4",
+  "timestamp": "2026-09-24T11:00:16.600070+00:00"
+}

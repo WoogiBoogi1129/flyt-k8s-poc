@@ -1,0 +1,16 @@
+{
+  "case_id": "evidence-show-capture-b/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "7d3f6e94-3442-4e0d-a341-4639ca409ac2",
+  "monotonic_origin_seconds": 258566.06379781,
+  "git_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "probe": "gpu",
+  "scenario": null,
+  "bytes": null,
+  "seed": 4027,
+  "timeout_seconds": 300,
+  "gpu_seconds": 45,
+  "gpu_program": "smoke"
+}

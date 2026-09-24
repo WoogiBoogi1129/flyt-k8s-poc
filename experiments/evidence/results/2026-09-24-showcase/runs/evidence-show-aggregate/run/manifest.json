@@ -1,0 +1,16 @@
+{
+  "case_id": "evidence-show-aggregate/run",
+  "formal_training_result": false,
+  "phase": "development",
+  "namespace": "flyt-evidence",
+  "channel_uid": "8eb8454b-6b19-459e-9e72-b95a6fa5062a",
+  "monotonic_origin_seconds": 256946.416648897,
+  "git_commit": "2912677c8b77e70f3c683dc0257360c3381899f5",
+  "probe": "memory",
+  "scenario": "aggregate_race",
+  "bytes": 4294967296,
+  "seed": 23,
+  "timeout_seconds": 300,
+  "gpu_seconds": 10,
+  "gpu_program": "smoke"
+}

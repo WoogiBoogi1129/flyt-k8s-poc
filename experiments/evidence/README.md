@@ -1,5 +1,11 @@
 # SHM/HAMi 실증 도구
 
+> 실제 후속 실행과 화면 증거: [2026-09-24 결과 보고서](IMPLEMENTATION_EXPERIMENT_RESULTS_2026-09-24.md).
+
+> **2026-09-24 자료 제작 범위 변경:** [현재 구현·실험 계획](IMPLEMENTATION_EXPERIMENT_PLAN.md)을 따른다.
+> 학습 정확성 비교와 장애 격리·복구 신규 실험은 제외한다. 아래 기존 전체 gate 및 과거 기록은 보존하며,
+> 이번 시연·자원·정상 회수 결과를 E1~E5 전체 완료로 간주하지 않는다.
+
 선행 개발과 본 실험을 분리한 실증 계획의 실행·판정 도구다. ivshmem launcher를
 빌드·배포해 단일 VM과 2개 VM의 실제 SHM GPU 복사·PTX 실행을 확인했다.
 대표 PyTorch 학습과 실제 passthrough 대비 두 VM 8개 조건의 정확성을 검증했다.
